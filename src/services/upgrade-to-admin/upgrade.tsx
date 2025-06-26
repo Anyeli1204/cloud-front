@@ -1,0 +1,14 @@
+import { UpgradeToAdmin } from "@interfaces/user-to-admin-Upgrade/UpgradeToAdmin";
+import { UpgradeResponse } from "@interfaces/user-to-admin-Upgrade/UpgradeResponse";
+import Api from "@services/api";
+
+export async function upgrade(upgradeToAdmin: UpgradeToAdmin) {
+	const api = await Api.getInstance();
+	const response = await api.post<UpgradeToAdmin, UpgradeResponse>(
+		upgradeToAdmin,
+		{
+			url: "/auth/upgradetoadmin",
+		},
+	);
+	return response;
+}
