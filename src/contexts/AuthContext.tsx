@@ -1,16 +1,17 @@
+// src/context/AuthContext.tsx
+import React, { createContext, ReactNode, useContext } from "react";
 import { useStorageState } from "@hooks/useStorageState";
 import { LoginRequest } from "@interfaces/auth/LoginRequest";
 import { RegisterRequest } from "@interfaces/auth/RegisterRequest";
-import Api from "@services/api";
-import { login } from "@services/auth/login";
-import { register } from "@services/auth/register";
-import { createContext, ReactNode, useContext } from "react";
+import { AuthResponse } from "@interfaces/auth/AuthResponse";
+import { login as loginService } from "@services/auth/login";
+import { register as registerService } from "@services/auth/register";
 
 interface AuthContextType {
-	register: (SignupRequest: RegisterRequest) => Promise<void>;
-	login: (loginRequest: LoginRequest) => Promise<void>;
+	register: (input: RegisterRequest) => Promise<void>;
+	login: (input: LoginRequest) => Promise<void>;
 	logout: () => void;
-	session?: string | null;
+	session: string | null;
 	isLoading: boolean;
 	id: number | null;
 	email: string | null;
@@ -21,89 +22,58 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-async function loginHandler(
-	loginRequest: LoginRequest,
-	setSession: (value: string) => void,
-	setId: (value: string | null) => void,
-	setEmail: (value: string | null) => void,
-	setPassword: (value: string | null) => void,
-	setUsername: (value: string | null) => void,
-	setRole: (value: string | null) => void,
-) {
-	const response = await login(loginRequest);
-	setSession(response.data.token);
-	const { id, email, password, username, role } = response.data;
-	setId(id?.toString() ?? null);
-	setEmail(email ?? null);
-	setPassword(password ?? null);
-	setUsername(username ?? null);
-	setRole(role ?? null);
-}
-
-async function signupHandler(
-	signupRequest: RegisterRequest,
-	setSession: (value: string) => void,
-	setId: (value: string | null) => void,
-	setEmail: (value: string | null) => void,
-	setPassword: (value: string | null) => void,
-	setUsername: (value: string | null) => void,
-	setRole: (value: string | null) => void,
-) {
-	const response = await register(signupRequest);
-	const { id, email, password, username, role } = response.data;
-	setSession(response.data.token);
-	setId(id?.toString() ?? null);
-	setEmail(email ?? null);
-	setPassword(password ?? null);
-	setUsername(username ?? null);
-	setRole(role ?? null);
-}
-
-export function AuthProvider(props: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
 	const [[isLoading, session], setSession] = useStorageState("token");
 	const [[, idStr], setId] = useStorageState("id");
 	const [[, email], setEmail] = useStorageState("email");
 	const [[, password], setPassword] = useStorageState("password");
 	const [[, username], setUsername] = useStorageState("username");
 	const [[, role], setRole] = useStorageState("role");
+
 	const id = idStr ? Number(idStr) : null;
 
-	if (session)
-		Api.getInstance().then((api) => {
-			api.authorization = session;
-		});
+	function saveSession(data: AuthResponse) {
+		setSession(data.token);
+		setId(data.id?.toString() ?? null);
+		setEmail(data.email ?? null);
+		setPassword(data.password ?? null);
+		setUsername(data.username ?? null);
+		setRole(data.role ?? null);
+	}
+
+	// Limpia la sesión
+	function clearSession() {
+		setSession(null);
+		setId(null);
+		setEmail(null);
+		setPassword(null);
+		setUsername(null);
+		setRole(null);
+	}
+
+	// Llama a tu servicio de login y guarda sesión
+	async function login(input: LoginRequest) {
+		const resp = await loginService(input);
+		saveSession(resp.data);
+	}
+
+	// Llama a tu servicio de register y guarda sesión
+	async function register(input: RegisterRequest) {
+		const resp = await registerService(input);
+		saveSession(resp.data);
+	}
+
+	// Desloguea simplemente limpiando storage
+	function logout() {
+		clearSession();
+	}
 
 	return (
 		<AuthContext.Provider
 			value={{
-				register: (signupRequest) =>
-					signupHandler(
-						signupRequest,
-						setSession,
-						setId,
-						setEmail,
-						setPassword,
-						setUsername,
-						setRole,
-					),
-				login: (loginRequest) =>
-					loginHandler(
-						loginRequest,
-						setSession,
-						setId,
-						setEmail,
-						setPassword,
-						setUsername,
-						setRole,
-					),
-				logout: () => {
-					setSession(null);
-					setId(null);
-					setEmail(null);
-					setPassword(null);
-					setUsername(null);
-					setRole(null);
-				},
+				register,
+				login,
+				logout,
 				session,
 				isLoading,
 				id,
@@ -113,14 +83,15 @@ export function AuthProvider(props: { children: ReactNode }) {
 				role: role as "USER" | "ADMIN" | null,
 			}}
 		>
-			{props.children}
+			{children}
 		</AuthContext.Provider>
 	);
 }
 
-export function useAuthContext() {
-	const context = useContext(AuthContext);
-	if (context === undefined)
-		throw new Error("useAuthContext must be used within a AuthProvider");
-	return context;
+export function useAuthContext(): AuthContextType {
+	const ctx = useContext(AuthContext);
+	if (!ctx) {
+		throw new Error("useAuthContext must be used within an AuthProvider");
+	}
+	return ctx;
 }

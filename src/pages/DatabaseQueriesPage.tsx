@@ -1,8 +1,15 @@
+// src/pages/DatabaseQueriesPage.tsx
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
+import Swal from "sweetalert2";
 import type { UserDBQueryRequest } from "@interfaces/db-queries/UserDBQueryRequest";
-import type { UserDbQueryResponse } from "@interfaces/db-queries/UserDbQueryResponse";
-
+import type {
+	UserDbPost,
+	DbMetric,
+	MetricByHashtag,
+	MetricByDayOfWeek,
+} from "@interfaces/db-queries/UserDbQueryResponse";
+import { dbQueries } from "@services/db-queries/UserDbQueries";
 import {
 	BarChart,
 	Bar,
@@ -16,192 +23,315 @@ import { FilterPanelDb } from "@components/FilterPanelDb";
 
 type OutletContext = { activeTab: "global" | "queries" | "apify" | "users" };
 
-// Mock data for simulation
-const mockData: UserDbQueryResponse[] = [
-	{
-		id: 1,
-		userId: 101,
-		postId: "123",
-		datePosted: "2025-06-20",
-		hourPosted: "14:30",
-		usernameTiktokAccount: "@user1",
-		postURL: "https://tiktok.com/post/123",
-		views: 1000,
-		likes: 150,
-		comments: 20,
-		saves: 10,
-		reposts: 5,
-		totalInteractions: 185,
-		engagement: 0.185,
-		numberHashtags: 2,
-		hashtags: "#fun,#react",
-		soundId: "sound1",
-		soundURL: "https://tiktok.com/sound/1",
-		regionPost: "US",
-		dateTracking: "2025-06-21",
-		timeTracking: "09:00",
-	},
-	{
-		id: 2,
-		userId: 102,
-		postId: "456",
-		datePosted: "2025-06-22",
-		hourPosted: "16:45",
-		usernameTiktokAccount: "@user2",
-		postURL: "https://tiktok.com/post/456",
-		views: 2000,
-		likes: 300,
-		comments: 50,
-		saves: 20,
-		reposts: 10,
-		totalInteractions: 380,
-		engagement: 0.19,
-		numberHashtags: 2,
-		hashtags: "#react,#typescript",
-		soundId: "sound2",
-		soundURL: "https://tiktok.com/sound/2",
-		regionPost: "EU",
-		dateTracking: "2025-06-23",
-		timeTracking: "11:15",
-	},
-	// Agrega más objetos según necesites...
-];
-
 export default function DatabaseQueriesPage() {
 	const { activeTab } = useOutletContext<OutletContext>();
-	const [filters, setFilters] = useState<UserDBQueryRequest | null>(null);
-	const [data, setData] = useState<UserDbQueryResponse[]>([]);
 
-	// Simulación de petición al cambiar filtros
+	const [filters, setFilters] = useState<UserDBQueryRequest | null>(null);
+	const [posts, setPosts] = useState<UserDbPost[]>([]);
+	const [metrics, setMetrics] = useState<DbMetric[]>([]);
+	const [error, setError] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+
+	// When filters change, fetch from API
 	useEffect(() => {
-		if (filters) {
-			const filtered = mockData.filter((d) => {
-				if (filters.datePostedFrom && d.datePosted < filters.datePostedFrom)
-					return false;
-				if (filters.datePostedTo && d.datePosted > filters.datePostedTo)
-					return false;
-				return true;
-			});
-			setData(filtered);
-		} else {
-			setData([]);
+		if (!filters) {
+			setPosts([]);
+			setMetrics([]);
+			return;
 		}
+		(async () => {
+			try {
+				Swal.fire({
+					title: "Cargando…",
+					html: "Obteniendo datos de TikTok, por favor espera.",
+					allowOutsideClick: false,
+					didOpen: () => Swal.showLoading(),
+				});
+
+				const [postList, metricList] = await dbQueries(filters);
+				setPosts(postList);
+				setMetrics(metricList);
+				setError(null);
+			} catch (e: any) {
+				console.error(e);
+				setError(e.message || "Error al solicitar datos");
+				setPosts([]);
+				setMetrics([]);
+			} finally {
+				Swal.close();
+				setLoading(false);
+			}
+		})();
 	}, [filters]);
 
-	// Datasets para las gráficas
-	const [dataRegion, setDataRegion] = useState<
-		{ region: string; count: number }[]
-	>([]);
-	const [dataHashtags, setDataHashtags] = useState<
-		{ tag: string; views: number }[]
-	>([]);
-	const [dataSounds, setDataSounds] = useState<
-		{ sound: string; views: number }[]
-	>([]);
-	const [dataLikesViews, setDataLikesViews] = useState<
-		{ region: string; likes: number; views: number }[]
-	>([]);
-
-	// Procesar datos para gráficas
-	useEffect(() => {
-		const regionMap = new Map<string, number>();
-		data.forEach((d) => {
-			regionMap.set(d.regionPost, (regionMap.get(d.regionPost) ?? 0) + 1);
-		});
-		setDataRegion(
-			Array.from(regionMap).map(([region, count]) => ({ region, count })),
-		);
-
-		const tagMap = new Map<string, number>();
-		data.forEach((d) => {
-			d.hashtags
-				.split(",")
-				.map((tag) => tag.trim())
-				.filter(Boolean)
-				.forEach((tag) => {
-					tagMap.set(tag, (tagMap.get(tag) ?? 0) + d.views);
-				});
-		});
-		setDataHashtags(Array.from(tagMap).map(([tag, views]) => ({ tag, views })));
-
-		const soundMap = new Map<string, number>();
-		data.forEach((d) => {
-			soundMap.set(d.soundId, (soundMap.get(d.soundId) ?? 0) + d.views);
-		});
-		setDataSounds(
-			Array.from(soundMap).map(([sound, views]) => ({ sound, views })),
-		);
-
-		const lvMap = new Map<string, { likes: number; views: number }>();
-		data.forEach((d) => {
-			const cur = lvMap.get(d.regionPost) ?? { likes: 0, views: 0 };
-			cur.likes += d.likes;
-			cur.views += d.views;
-			lvMap.set(d.regionPost, cur);
-		});
-		setDataLikesViews(
-			Array.from(lvMap).map(([region, { likes, views }]) => ({
-				region,
-				likes,
-				views,
-			})),
-		);
-	}, [data]);
+	// Separate metrics by type
+	const byHashtag = metrics.filter(
+		(m): m is MetricByHashtag => m.type === "MetricByHashtag",
+	);
+	const byDay = metrics.filter(
+		(m): m is MetricByDayOfWeek => m.type === "byDayOfWeek",
+	);
 
 	const charts = [
 		{
-			key: "q1",
-			title: "Region vs #Posts",
-			data: dataRegion,
-			xKey: "region",
-			bars: [{ dataKey: "count" }],
+			key: "h-views",
+			title: "Hashtags vs Views",
+			data: byHashtag.map((m) => ({
+				category: m.category,
+				value: m.views,
+			})),
+			bars: [{ dataKey: "value" }],
+			xKey: "category",
 		},
 		{
-			key: "q2",
-			title: "Hashtags vs Total Views",
-			data: dataHashtags,
-			xKey: "tag",
-			bars: [{ dataKey: "views" }],
+			key: "h-likes",
+			title: "Hashtags vs Likes",
+			data: byHashtag.map((m) => ({
+				category: m.category,
+				value: m.likes,
+			})),
+			bars: [{ dataKey: "value" }],
+			xKey: "category",
 		},
 		{
-			key: "q3",
-			title: "SoundId vs Views",
-			data: dataSounds,
-			xKey: "sound",
-			bars: [{ dataKey: "views" }],
+			key: "h-eng",
+			title: "Hashtags vs Avg Engagement",
+			data: byHashtag.map((m) => ({
+				category: m.category,
+				value: m.avgEngagement,
+			})),
+			bars: [{ dataKey: "value" }],
+			xKey: "category",
 		},
 		{
-			key: "q4",
-			title: "Likes & Views by Region",
-			data: dataLikesViews,
-			xKey: "region",
-			bars: [{ dataKey: "likes" }, { dataKey: "views" }],
+			key: "h-int",
+			title: "Hashtags vs Interactions",
+			data: byHashtag.map((m) => ({
+				category: m.category,
+				value: m.interactions,
+			})),
+			bars: [{ dataKey: "value" }],
+			xKey: "category",
+		},
+		{
+			key: "d-lv",
+			title: "Día vs Views & Likes",
+			data: byDay.map((m) => ({
+				category: m.category,
+				views: m.views,
+				likes: m.likes,
+			})),
+			bars: [
+				{ dataKey: "views", name: "Views" },
+				{ dataKey: "likes", name: "Likes" },
+			],
+			xKey: "category",
+		},
+		{
+			key: "d-eng",
+			title: "Día vs Avg Engagement",
+			data: byDay.map((m) => ({
+				category: m.category,
+				value: m.avgEngagement,
+			})),
+			bars: [{ dataKey: "value" }],
+			xKey: "category",
 		},
 	];
 
-	const renderChart = (cfg: (typeof charts)[0]) => (
-		<div key={cfg.key} className="bg-white rounded-xl shadow p-4">
-			<h4 className="font-semibold mb-2">{cfg.title}</h4>
-			<ResponsiveContainer width="100%" height={200}>
-				<BarChart data={cfg.data}>
-					<XAxis dataKey={cfg.xKey} />
-					<YAxis />
-					<Tooltip />
-					<Legend />
-					{cfg.bars.map((bar) => (
-						<Bar key={bar.dataKey} dataKey={bar.dataKey} />
-					))}
-				</BarChart>
-			</ResponsiveContainer>
-		</div>
-	);
+	const PALETTE = [
+		"#EF4444",
+		"#EC4899",
+		"#8B5CF6",
+		"#3B82F6",
+		"#10B981",
+		"#F43F5E",
+		"#6366F1",
+	];
+
+	function shuffle<T>(arr: T[]): T[] {
+		return [...arr].sort(() => Math.random() - 0.5);
+	}
+
+	const renderChart = ({
+		key,
+		title,
+		data,
+		bars,
+		xKey,
+	}: {
+		key: string;
+		title: string;
+		data: any[];
+		bars: { dataKey: string; name?: string }[];
+		xKey: string;
+	}) => {
+		const colors = shuffle(PALETTE);
+		return (
+			<div key={key} className="bg-white rounded-xl shadow-lg p-4">
+				<h4 className="font-semibold mb-2">{title}</h4>
+				<ResponsiveContainer width="100%" height={220}>
+					<BarChart data={data}>
+						<XAxis dataKey={xKey} />
+						<YAxis />
+						<Tooltip />
+						<Legend />
+						{bars.map((b, i) => (
+							<Bar
+								key={b.dataKey}
+								dataKey={b.dataKey}
+								name={b.name}
+								fill={colors[i % colors.length]}
+								radius={[4, 4, 0, 0]}
+								barSize={60}
+							/>
+						))}
+					</BarChart>
+				</ResponsiveContainer>
+			</div>
+		);
+	};
 
 	if (activeTab !== "queries") return null;
+
+	const headers = [
+		"Post Code",
+		"Date Posted",
+		"Time Posted",
+		"Username",
+		"Post URL",
+		"Views",
+		"Likes",
+		"Comments",
+		"Reposts",
+		"Saves",
+		"Engagement %",
+		"Interactions",
+		"Hashtags",
+		"Amount Hashtags",
+		"Sound ID",
+		"Sound URL",
+		"Region",
+		"Track Date",
+		"Track Time",
+		"User",
+	];
+
 	return (
-		<div className="p-6">
-			<FilterPanelDb onApply={setFilters!} onReset={() => setFilters(null)} />
+		<div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+			<FilterPanelDb onApply={setFilters} onReset={() => setFilters(null)} />
+			{error && (
+				<div className="text-red-600 text-center font-medium">{error}</div>
+			)}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 				{charts.map(renderChart)}
+			</div>
+
+			{/* TABLA DE POSTS */}
+			<div className="bg-white rounded-lg shadow overflow-x-auto">
+				<table className="min-w-full divide-y divide-gray-200">
+					<thead className="bg-purple-600">
+						<tr>
+							{headers.map((h) => (
+								<th
+									key={h}
+									className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+								>
+									{h}
+								</th>
+							))}
+						</tr>
+					</thead>
+					<tbody className="divide-y divide-gray-200 bg-white">
+						{loading ? (
+							<tr>
+								<td colSpan={headers.length} className="p-4 text-center">
+									Cargando…
+								</td>
+							</tr>
+						) : posts.length === 0 ? (
+							<tr>
+								<td colSpan={headers.length} className="p-4 text-center">
+									Sin datos
+								</td>
+							</tr>
+						) : (
+							posts.map((row, i) => (
+								<tr
+									key={`${row.postId}-${i}`}
+									className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}
+								>
+									<td className="px-4 py-2 text-sm font-medium text-gray-800">
+										{row.postId}
+									</td>
+									<td className="px-4 py-2 text-sm">{row.datePosted}</td>
+									<td className="px-4 py-2 text-sm">{row.hourPosted}</td>
+									<td className="px-4 py-2 text-sm">
+										{row.usernameTiktokAccount}
+									</td>
+									<td className="px-4 py-2 text-sm">
+										{row.postURL ? (
+											<a
+												href={row.postURL}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-purple-600 hover:underline"
+											>
+												{row.postURL.split("/").pop()}
+											</a>
+										) : (
+											"–"
+										)}
+									</td>
+									<td className="px-4 py-2 text-sm">
+										{row.views?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm">
+										{row.likes?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm">
+										{row.comments?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm">
+										{row.reposts?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm">
+										{row.saves?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm">
+										{row.engagement.toFixed(2)}%
+									</td>
+									<td className="px-4 py-2 text-sm">
+										{row.totalInteractions?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm">{row.hashtags || "–"}</td>
+									<td className="px-4 py-2 text-sm">
+										{row.numberHashtags?.toString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm">{row.soundId || "–"}</td>
+									<td className="px-4 py-2 text-sm">
+										{row.soundURL ? (
+											<a
+												href={row.soundURL}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-purple-600 hover:underline"
+											>
+												{row.soundURL.split("/").pop()}
+											</a>
+										) : (
+											"–"
+										)}
+									</td>
+									<td className="px-4 py-2 text-sm">{row.regionPost}</td>
+									<td className="px-4 py-2 text-sm">{row.dateTracking}</td>
+									<td className="px-4 py-2 text-sm">{row.timeTracking}</td>
+									<td className="px-4 py-2 text-sm">{row.userId}</td>
+								</tr>
+							))
+						)}
+					</tbody>
+				</table>
 			</div>
 		</div>
 	);

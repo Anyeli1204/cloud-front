@@ -1,4 +1,5 @@
 export interface UserDBQueryRequest {
+	userId: number;
 	tiktokUsernames?: string;
 	postId?: string;
 	datePostedFrom: string;

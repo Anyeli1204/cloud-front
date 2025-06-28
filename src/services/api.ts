@@ -9,41 +9,39 @@ export default class Api {
 
 	private _basePath: string;
 
-	private _authorization: string | null;
-
-	public set authorization(value: string) {
-		this._authorization = value;
-	}
-
-	private constructor(basePath: string, authorization: string | null) {
+	private constructor(basePath: string) {
 		this._basePath = basePath;
-		this._authorization = authorization;
 	}
 
 	public static async getInstance() {
 		if (!this._instance) {
-			const basePath = `http://${import.meta.env.VITE_BASE_URL}:8080`;
-			this._instance = new Api(basePath, null);
+			const basePath = "/api";
+			this._instance = new Api(basePath);
 		}
-
 		return this._instance;
 	}
 
-	public async request<RequestType, ResponseType>(config: AxiosRequestConfig) {
+	private async request<RequestType, ResponseType>(config: AxiosRequestConfig) {
 		const headers: RawAxiosRequestHeaders = {
 			"Content-Type": "application/json",
-			Authorization: this._authorization ? `Bearer ${this._authorization}` : "",
 		};
+
+		const token = sessionStorage.getItem("token");
+		if (token) {
+			headers["Authorization"] = `Bearer ${token}`;
+		}
 
 		const configOptions: AxiosRequestConfig = {
 			...config,
 			baseURL: this._basePath,
 			headers: headers,
+			withCredentials: true,
 		};
 
-		const path = this._basePath + config.url;
-
-		return axios<RequestType, AxiosResponse<ResponseType>>(path, configOptions);
+		return axios<RequestType, AxiosResponse<ResponseType>>(
+			config.url!,
+			configOptions,
+		);
 	}
 
 	public get<RequestType, ResponseType>(config: AxiosRequestConfig) {

@@ -5,7 +5,7 @@ import Api from "@services/api";
 
 function saveAuthSession(data: AuthResponse) {
 	sessionStorage.setItem("token", data.token);
-	sessionStorage.setItem("id", data.id !== undefined ? data.id.toString() : "");
+	sessionStorage.setItem("id", data.id.toString());
 	sessionStorage.setItem("email", data.email);
 	sessionStorage.setItem("password", data.password);
 	sessionStorage.setItem("username", data.username);
@@ -17,7 +17,7 @@ export async function login(loginRequest: LoginRequest) {
 	const response = await api.post<LoginRequest, AuthResponse>(loginRequest, {
 		url: "/auth/signin",
 	});
-	api.authorization = response.data.token;
+
 	saveAuthSession(response.data);
 	console.log(response.data);
 	return response;

@@ -3,8 +3,17 @@ import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-// https://vitejs.dev/config/
 export default defineConfig({
+	server: {
+		proxy: {
+			"/api": {
+				// NO HARDCODEARLO
+				target: "http://localhost:8080",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api/, ""),
+			},
+		},
+	},
 	plugins: [
 		react(),
 		tsconfigPaths(),

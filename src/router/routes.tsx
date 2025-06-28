@@ -4,7 +4,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import AuthPage from "src/pages/AuthPage";
 import DashboardPage from "src/pages/DashboardPage";
 import ApifyCallPage from "src/pages/ApifyCallPage";
-import DatabaseQueriesPage from "src/pages/DataBaseQueriesPage";
+import DatabaseQueriesPage from "src/pages/DatabaseQueriesPage";
 
 import NotFoundPage from "src/pages/NotFoundPage";
 export const router = createBrowserRouter([
