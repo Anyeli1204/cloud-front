@@ -75,6 +75,13 @@ export default function ApifyCallPage() {
 
 			{error && <div className="text-red-600 text-center">{error}</div>}
 
+			{/* NUEVO: Mensaje cuando no hay datos y no estamos cargando */}
+			{!loading && data.length === 0 && (
+				<div className="text-gray-500 text-center text-xl py-6">
+					No data available yet.
+				</div>
+			)}
+
 			<div className="bg-white rounded-lg shadow overflow-x-auto">
 				<table className="min-w-full divide-y divide-gray-200">
 					<thead className="bg-purple-600">
@@ -181,7 +188,6 @@ export default function ApifyCallPage() {
 										{row.trackingTime ?? "–"}
 									</td>
 									<td className="px-4 py-2 text-sm">{row.user ?? "–"}</td>
-									<td className="px-4 py-2 text-sm">{row.admin ?? "–"}</td>
 								</tr>
 							))
 						)}

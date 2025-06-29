@@ -138,7 +138,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 					</label>
 					<input
 						type="text"
-						placeholder="@user1,@user2"
+						placeholder="user1,user2"
 						value={f.tiktokUsernames}
 						onChange={(e) => handleChange("tiktokUsernames", e.target.value)}
 						className={inputCls}

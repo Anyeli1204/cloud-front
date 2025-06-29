@@ -33,6 +33,14 @@ export interface MetricByHashtag {
 	avgEngagement: number;
 	interactions: number;
 }
+export interface MetricByUsername {
+	type: "metricsByUsername";
+	category: string;
+	views: number;
+	likes: number;
+	avgEngagement: number;
+	interactions: number;
+}
 
 export interface MetricByDayOfWeek {
 	type: "byDayOfWeek";
@@ -43,7 +51,7 @@ export interface MetricByDayOfWeek {
 	interactions: number; // always 0 in the sample
 }
 
-export type DbMetric = MetricByHashtag | MetricByDayOfWeek;
+export type DbMetric = MetricByHashtag | MetricByDayOfWeek | MetricByUsername;
 
 /**
  * El formato completo de la respuesta viene como un array de dos arrays:

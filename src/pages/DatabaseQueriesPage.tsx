@@ -2,14 +2,17 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Swal from "sweetalert2";
+
 import type { UserDBQueryRequest } from "@interfaces/db-queries/UserDBQueryRequest";
 import type {
 	UserDbPost,
 	DbMetric,
 	MetricByHashtag,
+	MetricByUsername,
 	MetricByDayOfWeek,
 } from "@interfaces/db-queries/UserDbQueryResponse";
 import { dbQueries } from "@services/db-queries/UserDbQueries";
+
 import {
 	BarChart,
 	Bar,
@@ -19,6 +22,7 @@ import {
 	ResponsiveContainer,
 	Legend,
 } from "recharts";
+
 import { FilterPanelDb } from "@components/FilterPanelDb";
 
 type OutletContext = { activeTab: "global" | "queries" | "apify" | "users" };
@@ -32,7 +36,6 @@ export default function DatabaseQueriesPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 
-	// When filters change, fetch from API
 	useEffect(() => {
 		if (!filters) {
 			setPosts([]);
@@ -41,6 +44,7 @@ export default function DatabaseQueriesPage() {
 		}
 		(async () => {
 			try {
+				setLoading(true);
 				Swal.fire({
 					title: "Cargando…",
 					html: "Obteniendo datos de TikTok, por favor espera.",
@@ -58,59 +62,91 @@ export default function DatabaseQueriesPage() {
 				setPosts([]);
 				setMetrics([]);
 			} finally {
-				Swal.close();
 				setLoading(false);
+				Swal.close();
 			}
 		})();
 	}, [filters]);
 
-	// Separate metrics by type
-	const byHashtag = metrics.filter(
-		(m): m is MetricByHashtag => m.type === "MetricByHashtag",
-	);
+	// === split metrics & fallback para usernames inexistentes ===
+	const primaryMetrics = (() => {
+		if (filters?.hashtags?.trim()) {
+			return metrics.filter(
+				(m): m is MetricByHashtag => m.type === "MetricByHashtag",
+			);
+		} else if (filters?.tiktokUsernames?.trim()) {
+			return metrics.filter(
+				(m): m is MetricByUsername => m.type === "metricsByUsername",
+			);
+		} else {
+			return [];
+		}
+	})();
+
+	// fallback: si filtramos por username y no hay métricas, inyectamos un dummy cero por cada username
+	let effectivePrimary = primaryMetrics;
+	if (filters?.tiktokUsernames?.trim() && primaryMetrics.length === 0) {
+		const names = filters.tiktokUsernames.split(",").map((u) => u.trim());
+		effectivePrimary = names.map((category) => ({
+			type: "metricsByUsername" as const,
+			category,
+			views: 0,
+			likes: 0,
+			avgEngagement: 0,
+			interactions: 0,
+		}));
+	}
+
 	const byDay = metrics.filter(
 		(m): m is MetricByDayOfWeek => m.type === "byDayOfWeek",
 	);
 
+	const hasPrimary = effectivePrimary.length > 0;
+	const primaryLabel =
+		effectivePrimary[0]?.type === "metricsByUsername"
+			? "Usernames"
+			: "Hashtags";
+
+	// build charts (siempre 6, porque en fallback habrá al menos 1 primaria)
 	const charts = [
 		{
-			key: "h-views",
-			title: "Hashtags vs Views",
-			data: byHashtag.map((m) => ({
+			key: "p-views",
+			title: `${primaryLabel} vs Views`,
+			data: effectivePrimary.map((m) => ({
 				category: m.category,
 				value: m.views,
 			})),
-			bars: [{ dataKey: "value" }],
+			bars: [{ dataKey: "value", name: "Views" }],
 			xKey: "category",
 		},
 		{
-			key: "h-likes",
-			title: "Hashtags vs Likes",
-			data: byHashtag.map((m) => ({
+			key: "p-likes",
+			title: `${primaryLabel} vs Likes`,
+			data: effectivePrimary.map((m) => ({
 				category: m.category,
 				value: m.likes,
 			})),
-			bars: [{ dataKey: "value" }],
+			bars: [{ dataKey: "value", name: "Likes" }],
 			xKey: "category",
 		},
 		{
-			key: "h-eng",
-			title: "Hashtags vs Avg Engagement",
-			data: byHashtag.map((m) => ({
+			key: "p-eng",
+			title: `${primaryLabel} vs Avg Engagement`,
+			data: effectivePrimary.map((m) => ({
 				category: m.category,
 				value: m.avgEngagement,
 			})),
-			bars: [{ dataKey: "value" }],
+			bars: [{ dataKey: "value", name: "Engagement" }],
 			xKey: "category",
 		},
 		{
-			key: "h-int",
-			title: "Hashtags vs Interactions",
-			data: byHashtag.map((m) => ({
+			key: "p-int",
+			title: `${primaryLabel} vs Interactions`,
+			data: effectivePrimary.map((m) => ({
 				category: m.category,
 				value: m.interactions,
 			})),
-			bars: [{ dataKey: "value" }],
+			bars: [{ dataKey: "value", name: "Interactions" }],
 			xKey: "category",
 		},
 		{
@@ -134,7 +170,7 @@ export default function DatabaseQueriesPage() {
 				category: m.category,
 				value: m.avgEngagement,
 			})),
-			bars: [{ dataKey: "value" }],
+			bars: [{ dataKey: "value", name: "Engagement" }],
 			xKey: "category",
 		},
 	];
@@ -148,7 +184,6 @@ export default function DatabaseQueriesPage() {
 		"#F43F5E",
 		"#6366F1",
 	];
-
 	function shuffle<T>(arr: T[]): T[] {
 		return [...arr].sort(() => Math.random() - 0.5);
 	}
@@ -220,14 +255,23 @@ export default function DatabaseQueriesPage() {
 	return (
 		<div className="p-6 space-y-6 bg-gray-50 min-h-screen">
 			<FilterPanelDb onApply={setFilters} onReset={() => setFilters(null)} />
+
 			{error && (
 				<div className="text-red-600 text-center font-medium">{error}</div>
 			)}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				{charts.map(renderChart)}
-			</div>
 
-			{/* TABLA DE POSTS */}
+			{/* si aún no se ha aplicado filtro */}
+			{filters === null ? (
+				<div className="text-gray-500 text-center text-xl py-6">
+					No data available yet.
+				</div>
+			) : (
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					{charts.map(renderChart)}
+				</div>
+			)}
+
+			{/* POSTS TABLE */}
 			<div className="bg-white rounded-lg shadow overflow-x-auto">
 				<table className="min-w-full divide-y divide-gray-200">
 					<thead className="bg-purple-600">
@@ -252,7 +296,7 @@ export default function DatabaseQueriesPage() {
 						) : posts.length === 0 ? (
 							<tr>
 								<td colSpan={headers.length} className="p-4 text-center">
-									Sin datos
+									No data
 								</td>
 							</tr>
 						) : (
@@ -284,31 +328,31 @@ export default function DatabaseQueriesPage() {
 										)}
 									</td>
 									<td className="px-4 py-2 text-sm">
-										{row.views?.toLocaleString() ?? "0"}
+										{row.views.toLocaleString()}
 									</td>
 									<td className="px-4 py-2 text-sm">
-										{row.likes?.toLocaleString() ?? "0"}
+										{row.likes.toLocaleString()}
 									</td>
 									<td className="px-4 py-2 text-sm">
-										{row.comments?.toLocaleString() ?? "0"}
+										{row.comments.toLocaleString()}
 									</td>
 									<td className="px-4 py-2 text-sm">
-										{row.reposts?.toLocaleString() ?? "0"}
+										{row.reposts.toLocaleString()}
 									</td>
 									<td className="px-4 py-2 text-sm">
-										{row.saves?.toLocaleString() ?? "0"}
+										{row.saves.toLocaleString()}
 									</td>
 									<td className="px-4 py-2 text-sm">
 										{row.engagement.toFixed(2)}%
 									</td>
 									<td className="px-4 py-2 text-sm">
-										{row.totalInteractions?.toLocaleString() ?? "0"}
+										{row.totalInteractions.toLocaleString()}
 									</td>
 									<td className="px-4 py-2 text-sm">{row.hashtags || "–"}</td>
 									<td className="px-4 py-2 text-sm">
-										{row.numberHashtags?.toString() ?? "0"}
+										{row.numberHashtags.toString()}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.soundId || "–"}</td>
+									<td className="px-4 py-2 text-sm">{row.soundId}</td>
 									<td className="px-4 py-2 text-sm">
 										{row.soundURL ? (
 											<a

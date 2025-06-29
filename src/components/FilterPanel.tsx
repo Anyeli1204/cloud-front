@@ -18,7 +18,7 @@ const POPULAR_HASHTAGS = [
 	"#tech",
 	"#beauty",
 ];
-const POPULAR_USERS = ["@cooking_master", "@travel_vibes", "@tech_tips"];
+const POPULAR_USERS = ["cooking_master", "travel_vibes", "tech_tips"];
 const POPULAR_KEYWORDS = ["pizza", "recetas", "cocina", "viajes", "deporte"];
 
 export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
@@ -168,7 +168,7 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 					</label>
 					<input
 						type="text"
-						placeholder="@usuario1,@usuario2"
+						placeholder="usuario1,usuario2"
 						value={filters.tiktokAccount}
 						onChange={(e) => handleChange("tiktokAccount", e.target.value)}
 						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300"
