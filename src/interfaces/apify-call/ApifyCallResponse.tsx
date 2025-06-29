@@ -48,6 +48,16 @@ export interface ApifyCallResponse {
 	admin?: string;
 }
 
+export interface HashtagViews {
+	hashtag: string;
+	totalVistas: number;
+}
+
+export interface SoundViews {
+	soundId: number;
+	totalViews: number;
+}
+
 /**
  * Convierte un objeto "raw" con claves devueltas por la API
  * (p. ej. con espacios, mayúsculas, '# of Hashtags', etc.)

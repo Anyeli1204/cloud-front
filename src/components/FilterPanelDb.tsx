@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { User, Hash, Globe, Calendar, Link as LinkIcon } from "lucide-react";
 import type { UserDBQueryRequest } from "@interfaces/db-queries/UserDBQueryRequest";
 
 const MySwal = withReactContent(Swal);
@@ -78,25 +79,23 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 	};
 
 	const inputCls =
-		"w-full border-2 border-purple-200 bg-white px-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition";
+		"w-full border-2 border-purple-200 bg-white pl-10 pr-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm";
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-
 		const hasUsers = !!f.tiktokUsernames!.trim();
 		const hasTags = !!f.hashtags!.trim();
 
-		// EXACTAMENTE UNO: usuarios XOR hashtags
 		if (!(hasUsers !== hasTags)) {
 			MySwal.fire({
 				icon: "error",
 				iconHtml: "❌",
 				title: "<strong>¡Filtros inválidos!</strong>",
 				html: `
-    <div style="text-align:left; font-size:1.125rem; line-height:1.3;">
-      <p>• <strong>Elegir uno: </strong> TikTok Usernames o Hashtags.</p>
-    </div>
-  `,
+          <div style="text-align:left; font-size:1.125rem; line-height:1.3;">
+            <p>• <strong>Elegir uno:</strong> TikTok Usernames o Hashtags.</p>
+          </div>
+        `,
 				background: "#fff",
 				backdrop: "rgba(0,0,0,0.7)",
 				customClass: {
@@ -126,88 +125,112 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 			onSubmit={handleSubmit}
 			className="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg p-8 mb-6 w-full"
 		>
-			<h2 className="text-2xl font-bold text-center text-purple-700 mb-8">
+			<h2 className="text-3xl font-bold mb-5 text-center">
 				Filtros Database Queries
 			</h2>
 
-			{/* FILA 1: 6 columnas */}
+			{/* FILA 1 */}
 			<div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-6">
+				{/* TikTok Usernames */}
 				<div>
 					<label className="block mb-1 font-medium text-gray-700">
-						Tiktok Usernames
+						TikTok Usernames
 					</label>
-					<input
-						type="text"
-						placeholder="user1,user2"
-						value={f.tiktokUsernames}
-						onChange={(e) => handleChange("tiktokUsernames", e.target.value)}
-						className={inputCls}
-					/>
+					<div className="relative">
+						<User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+						<input
+							type="text"
+							placeholder="user1,user2"
+							value={f.tiktokUsernames}
+							onChange={(e) => handleChange("tiktokUsernames", e.target.value)}
+							className={inputCls}
+						/>
+					</div>
 				</div>
 
+				{/* Hashtags */}
 				<div>
 					<label className="block mb-1 font-medium text-gray-700">
 						Hashtags
 					</label>
-					<input
-						type="text"
-						placeholder="#tag1,#tag2"
-						value={f.hashtags}
-						onChange={(e) => handleChange("hashtags", e.target.value)}
-						className={inputCls}
-					/>
+					<div className="relative">
+						<Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+						<input
+							type="text"
+							placeholder="#tag1,#tag2"
+							value={f.hashtags}
+							onChange={(e) => handleChange("hashtags", e.target.value)}
+							className={inputCls}
+						/>
+					</div>
 				</div>
 
+				{/* Región */}
 				<div>
 					<label className="block mb-1 font-medium text-gray-700">Región</label>
-					<input
-						type="text"
-						placeholder="US, EU..."
-						value={f.regionPost}
-						onChange={(e) => handleChange("regionPost", e.target.value)}
-						className={inputCls}
-					/>
+					<div className="relative">
+						<Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+						<input
+							type="text"
+							placeholder="US, EU..."
+							value={f.regionPost}
+							onChange={(e) => handleChange("regionPost", e.target.value)}
+							className={inputCls}
+						/>
+					</div>
 				</div>
 
+				{/* Post ID */}
 				<div>
 					<label className="block mb-1 font-medium text-gray-700">
 						Post ID
 					</label>
-					<input
-						type="text"
-						placeholder="123,456"
-						value={f.postId}
-						onChange={(e) => handleChange("postId", e.target.value)}
-						className={inputCls}
-					/>
+					<div className="relative">
+						<LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+						<input
+							type="text"
+							placeholder="123,456"
+							value={f.postId}
+							onChange={(e) => handleChange("postId", e.target.value)}
+							className={inputCls}
+						/>
+					</div>
 				</div>
 
+				{/* Fecha Desde */}
 				<div>
 					<label className="block mb-1 font-medium text-gray-700">
 						Fecha Desde
 					</label>
-					<input
-						type="date"
-						value={f.datePostedFrom}
-						onChange={(e) => handleChange("datePostedFrom", e.target.value)}
-						className={inputCls}
-					/>
+					<div className="relative">
+						<Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+						<input
+							type="date"
+							value={f.datePostedFrom}
+							onChange={(e) => handleChange("datePostedFrom", e.target.value)}
+							className={inputCls.replace("text-sm", "") + " pl-10"}
+						/>
+					</div>
 				</div>
 
+				{/* Fecha Hasta */}
 				<div>
 					<label className="block mb-1 font-medium text-gray-700">
 						Fecha Hasta
 					</label>
-					<input
-						type="date"
-						value={f.datePostedTo}
-						onChange={(e) => handleChange("datePostedTo", e.target.value)}
-						className={inputCls}
-					/>
+					<div className="relative">
+						<Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+						<input
+							type="date"
+							value={f.datePostedTo}
+							onChange={(e) => handleChange("datePostedTo", e.target.value)}
+							className={inputCls.replace("text-sm", "") + " pl-10"}
+						/>
+					</div>
 				</div>
 			</div>
 
-			{/* FILA 2: 6 columnas */}
+			{/* FILA 2 */}
 			<div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-6">
 				{numericFields.map(({ key, max, label, step }) => (
 					<div key={key}>
@@ -221,7 +244,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 								placeholder="Min"
 								value={f[key] ?? ""}
 								onChange={(e) => handleChange(key, e.target.valueAsNumber)}
-								className={inputCls}
+								className="w-1/2 border-2 border-purple-200 bg-white px-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm"
 							/>
 							<input
 								type="number"
@@ -229,36 +252,44 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 								placeholder="Max"
 								value={f[max] ?? ""}
 								onChange={(e) => handleChange(max, e.target.valueAsNumber)}
-								className={inputCls}
+								className="w-1/2 border-2 border-purple-200 bg-white px-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm"
 							/>
 						</div>
 					</div>
 				))}
 
+				{/* Sound ID */}
 				<div>
 					<label className="block mb-1 font-medium text-gray-700">
 						Sound ID
 					</label>
-					<input
-						type="text"
-						placeholder="sound1"
-						value={f.soundId}
-						onChange={(e) => handleChange("soundId", e.target.value)}
-						className={inputCls}
-					/>
+					<div className="relative">
+						<LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+						<input
+							type="text"
+							placeholder="sound1"
+							value={f.soundId}
+							onChange={(e) => handleChange("soundId", e.target.value)}
+							className={inputCls}
+						/>
+					</div>
 				</div>
 
+				{/* URL Sound */}
 				<div>
 					<label className="block mb-1 font-medium text-gray-700">
 						URL Sound
 					</label>
-					<input
-						type="text"
-						placeholder="https://..."
-						value={f.soundURL}
-						onChange={(e) => handleChange("soundURL", e.target.value)}
-						className={inputCls}
-					/>
+					<div className="relative">
+						<LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+						<input
+							type="text"
+							placeholder="https://..."
+							value={f.soundURL}
+							onChange={(e) => handleChange("soundURL", e.target.value)}
+							className={inputCls}
+						/>
+					</div>
 				</div>
 			</div>
 
@@ -267,13 +298,13 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 				<button
 					type="button"
 					onClick={handleReset}
-					className="bg-white border-2 border-purple-300 text-purple-700 px-6 py-2 rounded-lg hover:bg-purple-50"
+					className="bg-white border-2 border-purple-300 text-purple-700 px-6 py-2 rounded-lg hover:bg-purple-50 transition"
 				>
 					Limpiar
 				</button>
 				<button
 					type="submit"
-					className="px-6 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
+					className="px-6 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition"
 				>
 					Aplicar
 				</button>

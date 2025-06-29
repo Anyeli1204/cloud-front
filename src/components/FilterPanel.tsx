@@ -129,7 +129,7 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 			onSubmit={handleSubmit}
 			className="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg p-6 mb-6 w-full"
 		>
-			<h2 className="text-2xl font-bold text-center text-purple-700 mb-8">
+			<h2 className="text-3xl font-bold mb-5 text-center">
 				Filtros Apify Call
 			</h2>
 

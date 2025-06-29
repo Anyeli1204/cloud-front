@@ -1,5 +1,5 @@
 export interface AdminApifyRequest {
-	adminId: number;
+	adminId?: number;
 	hashtags?: string;
 	keyWords?: string;
 }

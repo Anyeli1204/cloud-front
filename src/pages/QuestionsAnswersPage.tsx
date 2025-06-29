@@ -127,7 +127,7 @@ export default function QuestionsAnswersPage() {
 		<div className="min-h-screen flex flex-col">
 			<div className="flex-1">
 				<div className="max-w-6xl mx-auto bg-white rounded-xl p-8 shadow-xl">
-					<h1 className="text-4xl font-extrabold mb-8 text-purple-800 text-center">
+					<h1 className="text-3xl font-bold mb-4 text-center">
 						Centro de Ayuda
 					</h1>
 
