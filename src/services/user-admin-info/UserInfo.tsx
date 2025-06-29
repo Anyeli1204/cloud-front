@@ -4,11 +4,8 @@ import Api from "@services/api";
 
 export async function userInfo(userInfoRequest: UserInfoRequest) {
 	const api = await Api.getInstance();
-	const response = await api.post<UserInfoRequest, UserInfoResponse>(
-		userInfoRequest,
-		{
-			url: `/user/profile/${userInfoRequest.userId}`,
-		},
-	);
+	const response = await api.get<void, UserInfoResponse>({
+		url: `/user/profile/${userInfoRequest.userId}`,
+	});
 	return response;
 }

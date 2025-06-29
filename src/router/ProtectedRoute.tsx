@@ -32,6 +32,9 @@ export function ProtectedRoute() {
 			case "apify":
 				navigate("/apify-call");
 				break;
+			case "qa":
+				navigate("/qa");
+				break;
 			case "users":
 				navigate("/users");
 				break;

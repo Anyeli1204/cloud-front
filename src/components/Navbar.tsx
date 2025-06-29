@@ -1,10 +1,22 @@
 import React from "react";
-import { Home, Database, Music, User, LogOut } from "lucide-react";
+import {
+	Home,
+	Database,
+	Music,
+	User,
+	LogOut,
+	MessageCircle,
+} from "lucide-react";
 
 const options = [
 	{ key: "global", label: "Daily Top Global", icon: <Home size={18} /> },
 	{ key: "apify", label: "Apify Call", icon: <Music size={18} /> },
 	{ key: "queries", label: "Database Queries", icon: <Database size={18} /> },
+	{
+		key: "qa",
+		label: "Preguntas y Respuestas",
+		icon: <MessageCircle size={18} />,
+	},
 	{ key: "users", label: "User Information", icon: <User size={18} /> },
 ];
 

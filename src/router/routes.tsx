@@ -5,6 +5,8 @@ import AuthPage from "src/pages/AuthPage";
 import DashboardPage from "src/pages/DashboardPage";
 import ApifyCallPage from "src/pages/ApifyCallPage";
 import DatabaseQueriesPage from "src/pages/DatabaseQueriesPage";
+import UserInformationPage from "src/pages/UserInformationPage";
+import QuestionsAnswersPage from "src/pages/QuestionsAnswersPage";
 
 import NotFoundPage from "src/pages/NotFoundPage";
 export const router = createBrowserRouter([
@@ -24,6 +26,14 @@ export const router = createBrowserRouter([
 					{ path: "dashboard", element: <DashboardPage /> },
 					{ path: "apify-call", element: <ApifyCallPage /> },
 					{ path: "queries", element: <DatabaseQueriesPage /> },
+					{
+						path: "/users",
+						children: [{ path: "", element: <UserInformationPage /> }],
+					},
+					{
+						path: "/qa",
+						children: [{ path: "", element: <QuestionsAnswersPage /> }],
+					},
 				],
 			},
 

@@ -6,10 +6,7 @@ export async function adminInfo(
 	adminInformationRequest: AdminInformationRequest,
 ) {
 	const api = await Api.getInstance();
-	const response = await api.post<
-		AdminInformationRequest,
-		AdminInformationResponse
-	>(adminInformationRequest, {
+	const response = await api.get<void, AdminInformationResponse>({
 		url: `/admin/profile/${adminInformationRequest.adminId}`,
 	});
 	return response;
