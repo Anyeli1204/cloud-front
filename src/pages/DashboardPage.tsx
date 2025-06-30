@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import {
 	BarChart,
@@ -22,7 +22,8 @@ import { ApifyFilterForm } from "@components/ApifyFilterForm";
 const BLUE = "#007BFF"; // un azul vivo
 const PURPLE = "#FF4081"; // tu púrpura neón
 export default function DashboardPage() {
-	const { id: adminId } = useAuthContext();
+	const { id: adminId, role } = useAuthContext();
+	const isAdmin = role === "ADMIN";
 	const [loading, setLoading] = useState(false);
 	const [posts, setPosts] = useState<ApifyCallResponse[]>([]);
 	const [lastFilters, setLastFilters] = useState<AdminApifyRequest | null>(
@@ -36,6 +37,35 @@ export default function DashboardPage() {
 		{ soundId: string; totalViews: number }[]
 	>([]);
 	const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!isAdmin) {
+			const stored = localStorage.getItem("publishedData");
+			if (stored) {
+				const { posts, hashtagData, soundData, lastFilters } =
+					JSON.parse(stored);
+				setPosts(posts);
+				setHashtagData(hashtagData);
+				setSoundData(soundData);
+				setLastFilters(lastFilters);
+			}
+		}
+	}, [isAdmin]);
+
+	const handlePublish = () => {
+		if (!lastFilters) {
+			Swal.fire("Atención", "No hay datos para publicar aún.", "warning");
+			return;
+		}
+		const payload = { posts, hashtagData, soundData, lastFilters };
+		localStorage.setItem("publishedData", JSON.stringify(payload));
+		const raw = localStorage.getItem("publishedData");
+		if (raw) {
+			const data = JSON.parse(raw);
+			console.log("Datos publicados:", data);
+		}
+		Swal.fire("Publicado", "Los datos se guardaron correctamente.", "success");
+	};
 
 	const handleApify = async (filters: AdminApifyRequest) => {
 		setLoading(true);
@@ -204,11 +234,25 @@ export default function DashboardPage() {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
-			<h1 className="text-3xl font-bold mb-4 text-center">
+			<h1 className="text-5xl font-bold mt-2 text-center">
 				Dashboard ScrapeTok
 			</h1>
+			<h2 className="text-base font-light mb-1 text-center text-gray-600 ">
+				🔥 ¿Buscas lo más trending? seleccionamos para ti los 3 vídeos más
+				virales de cada hashtag a nivel global 🌎
+			</h2>
 
-			<ApifyFilterForm onSubmit={handleApify} loading={loading} />
+			{/* Si es ADMIN, muestro el form; si no, solo le enseño lo publicado */}
+			{isAdmin ? (
+				<div className="mt-8">
+					<ApifyFilterForm
+						onSubmit={handleApify}
+						loading={loading}
+						onPublish={handlePublish}
+					/>
+				</div>
+			) : null}
+
 			{posts.length > 0 && renderCards()}
 
 			{hashtagData.length + soundData.length === 0 && !loading ? (

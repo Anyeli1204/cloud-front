@@ -7,9 +7,14 @@ import { Hash, Edit3 } from "lucide-react";
 interface ApifyFilterFormProps {
 	onSubmit: (filters: AdminApifyRequest) => void;
 	loading: boolean;
+	onPublish?: () => void;
 }
 
-export function ApifyFilterForm({ onSubmit, loading }: ApifyFilterFormProps) {
+export function ApifyFilterForm({
+	onSubmit,
+	loading,
+	onPublish,
+}: ApifyFilterFormProps) {
 	const [hashtags, setHashtags] = useState("");
 	const [keyWords, setKeyWords] = useState("");
 
@@ -73,41 +78,52 @@ export function ApifyFilterForm({ onSubmit, loading }: ApifyFilterFormProps) {
 						className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition"
 					/>
 				</div>
-				<button
-					onClick={handleClick}
-					disabled={loading}
-					className="flex-none inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg transition disabled:opacity-50"
-				>
-					{loading && (
-						<svg
-							className="animate-spin h-5 w-5 text-white"
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
+				<div className="flex-none flex items-center gap-2">
+					<button
+						onClick={handleClick}
+						disabled={loading}
+						className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg transition disabled:opacity-50"
+					>
+						{loading && (
+							<svg
+								className="animate-spin h-5 w-5 text-white"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<circle
+									className="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									strokeWidth="4"
+								/>
+								<path
+									className="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8v8H4z"
+								/>
+							</svg>
+						)}
+						<span>{loading ? "Cargando…" : "Buscar"}</span>
+					</button>
+					{onPublish && (
+						<button
+							type="button"
+							onClick={onPublish}
+							className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded transition"
 						>
-							<circle
-								className="opacity-25"
-								cx="12"
-								cy="12"
-								r="10"
-								stroke="currentColor"
-								strokeWidth="4"
-							/>
-							<path
-								className="opacity-75"
-								fill="currentColor"
-								d="M4 12a8 8 0 018-8v8H4z"
-							/>
-						</svg>
+							Publicar
+						</button>
 					)}
-					<span>{loading ? "Cargando…" : "Buscar"}</span>
-				</button>
-				<button
-					onClick={handleClear}
-					className="flex-none bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-5 py-2 rounded-lg transition"
-				>
-					Limpiar
-				</button>
+					<button
+						onClick={handleClear}
+						className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-5 py-2 rounded-lg transition"
+					>
+						Limpiar
+					</button>
+				</div>
 			</div>
 		</div>
 	);
