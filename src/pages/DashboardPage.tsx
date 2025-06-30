@@ -10,6 +10,7 @@ import {
 	Legend,
 } from "recharts";
 import { Maximize2 } from "lucide-react";
+import chunk from "lodash/chunk";
 
 import { useAuthContext } from "@contexts/AuthContext";
 import { adminApify } from "@services/apifyCall/adminApifyCall";
@@ -21,6 +22,11 @@ import { ApifyFilterForm } from "@components/ApifyFilterForm";
 export default function DashboardPage() {
 	const { id: adminId } = useAuthContext();
 	const [loading, setLoading] = useState(false);
+	const [posts, setPosts] = useState<ApifyCallResponse[]>([]);
+	const [lastFilters, setLastFilters] = useState<AdminApifyRequest | null>(
+		null,
+	);
+
 	const [hashtagData, setHashtagData] = useState<
 		{ hashtag: string; views: number }[]
 	>([]);
@@ -31,6 +37,7 @@ export default function DashboardPage() {
 
 	const handleApify = async (filters: AdminApifyRequest) => {
 		setLoading(true);
+		setLastFilters(filters);
 		// pop-up de carga
 		Swal.fire({
 			title: "Cargando…",
@@ -44,13 +51,16 @@ export default function DashboardPage() {
 				...filters,
 				adminId: Number(adminId),
 			});
-			const posts: ApifyCallResponse[] = (
+			const mapped: ApifyCallResponse[] = (
 				rawPosts as Record<string, any>[]
 			).map(mapRawToApifyResponse);
 
+			setPosts(mapped);
+			console.log(mapped);
+
 			// vistas por hashtag
 			const hMap = new Map<string, number>();
-			posts.forEach((p) =>
+			mapped.forEach((p) =>
 				p.hashtags
 					.split(",")
 					.map((h) => h.trim())
@@ -65,7 +75,7 @@ export default function DashboardPage() {
 
 			// vistas por soundId
 			const sMap = new Map<string, number>();
-			posts.forEach((p) =>
+			mapped.forEach((p) =>
 				sMap.set(p.soundId, (sMap.get(p.soundId) || 0) + p.views),
 			);
 			setSoundData(
@@ -126,6 +136,70 @@ export default function DashboardPage() {
 		);
 	};
 
+	// Para cada bloque de 6 videos, mostrar top 3 por vistas
+	// aquellos que lo incluyan y muestra su top 3 más virales.
+	const renderCards = () => {
+		if (!lastFilters) return null;
+		const terms = lastFilters.hashtags
+			? lastFilters.hashtags
+					.split(",")
+					.map((t) => t.trim())
+					.filter(Boolean)
+			: lastFilters.keyWords
+				? lastFilters.keyWords
+						.split(",")
+						.map((t) => t.trim())
+						.filter(Boolean)
+				: [];
+
+		return (
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+				{terms.map((term) => {
+					// Filtra todos los posts que incluyan este término
+					const candidates = posts.filter((p) =>
+						p.hashtags
+							.split(",")
+							.map((h) => h.trim())
+							.includes(term),
+					);
+					if (candidates.length === 0) return null;
+					// Ordena y toma top 3
+					const top3 = candidates.sort((a, b) => b.views - a.views).slice(0, 3);
+
+					return (
+						<div key={term} className="bg-white rounded-lg shadow p-4">
+							<h4 className="text-xl font-semibold mb-4">🎯 {term}</h4>
+							<ul className="space-y-4">
+								{top3.map((p) => (
+									<li
+										key={p.postCode}
+										className="border-b pb-3 last:border-none"
+									>
+										<a
+											href={p.postLink}
+											target="_blank"
+											className="font-medium text-blue-600 hover:underline"
+										>
+											{p.postCode}
+										</a>
+										<p className="text-sm text-gray-600">
+											📅 {p.datePosted} | 👤 {p.tiktokAccountUsername}
+										</p>
+										<div className="mt-2 flex gap-4 text-sm">
+											<span>👁️ {p.views.toLocaleString()}</span>
+											<span>❤️ {p.likes.toLocaleString()}</span>
+											<span>📊 {p.engagementRate}%</span>
+										</div>
+									</li>
+								))}
+							</ul>
+						</div>
+					);
+				})}
+			</div>
+		);
+	};
+
 	return (
 		<div className="min-h-screen bg-gray-50 p-6">
 			<h1 className="text-3xl font-bold mb-4 text-center">
@@ -133,6 +207,7 @@ export default function DashboardPage() {
 			</h1>
 
 			<ApifyFilterForm onSubmit={handleApify} loading={loading} />
+			{posts.length > 0 && renderCards()}
 
 			{hashtagData.length + soundData.length === 0 && !loading ? (
 				<div className="text-center text-gray-600 mt-12">
@@ -143,7 +218,10 @@ export default function DashboardPage() {
 					{renderBar(
 						"hashtags",
 						"Vistas vs Hashtag",
-						hashtagData,
+						// limitar a 12 como máximo
+						hashtagData.length > 10
+							? sample(hashtagData).slice(0, 10)
+							: hashtagData,
 						"hashtag",
 						"views",
 						"#4f46e5",
@@ -151,7 +229,8 @@ export default function DashboardPage() {
 					{renderBar(
 						"sounds",
 						"Total Views vs Sound ID",
-						soundData,
+						// limitar a 7 como máximo
+						soundData.length > 5 ? sample(soundData).slice(0, 5) : soundData,
 						"soundId",
 						"totalViews",
 						"#f472b6",
