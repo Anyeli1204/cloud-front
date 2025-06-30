@@ -185,11 +185,11 @@ export default function UserInformationPage() {
 			) || [];
 
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-blue-50">
-				<div className="max-w-6xl mx-auto px-4 py-8">
-					<h1 className="text-4xl font-extrabold mb-8 text-purple-800 text-center flex items-center gap-2">
-						<User size={28} className="text-purple-800" /> Información de
-						Usuario
+			<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
+				<div className="max-w-6xl mx-auto px-4 py-6">
+					<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 flex items-center justify-center gap-2">
+						<User size={28} className="text-purple-800" />
+						Información de Usuario
 					</h1>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
 						<div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center transition-transform duration-200 hover:shadow-2xl hover:-translate-y-1 max-w-md w-full h-full self-stretch">
@@ -200,7 +200,7 @@ export default function UserInformationPage() {
 								<img
 									src={avatarUrl}
 									alt="Foto de perfil"
-									className="tiktok-profile-img"
+									className="tiktok-profile-img rounded-full w-[130px] h-[130px] m-2 object-cover"
 									style={{ width: "130px", height: "130px" }}
 								/>
 							</div>
@@ -230,8 +230,8 @@ export default function UserInformationPage() {
 						</div>
 						<div className="md:col-span-2 flex flex-col gap-8">
 							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#4ba3c7]">
-									<Shield size={18} className="text-[#4ba3c7]" /> Historial de
+								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#7E22CE]">
+									<Shield size={18} className="text-[#7E22CE]" /> Historial de
 									Scrapeo
 								</h2>
 								{scrapeosPagina.length > 0 ? (
@@ -240,7 +240,7 @@ export default function UserInformationPage() {
 											{scrapeosPagina.map((filtro, idx) => (
 												<div
 													key={idx}
-													className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-[#4ba3c7]"
+													className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-[#7E22CE]"
 												>
 													{ordenCampos.map(({ key, label }) => {
 														const valor = filtro[key];
@@ -263,7 +263,7 @@ export default function UserInformationPage() {
 										</div>
 										<div className="flex flex-wrap gap-2 justify-center mt-4">
 											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#4ba3c7] hover:bg-[#4ba3c7] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaActual((p) => Math.max(1, p - 1))
 												}
@@ -277,14 +277,14 @@ export default function UserInformationPage() {
 											).map((num) => (
 												<button
 													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaActual === num ? "bg-[#4ba3c7] text-white" : "bg-[#e3f0fa] text-[#4ba3c7] hover:bg-[#4ba3c7] hover:text-white"}`}
+													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaActual === num ? "bg-[#7E22CE] text-white" : "bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white"}`}
 													onClick={() => setPaginaActual(num)}
 												>
 													{num}
 												</button>
 											))}
 											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#4ba3c7] hover:bg-[#4ba3c7] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaActual((p) => Math.min(totalPaginas, p + 1))
 												}
@@ -301,8 +301,8 @@ export default function UserInformationPage() {
 								)}
 							</div>
 							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#e48abf]">
-									<Mail size={18} className="text-[#e48abf]" /> Cuentas
+								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#FF00CC]">
+									<Mail size={18} className="text-[#FF00CC]" /> Cuentas
 									Scrapeadas
 								</h2>
 								{(userData.tiktokUsernameScraped ?? []).length > 0 ? (
@@ -316,7 +316,7 @@ export default function UserInformationPage() {
 												.map((username, idx) => (
 													<li
 														key={idx}
-														className="bg-[#ffe3ed] text-[#e48abf] px-3 py-1 rounded-full text-sm font-semibold shadow-sm"
+														className="bg-[#ffe3ed] text-[#FF00CC] px-3 py-1 rounded-full text-sm font-semibold shadow-sm"
 													>
 														{username}
 													</li>
@@ -324,7 +324,7 @@ export default function UserInformationPage() {
 										</ul>
 										<div className="flex flex-wrap gap-2 justify-center mt-4">
 											<button
-												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#e48abf] hover:bg-[#e48abf] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaCuentas((p) => Math.max(1, p - 1))
 												}
@@ -343,14 +343,14 @@ export default function UserInformationPage() {
 											).map((num) => (
 												<button
 													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaCuentas === num ? "bg-[#e48abf] text-white" : "bg-[#ffe3ed] text-[#e48abf] hover:bg-[#e48abf] hover:text-white"}`}
+													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaCuentas === num ? "bg-[#FF00CC] text-white" : "bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white"}`}
 													onClick={() => setPaginaCuentas(num)}
 												>
 													{num}
 												</button>
 											))}
 											<button
-												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#e48abf] hover:bg-[#e48abf] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaCuentas((p) =>
 														Math.min(
@@ -399,9 +399,9 @@ export default function UserInformationPage() {
 			) || [];
 
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-blue-50">
+			<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
 				<div className="max-w-6xl mx-auto px-4 py-8">
-					<h1 className="text-4xl font-extrabold mb-8 text-purple-800 text-center flex items-center gap-2">
+					<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 flex items-center justify-center gap-2">
 						<Shield size={28} className="text-purple-800" /> Información de
 						Administrador
 					</h1>
@@ -414,7 +414,7 @@ export default function UserInformationPage() {
 								<img
 									src={avatarUrl}
 									alt="Foto de perfil"
-									className="tiktok-profile-img"
+									className="tiktok-profile-img rounded-full w-[130px] h-[130px] m-2 object-cover"
 									style={{ width: "130px", height: "130px" }}
 									onError={(e) =>
 										(e.currentTarget.src =
@@ -448,7 +448,7 @@ export default function UserInformationPage() {
 						</div>
 						<div className="md:col-span-2 flex flex-col gap-8">
 							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#4ba3c7]">
+								<h2 className="w-full font-semibold mb-4 flex items-center justify-center gap-2 text-[#7E22CE]">
 									<MessageCircle size={18} className="text-[#4ba3c7]" />{" "}
 									Preguntas Respondidas
 								</h2>
@@ -460,7 +460,7 @@ export default function UserInformationPage() {
 												return (
 													<div
 														key={idx}
-														className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-[#4ba3c7] cursor-pointer hover:shadow-lg transition"
+														className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-[#7E22CE] cursor-pointer hover:shadow-lg transition"
 														onClick={() => setPreguntaSeleccionada(qa)}
 													>
 														<span className="font-medium">{pregunta}</span>
@@ -470,7 +470,7 @@ export default function UserInformationPage() {
 										</div>
 										<div className="flex flex-wrap gap-2 justify-center mt-4">
 											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#4ba3c7] hover:bg-[#4ba3c7] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaPreguntas((p) => Math.max(1, p - 1))
 												}
@@ -484,14 +484,14 @@ export default function UserInformationPage() {
 											).map((num) => (
 												<button
 													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaPreguntas === num ? "bg-[#4ba3c7] text-white" : "bg-[#e3f0fa] text-[#4ba3c7] hover:bg-[#4ba3c7] hover:text-white"}`}
+													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaPreguntas === num ? "bg-[#4ba3c7] text-white" : "bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white"}`}
 													onClick={() => setPaginaPreguntas(num)}
 												>
 													{num}
 												</button>
 											))}
 											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#4ba3c7] hover:bg-[#4ba3c7] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaPreguntas((p) =>
 														Math.min(totalPaginasPreguntas, p + 1),
@@ -517,11 +517,11 @@ export default function UserInformationPage() {
 											>
 												×
 											</button>
-											<h2 className="text-2xl font-bold text-[#4ba3c7] mb-4">
+											<h2 className="text-2xl font-bold text-[#7E22CE] mb-4">
 												Respuesta
 											</h2>
 											<div className="mb-2">
-												<span className="font-bold text-[#4ba3c7] mr-2">
+												<span className="font-bold text-[#7E22CE] mr-2">
 													Pregunta:
 												</span>
 												<span className="text-gray-800">
@@ -541,8 +541,8 @@ export default function UserInformationPage() {
 								)}
 							</div>
 							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#e48abf]">
-									<Bell size={18} className="text-[#e48abf]" /> Alertas Emitidas
+								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#FF00CC]">
+									<Bell size={18} className="text-[#FF00CC]" /> Alertas Emitidas
 								</h2>
 								{alertasPagina.length > 0 ? (
 									<>
@@ -552,7 +552,7 @@ export default function UserInformationPage() {
 												return (
 													<li
 														key={idx}
-														className="bg-[#ffe3ed] text-[#e48abf] px-3 py-1 rounded-full text-sm font-semibold shadow-sm"
+														className="bg-[#ffe3ed] text-[#FF00CC] px-3 py-1 rounded-full text-sm font-semibold shadow-sm"
 													>
 														<span className="font-bold">ID:</span> {id}{" "}
 														<span className="ml-2 font-medium">Fecha:</span>{" "}
@@ -564,7 +564,7 @@ export default function UserInformationPage() {
 										{/* Paginación */}
 										<div className="flex flex-wrap gap-2 justify-center mt-4">
 											<button
-												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#e48abf] hover:bg-[#e48abf] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaAlertas((p) => Math.max(1, p - 1))
 												}
@@ -578,14 +578,14 @@ export default function UserInformationPage() {
 											).map((num) => (
 												<button
 													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaAlertas === num ? "bg-[#e48abf] text-white" : "bg-[#ffe3ed] text-[#e48abf] hover:bg-[#e48abf] hover:text-white"}`}
+													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaAlertas === num ? "bg-[#FF00CC] text-white" : "bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white"}`}
 													onClick={() => setPaginaAlertas(num)}
 												>
 													{num}
 												</button>
 											))}
 											<button
-												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#e48abf] hover:bg-[#e48abf] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaAlertas((p) =>
 														Math.min(totalPaginasAlertas, p + 1),

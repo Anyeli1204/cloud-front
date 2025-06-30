@@ -125,7 +125,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 			onSubmit={handleSubmit}
 			className="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg p-8 mb-6 w-full"
 		>
-			<h2 className="text-3xl font-bold mb-5 text-center">
+			<h2 className="text-3xl font-bold mb-6 text-center">
 				Filtros Database Queries
 			</h2>
 

@@ -11,7 +11,15 @@ interface Props {
 
 export default function AskQuestionForm({
 	onSubmit,
-	suggestedTags = ["scraping", "tiktok", "api", "educación", "métricas"],
+	suggestedTags = [
+		"web scraping",
+		"tiktok",
+		"api",
+		"educación",
+		"métricas",
+		"social media",
+		"mobile",
+	],
 	loading = false,
 	error,
 	success,
@@ -21,7 +29,6 @@ export default function AskQuestionForm({
 	const [localError, setLocalError] = useState("");
 	const [customTag, setCustomTag] = useState("");
 	const [allTags, setAllTags] = useState<string[]>(suggestedTags);
-	const [filter, setFilter] = useState<"ALL" | "ANSWERED" | "PENDING">("ALL");
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -29,7 +36,6 @@ export default function AskQuestionForm({
 			setLocalError("La pregunta no puede estar vacía.");
 			return;
 		}
-		// Construir la pregunta con hashtags al final
 		const hashtags = selectedTags.map((tag) => `#${tag}`);
 		const finalQuestion =
 			hashtags.length > 0
@@ -60,16 +66,10 @@ export default function AskQuestionForm({
 		}
 	};
 
-	const estadoFiltros: Array<"ALL" | "ANSWERED" | "PENDING"> = [
-		"ALL",
-		"ANSWERED",
-		"PENDING",
-	];
-
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-md border border-purple-100 flex flex-col gap-4"
+			className="w-full max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md border border-purple-100 flex flex-col gap-3"
 		>
 			<h2 className="text-2xl font-bold text-center text-purple-700">
 				Haz una pregunta
@@ -112,11 +112,12 @@ export default function AskQuestionForm({
 				</div>
 			)}
 
+			{/* Sugerencias centradas */}
 			<div>
-				<p className="text-sm text-gray-500 mb-2">
+				<p className="text-sm text-gray-500 mb-4 text-center">
 					Sugerencias de palabras clave:
 				</p>
-				<div className="flex flex-wrap gap-2 mb-2">
+				<div className="flex flex-wrap gap-2 justify-center mb-2">
 					{allTags.map((tag) => (
 						<button
 							key={tag}
@@ -133,7 +134,7 @@ export default function AskQuestionForm({
 						</button>
 					))}
 				</div>
-				<div className="flex gap-2 items-center mt-2">
+				<div className="flex gap-2 items-center justify-center">
 					<input
 						type="text"
 						value={customTag}
@@ -154,10 +155,11 @@ export default function AskQuestionForm({
 				</div>
 			</div>
 
+			{/* Botón centrado */}
 			<button
 				type="submit"
 				disabled={loading}
-				className={`self-end px-6 py-2 rounded-lg flex items-center gap-2 transition ${
+				className={`self-center px-6 py-2 rounded-lg flex items-center gap-2 transition ${
 					loading
 						? "bg-gray-400 cursor-not-allowed"
 						: "bg-purple-600 hover:bg-purple-700 text-white"

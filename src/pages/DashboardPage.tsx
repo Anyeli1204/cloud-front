@@ -19,6 +19,8 @@ import type { ApifyCallResponse } from "@interfaces/apify-call/ApifyCallResponse
 import { mapRawToApifyResponse } from "@interfaces/apify-call/ApifyCallResponse";
 import { ApifyFilterForm } from "@components/ApifyFilterForm";
 
+const BLUE = "#007BFF"; // un azul vivo
+const PURPLE = "#FF4081"; // tu púrpura neón
 export default function DashboardPage() {
 	const { id: adminId } = useAuthContext();
 	const [loading, setLoading] = useState(false);
@@ -201,7 +203,7 @@ export default function DashboardPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-50 p-6">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
 			<h1 className="text-3xl font-bold mb-4 text-center">
 				Dashboard ScrapeTok
 			</h1>
@@ -218,22 +220,20 @@ export default function DashboardPage() {
 					{renderBar(
 						"hashtags",
 						"Vistas vs Hashtag",
-						// limitar a 12 como máximo
-						hashtagData.length > 10
-							? sample(hashtagData).slice(0, 10)
-							: hashtagData,
+						// si está full screen, mostrar hasta 12; si no, hasta 6
+						hashtagData.slice(0, fullScreenChart === "hashtags" ? 10 : 6),
 						"hashtag",
 						"views",
-						"#4f46e5",
+						BLUE,
 					)}
 					{renderBar(
 						"sounds",
 						"Total Views vs Sound ID",
-						// limitar a 7 como máximo
-						soundData.length > 5 ? sample(soundData).slice(0, 5) : soundData,
+						// si está full screen, mostrar hasta 8; si no, hasta 4
+						soundData.slice(0, fullScreenChart === "sounds" ? 6 : 3),
 						"soundId",
 						"totalViews",
-						"#f472b6",
+						PURPLE,
 					)}
 				</div>
 			)}
@@ -251,19 +251,21 @@ export default function DashboardPage() {
 							renderBar(
 								"hashtags",
 								"Vistas vs Hashtag",
-								hashtagData,
+								// ampliada: hasta 12
+								hashtagData.slice(0, 10),
 								"hashtag",
 								"views",
-								"#4f46e5",
+								BLUE,
 							)}
 						{fullScreenChart === "sounds" &&
 							renderBar(
 								"sounds",
 								"Total Views vs Sound ID",
-								soundData,
+								// ampliada: hasta 8
+								soundData.slice(0, 6),
 								"soundId",
 								"totalViews",
-								"#f472b6",
+								PURPLE,
 							)}
 					</div>
 				</div>

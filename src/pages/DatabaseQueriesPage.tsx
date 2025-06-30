@@ -253,7 +253,7 @@ export default function DatabaseQueriesPage() {
 	];
 
 	return (
-		<div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
 			<FilterPanelDb onApply={setFilters} onReset={() => setFilters(null)} />
 
 			{error && (
@@ -261,11 +261,7 @@ export default function DatabaseQueriesPage() {
 			)}
 
 			{/* si aún no se ha aplicado filtro */}
-			{filters === null ? (
-				<div className="text-gray-500 text-center text-xl py-6">
-					No data available yet.
-				</div>
-			) : (
+			{filters === null ? null : (
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{charts.map(renderChart)}
 				</div>
@@ -296,7 +292,7 @@ export default function DatabaseQueriesPage() {
 						) : posts.length === 0 ? (
 							<tr>
 								<td colSpan={headers.length} className="p-4 text-center">
-									No data
+									No data yet
 								</td>
 							</tr>
 						) : (

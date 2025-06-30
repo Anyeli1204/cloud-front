@@ -31,9 +31,6 @@ export default function CommonQuestions() {
 
 	return (
 		<section className="mb-12">
-			<h2 className="text-3xl font-bold text-center mb-6 text-purple-700">
-				Preguntas frecuentes
-			</h2>
 			<div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 				{faqs.map((faq) => (
 					<div

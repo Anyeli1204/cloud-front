@@ -70,17 +70,12 @@ export default function ApifyCallPage() {
 	];
 
 	return (
-		<div className="p-6 bg-gray-50 min-h-screen space-y-6">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
 			<FilterPanel onApply={handleApplyFilters} onReset={handleReset} />
 
 			{error && <div className="text-red-600 text-center">{error}</div>}
 
 			{/* NUEVO: Mensaje cuando no hay datos y no estamos cargando */}
-			{!loading && data.length === 0 && (
-				<div className="text-gray-500 text-center text-xl py-6">
-					No data available yet.
-				</div>
-			)}
 
 			<div className="bg-white rounded-lg shadow overflow-x-auto">
 				<table className="min-w-full divide-y divide-gray-200">
@@ -107,7 +102,7 @@ export default function ApifyCallPage() {
 						) : data.length === 0 ? (
 							<tr>
 								<td colSpan={headers.length} className="p-4 text-center">
-									Sin datos
+									No data yet
 								</td>
 							</tr>
 						) : (

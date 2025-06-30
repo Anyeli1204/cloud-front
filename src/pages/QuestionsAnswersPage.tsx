@@ -65,6 +65,7 @@ export default function QuestionsAnswersPage() {
 			await makeQuestion({ userId: id!, questionDescription: questionText });
 			setSuccessMsg("¡Pregunta enviada!");
 			fetchQuestions();
+			setTimeout(() => setSuccessMsg(null), 3000);
 		} catch {
 			setError("Error al enviar la pregunta");
 		}
@@ -124,10 +125,10 @@ export default function QuestionsAnswersPage() {
 		});
 
 	return (
-		<div className="min-h-screen flex flex-col">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6 flex flex-col">
 			<div className="flex-1">
 				<div className="max-w-6xl mx-auto bg-white rounded-xl p-8 shadow-xl">
-					<h1 className="text-3xl font-bold mb-4 text-center">
+					<h1 className="text-3xl font-bold mb-5 text-center">
 						Centro de Ayuda
 					</h1>
 
@@ -161,6 +162,7 @@ export default function QuestionsAnswersPage() {
 							success={successMsg}
 						/>
 					)}
+					<div className="mt-8" />
 
 					{activeTab === "QNA" && (
 						<>
@@ -413,31 +415,36 @@ export default function QuestionsAnswersPage() {
 							)}
 						</>
 					)}
+					{activeTab !== "QNA" && (
+						<footer className="w-full bg-purple-700 py-4 px-6 md:px-12 rounded-b-2xl mt-8">
+							<div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center md:justify-between gap-4 text-white">
+								<div className="flex items-center gap-2">
+									<span className="text-2xl">📞</span>
+									<span className="font-semibold">Información Contacto:</span>
+								</div>
+								<span className="hidden md:inline text-white/50">|</span>
+
+								<div className="flex items-center gap-2 whitespace-nowrap">
+									<span className="text-2xl">⏰</span>
+									<span>Horarios: L-V 9:00-18:00</span>
+								</div>
+								<span className="hidden md:inline text-white/50">|</span>
+
+								<div className="flex items-center gap-2 whitespace-nowrap">
+									<span className="text-2xl">⏱️</span>
+									<span className="font-semibold">Tiempo de Respuesta:</span>
+								</div>
+								<span className="hidden md:inline text-white/50">|</span>
+
+								<div className="flex items-center gap-2">
+									<span className="text-2xl">⏰</span>
+									<span>Preguntas técnicas: 24h máx.</span>
+								</div>
+							</div>
+						</footer>
+					)}
 				</div>
 			</div>
-			<footer className="w-full bg-purple-700 py-2 px-2 md:px-12 flex flex-col md:flex-row justify-center items-center">
-				<div className="flex flex-col md:flex-row w-full max-w-6xl justify-center items-center">
-					<div className="flex flex-row items-center gap-2 text-white text-sm md:text-base">
-						<span className="text-lg md:text-xl">📞</span>
-						<span className="font-semibold">Información de Contacto:</span>
-						<span className="hidden md:inline">|</span>
-						<span className="flex items-center gap-1">
-							<span className="text-base">🕒</span>
-							Horarios: L-V 9:00-18:00, Sáb 10:00-14:00 (GMT-5)
-						</span>
-					</div>
-					<span className="hidden md:inline-block h-6 w-px bg-purple-300 mx-6"></span>
-					<div className="flex flex-row items-center gap-2 text-purple-100 text-sm md:text-base mt-1 md:mt-0">
-						<span className="text-lg md:text-xl">⏱️</span>
-						<span className="font-semibold text-white">
-							Tiempo de Respuesta:
-						</span>
-						<span className="flex items-center gap-1 text-purple-100">
-							Preguntas: 2-4h, Técnicos: 24h máx.
-						</span>
-					</div>
-				</div>
-			</footer>
 		</div>
 	);
 }

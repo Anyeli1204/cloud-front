@@ -152,7 +152,16 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 							<button
 								key={tag}
 								type="button"
-								onClick={() => handleChange("hashtags", tag)}
+								onClick={() => {
+									const current = filters
+										.hashtags!.split(",")
+										.map((s) => s.trim())
+										.filter(Boolean);
+									const next = current.includes(tag)
+										? current
+										: [...current, tag];
+									handleChange("hashtags", next.join(","));
+								}}
 								className="text-sm px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200"
 							>
 								{tag}
@@ -178,7 +187,16 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 							<button
 								key={u}
 								type="button"
-								onClick={() => handleChange("tiktokAccount", u)}
+								onClick={() => {
+									// obtenemos los usuarios actuales como array
+									const current = filters
+										.tiktokAccount!.split(",")
+										.map((s) => s.trim())
+										.filter(Boolean);
+									// agregamos el nuevo sólo si no existía
+									const next = current.includes(u) ? current : [...current, u];
+									handleChange("tiktokAccount", next.join(","));
+								}}
 								className="text-sm px-2 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200"
 							>
 								{u}
@@ -204,7 +222,16 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 							<button
 								key={kw}
 								type="button"
-								onClick={() => handleChange("keyWords", kw)}
+								onClick={() => {
+									const current = filters
+										.keyWords!.split(",")
+										.map((s) => s.trim())
+										.filter(Boolean);
+									const next = current.includes(kw)
+										? current
+										: [...current, kw];
+									handleChange("keyWords", next.join(","));
+								}}
 								className="text-sm px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200"
 							>
 								{kw}
