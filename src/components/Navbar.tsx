@@ -20,7 +20,7 @@ const options = [
 	{ key: "users", label: "Account Information", icon: <User size={18} /> },
 ];
 
-export function NavBar({
+export default function NavBar({
 	active,
 	onSelect,
 	onLogout,

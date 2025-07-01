@@ -17,8 +17,8 @@ export async function login(loginRequest: LoginRequest) {
 	const response = await api.post<LoginRequest, AuthResponse>(loginRequest, {
 		url: "/auth/signin",
 	});
+	console.log("login response:", response.data);
 
 	saveAuthSession(response.data);
-	console.log(response.data);
 	return response;
 }

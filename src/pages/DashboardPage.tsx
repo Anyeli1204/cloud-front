@@ -167,7 +167,9 @@ export default function DashboardPage() {
 						<XAxis dataKey={xKey as string} />
 						<YAxis
 							width={95}
-							tickFormatter={(value: number) => value.toLocaleString()}
+							tickFormatter={(value: number | undefined) =>
+								typeof value === "number" ? value.toLocaleString() : ""
+							}
 						/>
 						<Tooltip />
 						<Legend />

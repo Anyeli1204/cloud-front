@@ -229,7 +229,9 @@ export default function DatabaseQueriesPage() {
 						<XAxis dataKey={xKey} />
 						<YAxis
 							width={["p-eng", "d-eng"].includes(key) ? 60 : 108}
-							tickFormatter={(value: number) => value.toLocaleString()}
+							tickFormatter={(value: number | undefined) =>
+								typeof value === "number" ? value.toLocaleString() : ""
+							}
 						/>
 						<Tooltip />
 						<Legend />

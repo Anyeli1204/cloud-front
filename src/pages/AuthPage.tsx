@@ -45,8 +45,7 @@ export default function AuthPage() {
 			setLoginError(null);
 			navigate("/dashboard");
 		} catch (err) {
-			setLoginError("Contraseña incorrecta. Intente de nuevo.");
-			console.error(err);
+			setLoginError("Contraseña incorrecta. Intente de nuevo. " + err);
 		}
 	};
 
