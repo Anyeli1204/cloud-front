@@ -4,7 +4,7 @@ import { userInfo } from "@services/user-admin-info/UserInfo";
 import { adminInfo } from "@services/user-admin-info/AdminInfo";
 import type { UserInfoResponse } from "@interfaces/user-info/UserInfoResponse";
 import type { AdminInformationResponse } from "@interfaces/admin-info/AdminInformationResponse";
-import type { QuestionAnswerResponse } from "@interfaces/question-answer/QuestionAnswerResponse";
+import type { QuestionAnswerResponse } from "@interfaces/QA/QuestionAnswerResponse";
 import {
 	User,
 	Shield,
@@ -116,7 +116,8 @@ export default function UserInformationPage() {
 	// Hooks para paginación y modal
 	const [paginaPreguntas, setPaginaPreguntas] = useState(1);
 	const preguntasPorPagina = 3;
-	const [preguntaSeleccionada, setPreguntaSeleccionada] = useState<QuestionAnswerResponse | null>(null);
+	const [preguntaSeleccionada, setPreguntaSeleccionada] =
+		useState<QuestionAnswerResponse | null>(null);
 
 	const [paginaAlertas, setPaginaAlertas] = useState(1);
 	const alertasPorPagina = 6;
@@ -225,6 +226,9 @@ export default function UserInformationPage() {
 								<div className="font-semibold text-base text-gray-700 break-all mb-4">
 									{userData.email}
 								</div>
+								<button className="mt-2 px-4 py-2 bg-purple-800 text-white rounded-lg hover:bg-purple-700 transition">
+									Qué guap@ eres!
+								</button>
 							</div>
 						</div>
 						<div className="md:col-span-2 flex flex-col gap-8">
@@ -451,7 +455,8 @@ export default function UserInformationPage() {
 						<div className="md:col-span-2 flex flex-col gap-8">
 							<div className="bg-white rounded-xl shadow-md p-6">
 								<h2 className="w-full font-semibold mb-4 flex items-center justify-center gap-2 text-blue-800">
-									<MessageCircle size={18} className="text-blue-800" /> Preguntas Respondidas
+									<MessageCircle size={18} className="text-blue-800" />{" "}
+									Preguntas Respondidas
 								</h2>
 								{preguntasPagina.length > 0 ? (
 									<>
@@ -465,15 +470,15 @@ export default function UserInformationPage() {
 														className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-blue-800 font-semibold text-left shadow hover:shadow-md transition"
 														onClick={() => {
 															setPreguntaSeleccionada({
+																id: Number(qa.id),
 																questionDescription: pregunta,
 																answerDescription: respuesta,
-																userId: adminData?.id || "",
-																questionDate: qa.questionDate || "-",
-																questionHour: qa.questionHour || "",
+																userId: 1,
+
 																status: "ANSWERED",
 																answerDate: qa.answerDate || "",
 																answerHour: qa.answerHour || "",
-																adminId: adminData?.id || "",
+																adminId: preguntaSeleccionada?.adminId || null,
 															});
 														}}
 													>
@@ -512,7 +517,8 @@ export default function UserInformationPage() {
 												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaPreguntas((p) =>
-														Math.min(totalPaginasPreguntas, p + 1))
+														Math.min(totalPaginasPreguntas, p + 1),
+													)
 												}
 												disabled={paginaPreguntas === totalPaginasPreguntas}
 											>
@@ -557,7 +563,10 @@ export default function UserInformationPage() {
 											>
 												&lt;
 											</button>
-											{Array.from({ length: totalPaginasAlertas }, (_, i) => i + 1).map((num) => (
+											{Array.from(
+												{ length: totalPaginasAlertas },
+												(_, i) => i + 1,
+											).map((num) => (
 												<button
 													key={num}
 													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaAlertas === num ? "bg-[#FF00CC] text-white" : "bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white"}`}
@@ -569,7 +578,9 @@ export default function UserInformationPage() {
 											<button
 												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
 												onClick={() =>
-													setPaginaAlertas((p) => Math.min(totalPaginasAlertas, p + 1))
+													setPaginaAlertas((p) =>
+														Math.min(totalPaginasAlertas, p + 1),
+													)
 												}
 												disabled={paginaAlertas === totalPaginasAlertas}
 											>
@@ -578,9 +589,7 @@ export default function UserInformationPage() {
 										</div>
 									</>
 								) : (
-									<div className="text-gray-400">
-										No hay alertas emitidas.
-									</div>
+									<div className="text-gray-400">No hay alertas emitidas.</div>
 								)}
 							</div>
 						</div>

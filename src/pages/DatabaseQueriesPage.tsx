@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Swal from "sweetalert2";
+import { Maximize2 } from "lucide-react";
 
 import type { UserDBQueryRequest } from "@interfaces/db-queries/UserDBQueryRequest";
 import type {
@@ -35,6 +36,7 @@ export default function DatabaseQueriesPage() {
 	const [metrics, setMetrics] = useState<DbMetric[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
+	const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!filters) {
@@ -203,12 +205,32 @@ export default function DatabaseQueriesPage() {
 	}) => {
 		const colors = shuffle(PALETTE);
 		return (
-			<div key={key} className="bg-white rounded-xl shadow-lg p-4">
-				<h4 className="font-semibold mb-2">{title}</h4>
-				<ResponsiveContainer width="100%" height={220}>
+			<div
+				key={key}
+				className="bg-white rounded-xl shadow-lg p-4"
+				style={{ height: fullScreenChart === key ? "92%" : "auto" }}
+			>
+				<div className="flex justify-between items-center mb-2">
+					<h4 className="font-semibold">{title}</h4>
+					<button
+						onClick={() =>
+							setFullScreenChart((prev) => (prev === key ? null : key))
+						}
+						className="p-1 rounded hover:bg-gray-100"
+					>
+						<Maximize2 size={16} />
+					</button>
+				</div>
+				<ResponsiveContainer
+					width="100%"
+					height={fullScreenChart === key ? "92%" : 220}
+				>
 					<BarChart data={data}>
 						<XAxis dataKey={xKey} />
-						<YAxis />
+						<YAxis
+							width={["p-eng", "d-eng"].includes(key) ? 60 : 108}
+							tickFormatter={(value: number) => value.toLocaleString()}
+						/>
 						<Tooltip />
 						<Legend />
 						{bars.map((b, i) => (
@@ -261,12 +283,30 @@ export default function DatabaseQueriesPage() {
 			)}
 
 			{/* si aún no se ha aplicado filtro */}
-			{filters === null ? null : (
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					{charts.map(renderChart)}
-				</div>
-			)}
+			{filters !== null && (
+				<>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						{charts.map(renderChart)}
+					</div>
 
+					{fullScreenChart && (
+						<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+							<div className="relative bg-white rounded-xl shadow-xl w-11/12 h-5/6 p-6 overflow-auto">
+								<button
+									className="absolute top-4 right-4 p-2 rounded hover:bg-gray-100"
+									onClick={() => setFullScreenChart(null)}
+								>
+									✕
+								</button>
+								{/* renderizamos de nuevo sólo el chart seleccionado */}
+								{charts
+									.filter((c) => c.key === fullScreenChart)
+									.map(renderChart)}
+							</div>
+						</div>
+					)}
+				</>
+			)}
 			{/* POSTS TABLE */}
 			<div className="bg-white rounded-lg shadow overflow-x-auto">
 				<table className="min-w-full divide-y divide-gray-200">

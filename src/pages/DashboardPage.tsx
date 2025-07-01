@@ -39,7 +39,7 @@ export default function DashboardPage() {
 	const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (!isAdmin) {
+		{
 			const stored = localStorage.getItem("publishedData");
 			if (stored) {
 				const { posts, hashtagData, soundData, lastFilters } =
@@ -50,7 +50,7 @@ export default function DashboardPage() {
 				setLastFilters(lastFilters);
 			}
 		}
-	}, [isAdmin]);
+	}, []);
 
 	const handlePublish = () => {
 		if (!lastFilters) {
@@ -143,7 +143,11 @@ export default function DashboardPage() {
 	) => {
 		const toPlot = sample(data);
 		return (
-			<div key={key} className="relative bg-white rounded shadow p-4">
+			<div
+				key={key}
+				className="relative bg-white rounded shadow p-4"
+				style={{ height: fullScreenChart === key ? "92%" : "auto" }}
+			>
 				<div className="flex justify-between items-center mb-2">
 					<h3 className="font-semibold">{title}</h3>
 					<button
@@ -155,10 +159,16 @@ export default function DashboardPage() {
 						<Maximize2 size={18} />
 					</button>
 				</div>
-				<ResponsiveContainer width="100%" height={250}>
+				<ResponsiveContainer
+					width="100%"
+					height={fullScreenChart === key ? "92%" : 250}
+				>
 					<BarChart data={toPlot as any}>
 						<XAxis dataKey={xKey as string} />
-						<YAxis />
+						<YAxis
+							width={95}
+							tickFormatter={(value: number) => value.toLocaleString()}
+						/>
 						<Tooltip />
 						<Legend />
 						<Bar dataKey={barKey as string} fill={color} />
@@ -243,7 +253,7 @@ export default function DashboardPage() {
 			</h2>
 
 			{/* Si es ADMIN, muestro el form; si no, solo le enseño lo publicado */}
-			{isAdmin ? (
+			{isAdmin && (
 				<div className="mt-8">
 					<ApifyFilterForm
 						onSubmit={handleApify}
@@ -251,7 +261,7 @@ export default function DashboardPage() {
 						onPublish={handlePublish}
 					/>
 				</div>
-			) : null}
+			)}
 
 			{posts.length > 0 && renderCards()}
 

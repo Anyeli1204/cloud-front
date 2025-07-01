@@ -17,7 +17,7 @@ const options = [
 		label: "Preguntas y Respuestas",
 		icon: <MessageCircle size={18} />,
 	},
-	{ key: "users", label: "User Information", icon: <User size={18} /> },
+	{ key: "users", label: "Account Information", icon: <User size={18} /> },
 ];
 
 export function NavBar({

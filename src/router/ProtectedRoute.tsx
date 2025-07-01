@@ -9,7 +9,10 @@ export function ProtectedRoute() {
 		"global" | "queries" | "apify" | "users"
 	>("global");
 
-	const { logout, session } = useAuthContext(); // asumo que tienes un método logout en tu contexto
+	const { logout, session, isLoading } = useAuthContext(); // asumo que tienes un método logout en tu contexto
+	if (isLoading) {
+		return null; // o un spinner si quieres
+	}
 	if (!session) {
 		return <Navigate to="/auth" replace />;
 	}

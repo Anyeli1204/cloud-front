@@ -36,7 +36,8 @@ export default function QuestionsAnswersPage() {
 	const [hashtagFilter, setHashtagFilter] = useState<string | null>(null);
 	const [hashtagDropdownOpen, setHashtagDropdownOpen] = useState(false);
 	const [manualHashtag, setManualHashtag] = useState("");
-	const [selectedQuestion, setSelectedQuestion] = useState<QuestionAnswerResponse | null>(null);
+	const [selectedQuestion, setSelectedQuestion] =
+		useState<QuestionAnswerResponse | null>(null);
 
 	const estadoFiltros: Array<"ALL" | "ANSWERED" | "PENDING"> = [
 		"ALL",
@@ -130,8 +131,8 @@ export default function QuestionsAnswersPage() {
 		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6 flex flex-col">
 			<div className="flex-1">
 				<div className="max-w-6xl mx-auto bg-white rounded-xl p-8 shadow-xl">
-				<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 flex items-center justify-center gap-2">
-				Centro de Ayuda
+					<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 flex items-center justify-center gap-2">
+						Centro de Ayuda
 					</h1>
 
 					<div className="flex justify-center mb-10 gap-4">
@@ -220,7 +221,9 @@ export default function QuestionsAnswersPage() {
 												/>
 												<button
 													className="bg-purple-600 text-white px-3 py-2 rounded text-sm font-semibold hover:bg-purple-700"
-													onClick={() => setHashtagFilter(`#${manualHashtag.trim()}`)}
+													onClick={() =>
+														setHashtagFilter(`#${manualHashtag.trim()}`)
+													}
 													disabled={!manualHashtag.trim()}
 												>
 													Buscar
@@ -291,16 +294,20 @@ export default function QuestionsAnswersPage() {
 										const textWithoutHashtags = q.questionDescription
 											.replace(hashtagRegex, "")
 											.trim();
-										const isSelected = selectedQuestion && selectedQuestion.id === q.id;
+										const isPending = q.status === "PENDING";
+										const isReplying = answeringId === q.id;
+
 										return (
 											<div
 												key={q.id}
-												className={`bg-white rounded-xl shadow p-4 border border-purple-100 cursor-pointer transition-all duration-200 ${isSelected ? "ring-2 ring-purple-400 bg-purple-50" : "hover:bg-purple-50"}`}
-												onClick={() => setSelectedQuestion(q)}
+												className="bg-white rounded-xl shadow p-4 border border-purple-100 mb-4"
 											>
+												{/* Fecha y estado */}
 												<div className="flex items-center gap-2 mb-1">
 													<User size={18} className="text-purple-400" />
-													<span className="text-sm text-gray-500">{q.questionDate} {q.questionHour}</span>
+													<span className="text-sm text-gray-500">
+														{q.questionDate} {q.questionHour}
+													</span>
 													<span
 														className={`ml-4 px-2 py-0.5 rounded text-xs font-semibold ${
 															q.status === "ANSWERED"
@@ -308,13 +315,20 @@ export default function QuestionsAnswersPage() {
 																: "bg-yellow-100 text-yellow-700"
 														}`}
 													>
-														{q.status === "ANSWERED" && (
-															<CheckCircle size={14} className="inline mr-1" />
-														)}
-														{q.status === "ANSWERED" ? "Respondida" : "Pendiente"}
+														{q.status === "ANSWERED" ? (
+															<CheckCircle
+																size={14}
+																className="inline mr-1 align-middle"
+															/>
+														) : null}
+														{q.status === "ANSWERED"
+															? "Respondida"
+															: "Pendiente"}
 													</span>
 												</div>
-												<div className="ml-7 mb-1 flex items-center">
+
+												{/* Pregunta */}
+												<div className="ml-7 mb-2 flex items-center">
 													<span className="font-bold text-purple-700 mr-2">
 														Pregunta:
 													</span>
@@ -322,9 +336,10 @@ export default function QuestionsAnswersPage() {
 														{textWithoutHashtags}
 													</span>
 												</div>
-												{/* Tercera línea: hashtags */}
+
+												{/* Hashtags */}
 												{hashtags.length > 0 && (
-													<div className="ml-7 flex flex-wrap gap-1 mt-1">
+													<div className="ml-7 flex flex-wrap gap-1 mb-2">
 														{hashtags.map((tag, idx) => (
 															<span
 																key={idx}
@@ -335,12 +350,62 @@ export default function QuestionsAnswersPage() {
 														))}
 													</div>
 												)}
+												{q.status === "ANSWERED" && (
+													<div className="ml-7 mt-2 bg-green-50 border-l-4 border-green-400 p-3 rounded">
+														<div className="flex items-center gap-2 text-green-700 font-semibold mb-1">
+															<Shield size={16} /> Respuesta:
+														</div>
+														<div className="text-gray-800">
+															{q.answerDescription}
+														</div>
+													</div>
+												)}
+
+												{/* —— BLOQUE INLINE DE RESPUESTA —— */}
+												{role === "ADMIN" && isPending && (
+													<div className="ml-7">
+														{isReplying ? (
+															<form
+																onSubmit={handleSendAnswer}
+																className="flex gap-2 items-start"
+															>
+																<input
+																	type="text"
+																	value={answer}
+																	onChange={(e) => setAnswer(e.target.value)}
+																	placeholder="Escribe tu respuesta..."
+																	className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none"
+																/>
+																<button
+																	type="submit"
+																	className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1 hover:bg-green-700 transition"
+																>
+																	<Send size={16} /> Responder
+																</button>
+																<button
+																	type="button"
+																	onClick={() => {
+																		setAnsweringId(null);
+																		setAnswer("");
+																	}}
+																	className="bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition"
+																>
+																	Cancelar
+																</button>
+															</form>
+														) : (
+															<button
+																onClick={() => setAnsweringId(q.id)}
+																className="bg-purple-600 text-white px-4 py-2 rounded flex items-center gap-1 hover:bg-purple-700 transition"
+															>
+																<MessageCircle size={16} /> Responder
+															</button>
+														)}
+													</div>
+												)}
 											</div>
 										);
 									})}
-									{selectedQuestion && (
-										<QuestionDetailModal question={selectedQuestion} onClose={() => setSelectedQuestion(null)} showIds={true} />
-									)}
 								</div>
 							)}
 						</>

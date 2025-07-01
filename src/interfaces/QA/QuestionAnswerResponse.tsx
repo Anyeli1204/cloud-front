@@ -4,9 +4,9 @@ export interface QuestionAnswerResponse {
 	questionDescription: string;
 	answerDescription: string | null;
 	adminId: number | null;
-	userId: number;
-	questionDate: string;
-	questionHour: string;
+	userId: number | null;
+	questionDate?: string;
+	questionHour?: string;
 	answerDate: string | null;
 	answerHour: string | null;
 }
