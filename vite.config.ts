@@ -7,7 +7,8 @@ export default defineConfig({
 	server: {
 		proxy: {
 			"/api": {
-				target: "http://localhost:8080",
+				target:
+					"https://dbp-backend-springboot.wittysky-1e95b768.centralus.azurecontainerapps.io",
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, ""),
 			},
