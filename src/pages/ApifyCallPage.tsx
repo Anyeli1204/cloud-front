@@ -5,11 +5,13 @@ import type { ApifyCallResponse } from "@interfaces/apify-call/ApifyCallResponse
 import { mapRawToApifyResponse } from "@interfaces/apify-call/ApifyCallResponse";
 import { userApify } from "@services/apifyCall/userApifyCall";
 import Swal from "sweetalert2";
+import { PostDetailModal } from "@components/PostDetailModal";
 
 export default function ApifyCallPage() {
 	const [data, setData] = useState<ApifyCallResponse[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [selectedPost, setSelectedPost] = useState<ApifyCallResponse | null>(null); // ESTADO NUEVO
 
 	const handleApplyFilters = async (filters: any) => {
 		// 1) Abrir modal de carga
@@ -110,6 +112,7 @@ export default function ApifyCallPage() {
 								<tr
 									key={`${row.postCode}-${i}`}
 									className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}
+									onClick={() => setSelectedPost(row)}
 								>
 									<td className="px-4 py-2 text-sm font-medium text-gray-800">
 										{row.postCode}
@@ -187,8 +190,9 @@ export default function ApifyCallPage() {
 							))
 						)}
 					</tbody>
-				</table>
-			</div>
+				</table>	
+			</div>	
+			{selectedPost && <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
 		</div>
 	);
 }

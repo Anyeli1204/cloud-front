@@ -15,6 +15,7 @@ import type { QuestionAnswerResponse } from "@interfaces/QA/QuestionAnswerRespon
 import CommonQuestions from "@components/CommonQuestions";
 import QuestionSearchBar from "@components/QuestionSearchBar";
 import AskQuestionForm from "@components/AskQuestionForm";
+import { QuestionDetailModal } from "@components/QuestionDetailModal";
 
 export default function QuestionsAnswersPage() {
 	const { id, role } = useAuthContext();
@@ -35,6 +36,7 @@ export default function QuestionsAnswersPage() {
 	const [hashtagFilter, setHashtagFilter] = useState<string | null>(null);
 	const [hashtagDropdownOpen, setHashtagDropdownOpen] = useState(false);
 	const [manualHashtag, setManualHashtag] = useState("");
+	const [selectedQuestion, setSelectedQuestion] = useState<QuestionAnswerResponse | null>(null);
 
 	const estadoFiltros: Array<"ALL" | "ANSWERED" | "PENDING"> = [
 		"ALL",
@@ -128,8 +130,8 @@ export default function QuestionsAnswersPage() {
 		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6 flex flex-col">
 			<div className="flex-1">
 				<div className="max-w-6xl mx-auto bg-white rounded-xl p-8 shadow-xl">
-					<h1 className="text-3xl font-bold mb-5 text-center">
-						Centro de Ayuda
+				<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 flex items-center justify-center gap-2">
+				Centro de Ayuda
 					</h1>
 
 					<div className="flex justify-center mb-10 gap-4">
@@ -207,28 +209,8 @@ export default function QuestionsAnswersPage() {
 									</button>
 									{hashtagDropdownOpen && (
 										<div className="absolute left-0 mt-2 w-56 bg-white border border-purple-200 rounded-lg shadow-lg z-50 p-2">
-											<button
-												className={`w-full text-left px-3 py-2 rounded font-semibold text-sm mb-1 ${!hashtagFilter ? "bg-purple-100 text-purple-700" : "hover:bg-purple-50 text-purple-700"}`}
-												onClick={() => {
-													setHashtagFilter(null);
-													setHashtagDropdownOpen(false);
-												}}
-											>
-												Todas
-											</button>
-											{allHashtags.map((tag) => (
-												<button
-													key={tag}
-													className={`w-full text-left px-3 py-2 rounded text-sm mb-1 ${hashtagFilter === tag ? "bg-purple-600 text-white" : "hover:bg-purple-100 text-purple-700"}`}
-													onClick={() => {
-														setHashtagFilter(tag);
-														setHashtagDropdownOpen(false);
-													}}
-												>
-													{tag}
-												</button>
-											))}
-											<div className="flex flex-col gap-2 mt-2">
+											{/* Solo input de búsqueda de palabra clave, sin menú desplegable ni lista */}
+											<div className="flex flex-col gap-2 w-56">
 												<input
 													type="text"
 													value={manualHashtag}
@@ -238,10 +220,7 @@ export default function QuestionsAnswersPage() {
 												/>
 												<button
 													className="bg-purple-600 text-white px-3 py-2 rounded text-sm font-semibold hover:bg-purple-700"
-													onClick={() => {
-														setHashtagFilter(`#${manualHashtag.trim()}`);
-														setHashtagDropdownOpen(false);
-													}}
+													onClick={() => setHashtagFilter(`#${manualHashtag.trim()}`)}
 													disabled={!manualHashtag.trim()}
 												>
 													Buscar
@@ -312,16 +291,16 @@ export default function QuestionsAnswersPage() {
 										const textWithoutHashtags = q.questionDescription
 											.replace(hashtagRegex, "")
 											.trim();
+										const isSelected = selectedQuestion && selectedQuestion.id === q.id;
 										return (
 											<div
 												key={q.id}
-												className="bg-white rounded-xl shadow p-4 border border-purple-100"
+												className={`bg-white rounded-xl shadow p-4 border border-purple-100 cursor-pointer transition-all duration-200 ${isSelected ? "ring-2 ring-purple-400 bg-purple-50" : "hover:bg-purple-50"}`}
+												onClick={() => setSelectedQuestion(q)}
 											>
 												<div className="flex items-center gap-2 mb-1">
 													<User size={18} className="text-purple-400" />
-													<span className="text-sm text-gray-500">
-														{q.questionDate} {q.questionHour}
-													</span>
+													<span className="text-sm text-gray-500">{q.questionDate} {q.questionHour}</span>
 													<span
 														className={`ml-4 px-2 py-0.5 rounded text-xs font-semibold ${
 															q.status === "ANSWERED"
@@ -332,9 +311,7 @@ export default function QuestionsAnswersPage() {
 														{q.status === "ANSWERED" && (
 															<CheckCircle size={14} className="inline mr-1" />
 														)}
-														{q.status === "ANSWERED"
-															? "Respondida"
-															: "Pendiente"}
+														{q.status === "ANSWERED" ? "Respondida" : "Pendiente"}
 													</span>
 												</div>
 												<div className="ml-7 mb-1 flex items-center">
@@ -347,70 +324,23 @@ export default function QuestionsAnswersPage() {
 												</div>
 												{/* Tercera línea: hashtags */}
 												{hashtags.length > 0 && (
-													<div className="flex flex-wrap gap-2 ml-7 mt-1">
-														{hashtags.map((tag) => (
+													<div className="ml-7 flex flex-wrap gap-1 mt-1">
+														{hashtags.map((tag, idx) => (
 															<span
-																key={tag}
-																className="inline-block bg-purple-100 text-purple-700 rounded-full px-3 py-1 text-xs font-semibold"
+																key={idx}
+																className="inline-block bg-purple-100 text-purple-700 rounded px-2 py-0.5 text-xs font-semibold shadow-sm"
 															>
 																{tag}
 															</span>
 														))}
 													</div>
 												)}
-												{q.status === "ANSWERED" && (
-													<div className="flex items-center gap-2 ml-7 mt-3 border-l-4 border-green-500 pl-4 py-2 bg-green-50">
-														<Shield size={18} className="text-green-500" />
-														<span className="font-bold text-green-700 mr-2">
-															Respuesta:
-														</span>
-														<span className="text-gray-800">
-															{q.answerDescription}
-														</span>
-													</div>
-												)}
-												{role === "ADMIN" &&
-													q.status === "PENDING" &&
-													(answeringId === q.id ? (
-														<form
-															onSubmit={handleSendAnswer}
-															className="flex gap-2 mt-3"
-														>
-															<input
-																type="text"
-																value={answer}
-																onChange={(e) => setAnswer(e.target.value)}
-																placeholder="Escribe tu respuesta..."
-																className="flex-1 px-3 py-2 border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-															/>
-															<button
-																type="submit"
-																className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-1"
-															>
-																<Send size={18} /> Responder
-															</button>
-															<button
-																type="button"
-																onClick={() => {
-																	setAnsweringId(null);
-																	setAnswer("");
-																}}
-																className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg"
-															>
-																Cancelar
-															</button>
-														</form>
-													) : (
-														<button
-															onClick={() => setAnsweringId(q.id)}
-															className="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-1"
-														>
-															<MessageCircle size={16} /> Responder
-														</button>
-													))}
 											</div>
 										);
 									})}
+									{selectedQuestion && (
+										<QuestionDetailModal question={selectedQuestion} onClose={() => setSelectedQuestion(null)} showIds={true} />
+									)}
 								</div>
 							)}
 						</>
@@ -421,21 +351,14 @@ export default function QuestionsAnswersPage() {
 								<div className="flex items-center gap-2">
 									<span className="text-2xl">📞</span>
 									<span className="font-semibold">Información Contacto:</span>
+									<span className="ml-2">+51 999 888 777</span>
 								</div>
 								<span className="hidden md:inline text-white/50">|</span>
-
 								<div className="flex items-center gap-2 whitespace-nowrap">
 									<span className="text-2xl">⏰</span>
 									<span>Horarios: L-V 9:00-18:00</span>
 								</div>
 								<span className="hidden md:inline text-white/50">|</span>
-
-								<div className="flex items-center gap-2 whitespace-nowrap">
-									<span className="text-2xl">⏱️</span>
-									<span className="font-semibold">Tiempo de Respuesta:</span>
-								</div>
-								<span className="hidden md:inline text-white/50">|</span>
-
 								<div className="flex items-center gap-2">
 									<span className="text-2xl">⏰</span>
 									<span>Preguntas técnicas: 24h máx.</span>

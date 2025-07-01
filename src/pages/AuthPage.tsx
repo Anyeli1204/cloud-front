@@ -36,13 +36,16 @@ export default function AuthPage() {
 	const { login, register, session } = useAuthContext();
 	const navigate = useNavigate();
 	const location = useLocation();
+	const [loginError, setLoginError] = useState<string | null>(null);
 
 	const handleLogin = async (email: string, password: string) => {
 		const payload: LoginRequest = { email, password };
 		try {
 			await login(payload);
+			setLoginError(null);
 			navigate("/dashboard");
 		} catch (err) {
+			setLoginError("Contraseña incorrecta. Intente de nuevo.");
 			console.error(err);
 		}
 	};
@@ -112,7 +115,14 @@ export default function AuthPage() {
 						</h2>
 						<div className="w-full max-w-sm">
 							{mode === "login" ? (
-								<LoginForm onSubmit={handleLogin} />
+								<>
+									<LoginForm onSubmit={handleLogin} />
+									{loginError && (
+										<div className="mt-4 text-center text-red-600 font-semibold bg-red-50 rounded-lg py-2 px-3 border border-red-200 animate-fade-in">
+											{loginError}
+										</div>
+									)}
+								</>
 							) : (
 								<RegisterForm onSubmit={handleRegister} />
 							)}

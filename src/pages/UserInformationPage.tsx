@@ -4,6 +4,7 @@ import { userInfo } from "@services/user-admin-info/UserInfo";
 import { adminInfo } from "@services/user-admin-info/AdminInfo";
 import type { UserInfoResponse } from "@interfaces/user-info/UserInfoResponse";
 import type { AdminInformationResponse } from "@interfaces/admin-info/AdminInformationResponse";
+import type { QuestionAnswerResponse } from "@interfaces/question-answer/QuestionAnswerResponse";
 import {
 	User,
 	Shield,
@@ -15,6 +16,7 @@ import {
 import CommonQuestions from "@components/CommonQuestions";
 import QuestionSearchBar from "@components/QuestionSearchBar";
 import { Button } from "@components/Button";
+import { QuestionDetailModal } from "@components/QuestionDetailModal";
 const TABS_USER = [
 	{ key: "perfil", label: "Perfil", icon: <User size={18} /> },
 	{
@@ -114,9 +116,7 @@ export default function UserInformationPage() {
 	// Hooks para paginación y modal
 	const [paginaPreguntas, setPaginaPreguntas] = useState(1);
 	const preguntasPorPagina = 3;
-	const [preguntaSeleccionada, setPreguntaSeleccionada] = useState<{
-		[pregunta: string]: string;
-	} | null>(null);
+	const [preguntaSeleccionada, setPreguntaSeleccionada] = useState<QuestionAnswerResponse | null>(null);
 
 	const [paginaAlertas, setPaginaAlertas] = useState(1);
 	const alertasPorPagina = 6;
@@ -225,13 +225,12 @@ export default function UserInformationPage() {
 								<div className="font-semibold text-base text-gray-700 break-all mb-4">
 									{userData.email}
 								</div>
-								<Button variant="secondary">Editar perfil</Button>
 							</div>
 						</div>
 						<div className="md:col-span-2 flex flex-col gap-8">
 							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#7E22CE]">
-									<Shield size={18} className="text-[#7E22CE]" /> Historial de
+								<h2 className="font-semibold mb-4 flex items-center gap-2 text-blue-800">
+									<Shield size={18} className="text-blue-800" /> Historial de
 									Scrapeo
 								</h2>
 								{scrapeosPagina.length > 0 ? (
@@ -240,7 +239,7 @@ export default function UserInformationPage() {
 											{scrapeosPagina.map((filtro, idx) => (
 												<div
 													key={idx}
-													className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-[#7E22CE]"
+													className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-blue-800"
 												>
 													{ordenCampos.map(({ key, label }) => {
 														const valor = filtro[key];
@@ -263,7 +262,7 @@ export default function UserInformationPage() {
 										</div>
 										<div className="flex flex-wrap gap-2 justify-center mt-4">
 											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaActual((p) => Math.max(1, p - 1))
 												}
@@ -277,14 +276,18 @@ export default function UserInformationPage() {
 											).map((num) => (
 												<button
 													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaActual === num ? "bg-[#7E22CE] text-white" : "bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white"}`}
+													className={`px-3 py-1 rounded-full font-semibold text-sm ${
+														paginaActual === num
+															? "bg-blue-800 text-white"
+															: "bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white"
+													}`}
 													onClick={() => setPaginaActual(num)}
 												>
 													{num}
 												</button>
 											))}
 											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
+												className="px-2 py-1 rounded bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaActual((p) => Math.min(totalPaginas, p + 1))
 												}
@@ -443,28 +446,39 @@ export default function UserInformationPage() {
 								<div className="font-semibold text-base text-gray-700 break-all mb-4">
 									{adminData.email}
 								</div>
-								<Button variant="secondary">Editar perfil</Button>
 							</div>
 						</div>
 						<div className="md:col-span-2 flex flex-col gap-8">
 							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="w-full font-semibold mb-4 flex items-center justify-center gap-2 text-[#7E22CE]">
-									<MessageCircle size={18} className="text-[#4ba3c7]" />{" "}
-									Preguntas Respondidas
+								<h2 className="w-full font-semibold mb-4 flex items-center justify-center gap-2 text-blue-800">
+									<MessageCircle size={18} className="text-blue-800" /> Preguntas Respondidas
 								</h2>
 								{preguntasPagina.length > 0 ? (
 									<>
 										<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 											{preguntasPagina.map((qa, idx) => {
 												const pregunta = Object.keys(qa)[0];
+												const respuesta = qa[pregunta];
 												return (
-													<div
+													<button
 														key={idx}
-														className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-[#7E22CE] cursor-pointer hover:shadow-lg transition"
-														onClick={() => setPreguntaSeleccionada(qa)}
+														className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-blue-800 font-semibold text-left shadow hover:shadow-md transition"
+														onClick={() => {
+															setPreguntaSeleccionada({
+																questionDescription: pregunta,
+																answerDescription: respuesta,
+																userId: adminData?.id || "",
+																questionDate: qa.questionDate || "-",
+																questionHour: qa.questionHour || "",
+																status: "ANSWERED",
+																answerDate: qa.answerDate || "",
+																answerHour: qa.answerHour || "",
+																adminId: adminData?.id || "",
+															});
+														}}
 													>
 														<span className="font-medium">{pregunta}</span>
-													</div>
+													</button>
 												);
 											})}
 										</div>
@@ -484,7 +498,11 @@ export default function UserInformationPage() {
 											).map((num) => (
 												<button
 													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaPreguntas === num ? "bg-[#4ba3c7] text-white" : "bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white"}`}
+													className={`px-3 py-1 rounded-full font-semibold text-sm ${
+														paginaPreguntas === num
+															? "bg-[#4ba3c7] text-white"
+															: "bg-[#e3f0fa] text-blue-800 hover:bg-[#4ba3c7] hover:text-white"
+													}`}
 													onClick={() => setPaginaPreguntas(num)}
 												>
 													{num}
@@ -494,8 +512,7 @@ export default function UserInformationPage() {
 												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
 												onClick={() =>
 													setPaginaPreguntas((p) =>
-														Math.min(totalPaginasPreguntas, p + 1),
-													)
+														Math.min(totalPaginasPreguntas, p + 1))
 												}
 												disabled={paginaPreguntas === totalPaginasPreguntas}
 											>
@@ -506,37 +523,6 @@ export default function UserInformationPage() {
 								) : (
 									<div className="text-gray-400">
 										No hay preguntas respondidas.
-									</div>
-								)}
-								{preguntaSeleccionada && (
-									<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-										<div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative animate-fade-in">
-											<button
-												className="absolute top-4 right-4 text-gray-400 hover:text-purple-600"
-												onClick={() => setPreguntaSeleccionada(null)}
-											>
-												×
-											</button>
-											<h2 className="text-2xl font-bold text-[#7E22CE] mb-4">
-												Respuesta
-											</h2>
-											<div className="mb-2">
-												<span className="font-bold text-[#7E22CE] mr-2">
-													Pregunta:
-												</span>
-												<span className="text-gray-800">
-													{Object.keys(preguntaSeleccionada)[0]}
-												</span>
-											</div>
-											<div className="mb-2">
-												<span className="font-bold text-green-700 mr-2">
-													Respuesta:
-												</span>
-												<span className="text-gray-800">
-													{Object.values(preguntaSeleccionada)[0]}
-												</span>
-											</div>
-										</div>
 									</div>
 								)}
 							</div>
@@ -561,7 +547,6 @@ export default function UserInformationPage() {
 												);
 											})}
 										</ul>
-										{/* Paginación */}
 										<div className="flex flex-wrap gap-2 justify-center mt-4">
 											<button
 												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
@@ -572,10 +557,7 @@ export default function UserInformationPage() {
 											>
 												&lt;
 											</button>
-											{Array.from(
-												{ length: totalPaginasAlertas },
-												(_, i) => i + 1,
-											).map((num) => (
+											{Array.from({ length: totalPaginasAlertas }, (_, i) => i + 1).map((num) => (
 												<button
 													key={num}
 													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaAlertas === num ? "bg-[#FF00CC] text-white" : "bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white"}`}
@@ -587,9 +569,7 @@ export default function UserInformationPage() {
 											<button
 												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
 												onClick={() =>
-													setPaginaAlertas((p) =>
-														Math.min(totalPaginasAlertas, p + 1),
-													)
+													setPaginaAlertas((p) => Math.min(totalPaginasAlertas, p + 1))
 												}
 												disabled={paginaAlertas === totalPaginasAlertas}
 											>
@@ -598,30 +578,26 @@ export default function UserInformationPage() {
 										</div>
 									</>
 								) : (
-									<div className="text-gray-400">No hay alertas emitidas.</div>
+									<div className="text-gray-400">
+										No hay alertas emitidas.
+									</div>
 								)}
 							</div>
 						</div>
 					</div>
 				</div>
+				{preguntaSeleccionada && (
+					<>
+						{console.log("role:", role, "showIds:", role === "ADMIN")}
+						<QuestionDetailModal
+							question={preguntaSeleccionada}
+							onClose={() => setPreguntaSeleccionada(null)}
+							showIds={role === "ADMIN"}
+							hideDate={role !== "ADMIN"}
+						/>
+					</>
+				)}
 			</div>
 		);
 	}
-
-	return (
-		<div className="flex justify-center items-center min-h-screen">
-			No hay datos para mostrar.
-		</div>
-	);
 }
-
-const traducirClave = (k: string) => {
-	if (k === "N Last Post By Hashtags") return "N° de últimos posts por hashtag";
-	if (k === "Date to") return "Fecha hasta";
-	if (k === "Date From") return "Fecha desde";
-	if (k === "Tiktok Usernames") return "Usuarios de TikTok";
-	if (k === "Hashtags") return "Hashtags";
-	if (k === "Execution Time") return "Tiempo de ejecución";
-	if (k === "Key Word") return "Palabra clave";
-	return k;
-};
