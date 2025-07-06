@@ -15,7 +15,7 @@ export default class Api {
 
 	public static async getInstance() {
 		if (!this._instance) {
-			const basePath = "/api";
+			const basePath = import.meta.env.VITE_API_BASE_URL || "/api";
 			this._instance = new Api(basePath);
 		}
 		return this._instance;
