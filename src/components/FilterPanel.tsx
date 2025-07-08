@@ -127,9 +127,9 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg p-6 mb-6 w-full"
+			className="bg-white rounded-2xl shadow-lg p-6 mb-6 w-full dark:bg-white/80"
 		>
-			<h2 className="text-3xl font-bold mb-5 text-center">
+			<h2 className="text-3xl font-bold mb-5 text-center text-purple-800">
 				Filtros Apify Call
 			</h2>
 
@@ -244,25 +244,25 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 			{/* Campos obligatorios */}
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 				<div>
-					<label className="block mb-1 font-medium text-gray-700">
+					<label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
 						Fecha Desde *
 					</label>
 					<input
 						type="date"
 						value={filters.dateFrom}
 						onChange={(e) => handleChange("dateFrom", e.target.value)}
-						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300"
+						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 dark:text-gray-400 dark:placeholder-gray-500"
 					/>
 				</div>
 				<div>
-					<label className="block mb-1 font-medium text-gray-700">
+					<label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
 						Fecha Hasta *
 					</label>
 					<input
 						type="date"
 						value={filters.dateTo}
 						onChange={(e) => handleChange("dateTo", e.target.value)}
-						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300"
+						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 dark:text-gray-400 dark:placeholder-gray-500"
 					/>
 				</div>
 				<div>

@@ -28,10 +28,10 @@ interface Props {
 export const PostDetailModal = ({ post, onClose }: Props) => {
 	return ReactDOM.createPortal(
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-pink-200/60 via-purple-200/60 to-sky-200/60 backdrop-blur-sm">
-			<div className="bg-white border-2 border-purple-200 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-10 relative flex flex-col justify-between">
+			<div className="bg-white border-2 border-purple-200 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-10 relative flex flex-col justify-between dark:bg-white/80">
 				<button
 					onClick={onClose}
-					className="absolute top-6 right-6 text-purple-400 hover:text-purple-700 bg-white rounded-full shadow p-2 transition-colors"
+					className="absolute top-6 right-6 text-purple-400 hover:text-purple-700 bg-white rounded-full shadow p-2 transition-colors dark:bg-white/80"
 				>
 					<XIcon className="w-7 h-7" />
 				</button>

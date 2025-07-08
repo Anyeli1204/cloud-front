@@ -28,10 +28,10 @@ export const QuestionDetailModal = ({
 	return ReactDOM.createPortal(
 		<>
 			<div className="fixed inset-0 z-[99999] flex items-center justify-center bg-gradient-to-br from-pink-200/70 via-purple-200/70 to-sky-200/70 backdrop-blur-md">
-				<div className="bg-white border-2 border-purple-200 rounded-3xl shadow-2xl max-w-lg w-full p-8 relative flex flex-col gap-6">
+				<div className="bg-white border-2 border-purple-200 rounded-3xl shadow-2xl max-w-lg w-full p-8 relative flex flex-col gap-6 dark:bg-white/80">
 					<button
 						onClick={onClose}
-						className="absolute top-6 right-6 text-purple-400 hover:text-purple-700 bg-white rounded-full shadow p-2 transition-colors"
+						className="absolute top-6 right-6 text-purple-400 hover:text-purple-700 bg-white rounded-full shadow p-2 transition-colors dark:bg-white/80"
 					>
 						<XIcon className="w-7 h-7" />
 					</button>

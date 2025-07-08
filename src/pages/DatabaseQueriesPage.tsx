@@ -29,14 +29,15 @@ import { FilterPanelDb } from "@components/FilterPanelDb";
 type OutletContext = { activeTab: "global" | "queries" | "apify" | "users" };
 
 export default function DatabaseQueriesPage() {
-	const { activeTab } = useOutletContext<OutletContext>();
-
 	const [filters, setFilters] = useState<UserDBQueryRequest | null>(null);
 	const [posts, setPosts] = useState<UserDbPost[]>([]);
 	const [metrics, setMetrics] = useState<DbMetric[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageWindowStart, setPageWindowStart] = useState(1);
+	const [totalPages, setTotalPages] = useState(1);
 
 	useEffect(() => {
 		if (!filters) {
@@ -58,6 +59,7 @@ export default function DatabaseQueriesPage() {
 				setPosts(postList);
 				setMetrics(metricList);
 				setError(null);
+				setTotalPages(Math.ceil(postList.length / PAGE_WINDOW_SIZE));
 			} catch (e: any) {
 				console.error(e);
 				setError(e.message || "Error al solicitar datos");
@@ -207,7 +209,7 @@ export default function DatabaseQueriesPage() {
 		return (
 			<div
 				key={key}
-				className="bg-white rounded-xl shadow-lg p-4"
+				className="bg-white rounded-xl shadow-lg p-4 dark:bg-white/80"
 				style={{ height: fullScreenChart === key ? "92%" : "auto" }}
 			>
 				<div className="flex justify-between items-center mb-2">
@@ -251,7 +253,6 @@ export default function DatabaseQueriesPage() {
 		);
 	};
 
-	if (activeTab !== "queries") return null;
 
 	const headers = [
 		"Post Code",
@@ -277,7 +278,7 @@ export default function DatabaseQueriesPage() {
 	];
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
 			<FilterPanelDb onApply={setFilters} onReset={() => setFilters(null)} />
 
 			{error && (
@@ -293,7 +294,7 @@ export default function DatabaseQueriesPage() {
 
 					{fullScreenChart && (
 						<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-							<div className="relative bg-white rounded-xl shadow-xl w-11/12 h-5/6 p-6 overflow-auto">
+							<div className="relative bg-white rounded-xl shadow-xl w-11/12 h-5/6 p-6 overflow-auto dark:bg-white/80">
 								<button
 									className="absolute top-4 right-4 p-2 rounded hover:bg-gray-100"
 									onClick={() => setFullScreenChart(null)}
@@ -310,7 +311,7 @@ export default function DatabaseQueriesPage() {
 				</>
 			)}
 			{/* POSTS TABLE */}
-			<div className="bg-white rounded-lg shadow overflow-x-auto">
+			<div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-white/80">
 				<table className="min-w-full divide-y divide-gray-200">
 					<thead className="bg-purple-600">
 						<tr>
@@ -324,7 +325,7 @@ export default function DatabaseQueriesPage() {
 							))}
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-gray-200 bg-white">
+					<tbody className="divide-y divide-gray-200 bg-white dark:bg-white/80">
 						{loading ? (
 							<tr>
 								<td colSpan={headers.length} className="p-4 text-center">
@@ -333,7 +334,7 @@ export default function DatabaseQueriesPage() {
 							</tr>
 						) : posts.length === 0 ? (
 							<tr>
-								<td colSpan={headers.length} className="p-4 text-center">
+								<td colSpan={headers.length} className="text-center py-8 text-gray-400 dark:text-gray-400">
 									No data yet
 								</td>
 							</tr>
@@ -341,7 +342,7 @@ export default function DatabaseQueriesPage() {
 							posts.map((row, i) => (
 								<tr
 									key={`${row.postId}-${i}`}
-									className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}
+									className={i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"}
 								>
 									<td className="px-4 py-2 text-sm font-medium text-gray-800">
 										{row.postId}
@@ -414,6 +415,32 @@ export default function DatabaseQueriesPage() {
 						)}
 					</tbody>
 				</table>
+			</div>
+			<div className="mt-4 flex justify-center">
+				<button
+					onClick={() => {
+						if (pageWindowStart > 1) {
+							const newWindowStart = pageWindowStart - PAGE_WINDOW_SIZE;
+							setPageWindowStart(newWindowStart);
+							setPage(Math.min(newWindowStart + PAGE_WINDOW_SIZE - 1, totalPages));
+						}
+					}}
+					className="px-4 py-2 bg-purple-600 text-white rounded-l"
+				>
+					Previous
+				</button>
+				<button
+					onClick={() => {
+						if (page < totalPages) {
+							const newWindowStart = pageWindowStart + PAGE_WINDOW_SIZE;
+							setPageWindowStart(newWindowStart);
+							setPage(newWindowStart);
+						}
+					}}
+					className="px-4 py-2 bg-purple-600 text-white rounded-r"
+				>
+					Next
+				</button>
 			</div>
 		</div>
 	);

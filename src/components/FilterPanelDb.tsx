@@ -123,9 +123,9 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg p-8 mb-6 w-full"
+			className="bg-white rounded-2xl shadow-lg p-8 mb-6 w-full dark:bg-white/80"
 		>
-			<h2 className="text-3xl font-bold mb-6 text-center">
+			<h2 className="text-3xl font-bold mb-6 text-center text-purple-800">
 				Filtros Database Queries
 			</h2>
 
@@ -199,7 +199,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 
 				{/* Fecha Desde */}
 				<div>
-					<label className="block mb-1 font-medium text-gray-700">
+					<label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
 						Fecha Desde
 					</label>
 					<div className="relative">
@@ -208,14 +208,14 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 							type="date"
 							value={f.datePostedFrom}
 							onChange={(e) => handleChange("datePostedFrom", e.target.value)}
-							className={inputCls.replace("text-sm", "") + " pl-10"}
+							className={inputCls + " dark:placeholder-gray-500 dark:text-gray-400"}
 						/>
 					</div>
 				</div>
 
 				{/* Fecha Hasta */}
 				<div>
-					<label className="block mb-1 font-medium text-gray-700">
+					<label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
 						Fecha Hasta
 					</label>
 					<div className="relative">
@@ -224,7 +224,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 							type="date"
 							value={f.datePostedTo}
 							onChange={(e) => handleChange("datePostedTo", e.target.value)}
-							className={inputCls.replace("text-sm", "") + " pl-10"}
+							className={inputCls + " dark:placeholder-gray-500 dark:text-gray-400"}
 						/>
 					</div>
 				</div>

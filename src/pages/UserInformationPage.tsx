@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useAuthContext } from "@contexts/AuthContext";
 import { userInfo } from "@services/user-admin-info/UserInfo";
 import { adminInfo } from "@services/user-admin-info/AdminInfo";
@@ -10,51 +10,9 @@ import {
 	Shield,
 	MessageCircle,
 	Bell,
-	BadgeCheck,
 	Mail,
 } from "lucide-react";
-import CommonQuestions from "@components/CommonQuestions";
-import QuestionSearchBar from "@components/QuestionSearchBar";
-import { Button } from "@components/Button";
 import { QuestionDetailModal } from "@components/QuestionDetailModal";
-const TABS_USER = [
-	{ key: "perfil", label: "Perfil", icon: <User size={18} /> },
-	{
-		key: "historial",
-		label: "Historial de Scrapeo",
-		icon: <Shield size={18} />,
-	},
-	{ key: "cuentas", label: "Cuentas Scrapeadas", icon: <Mail size={18} /> },
-];
-
-const TABS_ADMIN = [
-	{ key: "perfil", label: "Perfil", icon: <User size={18} /> },
-	{
-		key: "qa",
-		label: "Preguntas y Respuestas",
-		icon: <MessageCircle size={18} />,
-	},
-	{ key: "alertas", label: "Alertas Emitidas", icon: <Bell size={18} /> },
-];
-
-function Badge({ active }: { active: boolean }) {
-	return (
-		<span
-			className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-		>
-			{active ? <BadgeCheck size={14} className="mr-1" /> : null}
-			{active ? "Activo" : "Inactivo"}
-		</span>
-	);
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-	return (
-		<div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-purple-100 animate-fade-in">
-			{children}
-		</div>
-	);
-}
 
 function useRandomAvatar(username: string | undefined | null, role: string) {
 	const [avatar, setAvatar] = useState<string>("");
@@ -88,7 +46,6 @@ function useRandomAvatar(username: string | undefined | null, role: string) {
 
 export default function UserInformationPage() {
 	const { id, role } = useAuthContext();
-	const [activeTab, setActiveTab] = useState("perfil");
 	const [userData, setUserData] = useState<UserInfoResponse | null>(null);
 	const [adminData, setAdminData] = useState<AdminInformationResponse | null>(
 		null,
@@ -97,21 +54,28 @@ export default function UserInformationPage() {
 	const [error, setError] = useState<string | null>(null);
 	const scrapeosPorPagina = 3;
 	const [paginaActual, setPaginaActual] = useState(1);
-	const cuentasPorPagina = 9;
+	const [cuentasPorPagina, setCuentasPorPagina] = useState(9);
 	const [paginaCuentas, setPaginaCuentas] = useState(1);
+	const cuentasContainerRef = useRef<HTMLDivElement>(null);
 
-	const ordenCampos = [
-		{ key: "Date From", label: "Fecha desde" },
-		{ key: "Date to", label: "Fecha hasta" },
-		{ key: "Tiktok Usernames", label: "Usuarios de TikTok" },
-		{ key: "Hashtags", label: "Hashtags" },
-		{ key: "Key Word", label: "Palabra clave" },
-		{
-			key: "N Last Post By Hashtags",
-			label: "N° de últimos posts por hashtag",
-		},
-		{ key: "Execution Time", label: "Tiempo de ejecución" },
-	];
+	// Ajuste responsivo de cuentas por página
+	useLayoutEffect(() => {
+		function calcularCuentasPorPagina() {
+			const container = cuentasContainerRef.current;
+			if (!container) return;
+			const containerWidth = container.offsetWidth;
+			// Tamaño estimado de cada chip (incluyendo gap)
+			const chipWidth = 90; // px (más compacto)
+			const gapX = 8; // px (gap-2)
+			const chipsPorFila = Math.max(1, Math.floor(containerWidth / (chipWidth + gapX)));
+			const filas = 2; // máximo 2 filas
+			const total = chipsPorFila * filas;
+			setCuentasPorPagina(total);
+		}
+		calcularCuentasPorPagina();
+		window.addEventListener("resize", calcularCuentasPorPagina);
+		return () => window.removeEventListener("resize", calcularCuentasPorPagina);
+	}, []);
 
 	// Hooks para paginación y modal
 	const [paginaPreguntas, setPaginaPreguntas] = useState(1);
@@ -121,10 +85,8 @@ export default function UserInformationPage() {
 
 	const [paginaAlertas, setPaginaAlertas] = useState(1);
 	const alertasPorPagina = 6;
-	const totalAlertas = adminData?.emmitedAlert?.length || 0;
-	const totalPaginasAlertas = Math.ceil(totalAlertas / alertasPorPagina);
 	const alertasPagina =
-		adminData?.emmitedAlert?.slice(
+		adminData?.emmitedAlerts?.slice(
 			(paginaAlertas - 1) * alertasPorPagina,
 			paginaAlertas * alertasPorPagina,
 		) || [];
@@ -185,207 +147,182 @@ export default function UserInformationPage() {
 				paginaActual * scrapeosPorPagina,
 			) || [];
 
+		// Función para mostrar solo 5 botones de paginación en historial de scrapeo
+		const getPaginationRange = () => {
+			const total = totalPaginas;
+			const current = paginaActual;
+			const maxVisible = 5;
+			let start = Math.max(1, current - Math.floor(maxVisible / 2));
+			let end = start + maxVisible - 1;
+			if (end > total) {
+				end = total;
+				start = Math.max(1, end - maxVisible + 1);
+			}
+			return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+		};
+
+		// Función para mostrar solo 5 botones de paginación en cuentas scrapeadas
+		const totalPaginasCuentas = Math.ceil((userData.tiktokUsernameScraped?.length || 0) / cuentasPorPagina);
+		const getPaginationRangeCuentas = () => {
+			const total = totalPaginasCuentas;
+			const current = paginaCuentas;
+			const maxVisible = 5;
+			let start = Math.max(1, current - Math.floor(maxVisible / 2));
+			let end = start + maxVisible - 1;
+			if (end > total) {
+				end = total;
+				start = Math.max(1, end - maxVisible + 1);
+			}
+			return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+		};
+
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
+			<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
 				<div className="max-w-6xl mx-auto px-4 py-6">
-					<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 flex items-center justify-center gap-2">
-						<User size={28} className="text-purple-800" />
+					<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 dark:text-white flex items-center justify-center gap-2">
+						<User size={28} className="text-purple-800 dark:text-white" />
 						Información de Usuario
 					</h1>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-						<div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center transition-transform duration-200 hover:shadow-2xl hover:-translate-y-1 max-w-md w-full h-full self-stretch">
-							<div
-								className="tiktok-ring mb-6"
-								style={{ width: "150px", height: "150px" }}
-							>
-								<img
-									src={avatarUrl}
-									alt="Foto de perfil"
-									className="tiktok-profile-img rounded-full w-[130px] h-[130px] m-2 object-cover"
-									style={{ width: "130px", height: "130px" }}
-								/>
+					<div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+					<div className="backdrop-blur-md bg-white/80 dark:bg-white/30 rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-4 w-[300px] h-full min-h-[480px] self-stretch border-2 border-purple-100 mx-auto md:col-span-1">
+					<div className="relative mb-6">
+								<div className="w-40 h-40 rounded-full bg-gradient-to-tr from-purple-400 via-pink-400 to-blue-400 p-1 animate-spin-slow">
+									<div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+										<img
+											src={avatarUrl}
+											alt="Avatar"
+											className="rounded-full w-38 h-38 object-cover border-4 border-white shadow-lg"
+										/>
+									</div>
+								</div>
+								<div className="flex justify-center mt-2">
+									<span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 shadow-sm">
+										<svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+										Activo
+									</span>
+								</div>
 							</div>
-							<div className="text-center w-full">
-								<div className="text-gray-400 text-xs mb-1 tracking-wide">
-									Nombre
-								</div>
-								<div className="font-extrabold text-lg text-gray-800 mb-2">
-									{userData.firstname} {userData.lastname}
-								</div>
-								<div className="border-t border-gray-100 my-2"></div>
-								<div className="text-gray-400 text-xs mb-1 tracking-wide">
-									Usuario
-								</div>
-								<div className="font-semibold text-base text-gray-700 mb-2">
-									{userData.username}
-								</div>
-								<div className="border-t border-gray-100 my-2"></div>
-								<div className="text-gray-400 text-xs mb-1 tracking-wide">
-									Email
-								</div>
-								<div className="font-semibold text-base text-gray-700 break-all mb-4">
-									{userData.email}
-								</div>
-								<button className="mt-2 px-4 py-2 bg-purple-800 text-white rounded-lg hover:bg-purple-700 transition">
+							<div className="flex flex-col items-center gap-1 w-full">
+								<span className="text-gray-400 text-sm">Nombre</span>
+								<span className="text-2xl font-extrabold text-gray-800 dark:text-white text-center">{userData.firstname} {userData.lastname}</span>
+								<hr className="w-2/3 my-2 border-purple-100" />
+								<span className="text-gray-400 text-sm">Usuario</span>
+								<span className="text-base font-semibold text-purple-700 bg-purple-100 rounded-full px-4 py-1 mb-2 shadow">@{userData.username}</span>
+								<span className="text-gray-400 text-sm">Email</span>
+								<span className="flex items-center gap-2 text-base text-gray-700 dark:text-gray-200 truncate max-w-full">
+									<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m8 0a4 4 0 11-8 0 4 4 0 018 0zm0 0v1a4 4 0 01-8 0v-1" /></svg>
+									<span className="truncate">{userData.email}</span>
+								</span>
+								<button className="mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-all flex items-center gap-2">
+									<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2z" /></svg>
 									Qué guap@ eres!
 								</button>
 							</div>
 						</div>
-						<div className="md:col-span-2 flex flex-col gap-8">
-							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2 text-blue-800">
-									<Shield size={18} className="text-blue-800" /> Historial de
-									Scrapeo
+						<div className="md:col-span-3 flex flex-col gap-4 h-full justify-between w-full mt-8 md:mt-0 md:ml-8">
+							<div className="bg-white/90 dark:bg-white/60 rounded-2xl shadow-2xl p-4 border-2 border-blue-100 animate-fade-in w-full">
+								<h2 className="text-xl font-bold mb-4 mt-4 flex items-center gap-2 text-blue-700">
+									<Shield size={28} className="text-blue-500" /> Historial de Scrapeo
 								</h2>
-								{scrapeosPagina.length > 0 ? (
-									<>
-										<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-											{scrapeosPagina.map((filtro, idx) => (
-												<div
-													key={idx}
-													className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-blue-800"
-												>
-													{ordenCampos.map(({ key, label }) => {
-														const valor = filtro[key];
-														if (
-															valor === null ||
-															valor === "null" ||
-															valor === undefined ||
-															valor === ""
-														)
-															return null;
-														return (
-															<div key={key} className="mb-1">
-																<span className="font-medium">{label}:</span>{" "}
-																{String(valor)}
-															</div>
-														);
-													})}
-												</div>
-											))}
+								<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 text-sm items-start">
+									{scrapeosPagina.map((f, i) => (
+										<div key={i} className="bg-blue-50 rounded-xl p-2 shadow-md flex flex-col gap-1 border border-blue-100 max-w-xs w-full mx-auto min-h-40">
+											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> <span className="font-semibold">Fecha desde:</span> {f["Date From"]}</div>
+											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> <span className="font-semibold">Fecha hasta:</span> {f["Date to"]}</div>
+											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m8 0a4 4 0 11-8 0 4 4 0 018 0zm0 0v1a4 4 0 01-8 0v-1" /></svg> <span className="font-semibold">Palabra clave:</span> {f["Key Word"]}</div>
+											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2H7a2 2 0 00-2 2v5a2 2 0 002 2z" /></svg> <span className="font-semibold">N° de posts:</span> {f["N Last Post By Hashtags"]}</div>
+											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" /></svg> <span className="font-semibold">Tiempo de ejecución:</span> {f["Execution Time"]}</div>
 										</div>
-										<div className="flex flex-wrap gap-2 justify-center mt-4">
-											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white disabled:opacity-50"
-												onClick={() =>
-													setPaginaActual((p) => Math.max(1, p - 1))
-												}
-												disabled={paginaActual === 1}
-											>
-												&lt;
-											</button>
-											{Array.from(
-												{ length: totalPaginas },
-												(_, i) => i + 1,
-											).map((num) => (
-												<button
-													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${
-														paginaActual === num
-															? "bg-blue-800 text-white"
-															: "bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white"
-													}`}
-													onClick={() => setPaginaActual(num)}
-												>
-													{num}
-												</button>
-											))}
-											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white disabled:opacity-50"
-												onClick={() =>
-													setPaginaActual((p) => Math.min(totalPaginas, p + 1))
-												}
-												disabled={paginaActual === totalPaginas}
-											>
-												&gt;
-											</button>
-										</div>
-									</>
-								) : (
-									<div className="text-gray-400">
-										No hay historial de scrapeo.
-									</div>
-								)}
+									))}
+								</div>
+								<div className="flex justify-center gap-2 mt-2 mb-6">
+									<button
+										className="px-2 py-1 rounded bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white disabled:opacity-50"
+										onClick={() =>
+											setPaginaActual((p) => Math.max(1, p - 1))
+										}
+										disabled={paginaActual === 1}
+									>
+										&lt;
+									</button>
+									{getPaginationRange().map((num) => (
+										<button
+											key={num}
+											className={`px-3 py-1 rounded-full font-semibold text-sm ${
+												paginaActual === num
+													? "bg-blue-800 text-white"
+													: "bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white"
+											}`}
+											onClick={() => setPaginaActual(num)}
+										>
+											{num}
+										</button>
+									))}
+									<button
+										className="px-2 py-1 rounded bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white disabled:opacity-50"
+										onClick={() =>
+											setPaginaActual((p) => Math.min(totalPaginas, p + 1))
+										}
+										disabled={paginaActual === totalPaginas}
+									>
+										&gt;
+									</button>
+								</div>
 							</div>
-							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#FF00CC]">
-									<Mail size={18} className="text-[#FF00CC]" /> Cuentas
-									Scrapeadas
+							<div className="bg-white/90 dark:bg-white/60 rounded-2xl shadow-2xl p-4 border-2 border-pink-100 animate-fade-in w-full">
+								<h2 className="text-2xl font-bold mb-6 mt-6 flex items-center gap-3 text-pink-600">
+									<Mail size={28} className="text-pink-400" /> Cuentas Scrapeadas
 								</h2>
-								{(userData.tiktokUsernameScraped ?? []).length > 0 ? (
-									<>
-										<ul className="flex flex-wrap gap-2">
-											{(userData.tiktokUsernameScraped ?? [])
-												.slice(
-													(paginaCuentas - 1) * cuentasPorPagina,
-													paginaCuentas * cuentasPorPagina,
-												)
-												.map((username, idx) => (
-													<li
-														key={idx}
-														className="bg-[#ffe3ed] text-[#FF00CC] px-3 py-1 rounded-full text-sm font-semibold shadow-sm"
-													>
-														{username}
-													</li>
-												))}
-										</ul>
-										<div className="flex flex-wrap gap-2 justify-center mt-4">
-											<button
-												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
-												onClick={() =>
-													setPaginaCuentas((p) => Math.max(1, p - 1))
-												}
-												disabled={paginaCuentas === 1}
-											>
-												&lt;
-											</button>
-											{Array.from(
-												{
-													length: Math.ceil(
-														(userData.tiktokUsernameScraped ?? []).length /
+								<div ref={cuentasContainerRef} className="flex flex-wrap gap-2 mb-6 text-sm justify-start overflow-hidden" style={{maxHeight: '4.5rem'}}>
+									{userData.tiktokUsernameScraped?.slice((paginaCuentas-1)*cuentasPorPagina, paginaCuentas*cuentasPorPagina).map((acc, i) => (
+										<span key={i} title={acc} className="inline-flex items-center bg-pink-100 text-pink-700 px-2 py-0 rounded-full text-sm font-semibold shadow hover:bg-pink-200 transition-all cursor-pointer h-auto">
+											{acc}
+										</span>
+									))}
+								</div>
+								<div className="flex justify-center gap-2 mt-2">
+									<button
+										className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
+										onClick={() =>
+											setPaginaCuentas((p) => Math.max(1, p - 1))
+										}
+										disabled={paginaCuentas === 1}
+									>
+										&lt;
+									</button>
+									{getPaginationRangeCuentas().map((num) => (
+										<button
+											key={num}
+											className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaCuentas === num ? "bg-[#FF00CC] text-white" : "bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white"}`}
+											onClick={() => setPaginaCuentas(num)}
+										>
+											{num}
+										</button>
+									))}
+									<button
+										className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
+										onClick={() =>
+											setPaginaCuentas((p) =>
+												Math.min(
+													Math.ceil(
+														(userData.tiktokUsernameScraped?.length || 0) /
 															cuentasPorPagina,
 													),
-												},
-												(_, i) => i + 1,
-											).map((num) => (
-												<button
-													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaCuentas === num ? "bg-[#FF00CC] text-white" : "bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white"}`}
-													onClick={() => setPaginaCuentas(num)}
-												>
-													{num}
-												</button>
-											))}
-											<button
-												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
-												onClick={() =>
-													setPaginaCuentas((p) =>
-														Math.min(
-															Math.ceil(
-																(userData.tiktokUsernameScraped ?? []).length /
-																	cuentasPorPagina,
-															),
-															p + 1,
-														),
-													)
-												}
-												disabled={
-													paginaCuentas ===
-													Math.ceil(
-														(userData.tiktokUsernameScraped ?? []).length /
-															cuentasPorPagina,
-													)
-												}
-											>
-												&gt;
-											</button>
-										</div>
-									</>
-								) : (
-									<div className="text-gray-400">
-										No hay cuentas scrapeadas.
-									</div>
-								)}
+													p + 1,
+												),
+											)
+										}
+										disabled={
+											paginaCuentas ===
+											Math.ceil(
+												(userData.tiktokUsernameScraped?.length || 0) /
+													cuentasPorPagina,
+											)
+										}
+									>
+										&gt;
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -396,9 +333,7 @@ export default function UserInformationPage() {
 
 	if (role === "ADMIN" && adminData) {
 		const totalPreguntas = adminData.questionAndAnswer?.length || 0;
-		const totalPaginasPreguntas = Math.ceil(
-			totalPreguntas / preguntasPorPagina,
-		);
+		const totalPaginasPreguntas = Math.ceil(totalPreguntas / preguntasPorPagina);
 		const preguntasPagina =
 			adminData.questionAndAnswer?.slice(
 				(paginaPreguntas - 1) * preguntasPorPagina,
@@ -406,205 +341,207 @@ export default function UserInformationPage() {
 			) || [];
 
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
+			<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
 				<div className="max-w-6xl mx-auto px-4 py-8">
-					<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 flex items-center justify-center gap-2">
-						<Shield size={28} className="text-purple-800" /> Información de
-						Administrador
+					<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 dark:text-white flex items-center justify-center gap-2">
+						<Shield size={28} className="text-purple-800 dark:text-white" />
+						Información de Administrador
 					</h1>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-						<div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center transition-transform duration-200 hover:shadow-2xl hover:-translate-y-1 max-w-md w-full h-full self-stretch mx-auto">
-							<div
-								className="tiktok-ring mb-6"
-								style={{ width: "150px", height: "150px" }}
-							>
-								<img
-									src={avatarUrl}
-									alt="Foto de perfil"
-									className="tiktok-profile-img rounded-full w-[130px] h-[130px] m-2 object-cover"
-									style={{ width: "130px", height: "130px" }}
-									onError={(e) =>
-										(e.currentTarget.src =
-											"https://ui-avatars.com/api/?name=Admin&background=eee&color=7f00ff")
-									}
-								/>
+					<div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-stretch">
+						<div className="backdrop-blur-md bg-white/80 dark:bg-white/30 rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-4 w-[300px] h-full min-h-[480px] self-stretch border-2 border-purple-100 mx-auto md:col-span-1">
+							<div className="relative mb-6">
+								<div className="w-40 h-40 rounded-full bg-gradient-to-tr from-purple-400 via-pink-400 to-blue-400 p-1 animate-spin-slow">
+									<div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+										<img
+											src={avatarUrl}
+											alt="Avatar"
+											className="rounded-full w-38 h-38 object-cover border-4 border-white shadow-lg"
+										/>
+									</div>
+								</div>
 							</div>
-							<div className="text-center w-full">
-								<div className="text-gray-400 text-xs mb-1 tracking-wide">
-									Nombre
-								</div>
-								<div className="font-extrabold text-lg text-gray-800 mb-2">
+							<div className="flex flex-col items-center gap-1 w-full">
+								<span className="text-gray-400 text-sm">Nombre</span>
+								<span className="text-2xl font-extrabold text-gray-800 dark:text-white text-center">
 									{adminData.firstname} {adminData.lastname}
-								</div>
-								<div className="border-t border-gray-100 my-2"></div>
-								<div className="text-gray-400 text-xs mb-1 tracking-wide">
-									Usuario
-								</div>
-								<div className="font-semibold text-base text-gray-700 mb-2">
+								</span>
+								<hr className="w-2/3 my-2 border-purple-100" />
+								<span className="text-gray-400 text-sm">Usuario</span>
+								<span className="text-base font-semibold text-purple-700 bg-purple-100 rounded-full px-4 py-1 mb-2 shadow">
 									{adminData.username}
-								</div>
-								<div className="border-t border-gray-100 my-2"></div>
-								<div className="text-gray-400 text-xs mb-1 tracking-wide">
-									Email
-								</div>
-								<div className="font-semibold text-base text-gray-700 break-all mb-4">
-									{adminData.email}
-								</div>
+								</span>
+								<span className="text-gray-400 text-sm">Email</span>
+								<span className="flex items-center gap-2 text-base text-gray-700 dark:text-gray-200 truncate max-w-full">
+									<Mail className="h-5 w-5 text-purple-400" />
+									<span className="truncate">{adminData.email}</span>
+								</span>
 							</div>
 						</div>
-						<div className="md:col-span-2 flex flex-col gap-8">
-							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="w-full font-semibold mb-4 flex items-center justify-center gap-2 text-blue-800">
-									<MessageCircle size={18} className="text-blue-800" />{" "}
-									Preguntas Respondidas
+						<div className="md:col-span-3 flex flex-col gap-4 h-full justify-between w-full mt-8 md:mt-0 md:ml-8">
+							<div className="bg-white/90 dark:bg-white/60 rounded-2xl shadow-2xl p-4 border-2 border-blue-100 animate-fade-in w-full">
+								<h2 className="text-xl font-bold mb-4 mt-4 flex items-center gap-2 text-blue-700">
+									<MessageCircle size={28} className="text-blue-500" /> Preguntas Respondidas
 								</h2>
-								{preguntasPagina.length > 0 ? (
-									<>
-										<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-											{preguntasPagina.map((qa, idx) => {
-												const pregunta = Object.keys(qa)[0];
-												const respuesta = qa[pregunta];
-												return (
-													<button
-														key={idx}
-														className="rounded-lg p-3 border border-[#e3f0fa] text-xs break-words whitespace-pre-line bg-[#e3f0fa] text-blue-800 font-semibold text-left shadow hover:shadow-md transition"
-														onClick={() => {
-															setPreguntaSeleccionada({
-																id: Number(qa.id),
-																questionDescription: pregunta,
-																answerDescription: respuesta,
-																userId: 1,
-
-																status: "ANSWERED",
-																answerDate: qa.answerDate || "",
-																answerHour: qa.answerHour || "",
-																adminId: preguntaSeleccionada?.adminId || null,
-															});
-														}}
-													>
-														<span className="font-medium">{pregunta}</span>
-													</button>
-												);
-											})}
-										</div>
-										<div className="flex flex-wrap gap-2 justify-center mt-4">
-											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
-												onClick={() =>
-													setPaginaPreguntas((p) => Math.max(1, p - 1))
-												}
-												disabled={paginaPreguntas === 1}
-											>
-												&lt;
-											</button>
-											{Array.from(
-												{ length: totalPaginasPreguntas },
-												(_, i) => i + 1,
-											).map((num) => (
-												<button
-													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${
-														paginaPreguntas === num
-															? "bg-[#4ba3c7] text-white"
-															: "bg-[#e3f0fa] text-blue-800 hover:bg-[#4ba3c7] hover:text-white"
-													}`}
-													onClick={() => setPaginaPreguntas(num)}
+								<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 text-sm items-start">
+									{preguntasPagina.length > 0 ? (
+										preguntasPagina.map((qa, idx) => {
+											const pregunta = Object.keys(qa)[0];
+											const respuesta = qa[pregunta];
+											const preguntaSinHashtags = pregunta.replace(/#[\wáéíóúÁÉÍÓÚñÑ]+/g, '').trim();
+											const hashtags = pregunta.match(/#[\wáéíóúÁÉÍÓÚñÑ]+/g) || [];
+											return (
+												<div
+													key={idx}
+													className="bg-blue-50 rounded-xl p-4 shadow-md flex flex-col gap-2 border border-blue-100 w-full max-w-xs mx-auto cursor-pointer hover:scale-105 transition break-words"
+													onClick={() =>
+														setPreguntaSeleccionada({
+															id: Number(qa.id),
+															questionDescription: preguntaSinHashtags,
+															answerDescription: respuesta,
+															userId: 1,
+															status: "ANSWERED",
+															answerDate: qa.answerDate || "",
+															answerHour: qa.answerHour || "",
+															adminId: qa.adminId ? Number(qa.adminId) : null,
+														})
+													}
 												>
-													{num}
-												</button>
-											))}
-											<button
-												className="px-2 py-1 rounded bg-[#e3f0fa] text-[#7E22CE] hover:bg-[#7E22CE] hover:text-white disabled:opacity-50"
-												onClick={() =>
-													setPaginaPreguntas((p) =>
-														Math.min(totalPaginasPreguntas, p + 1),
-													)
-												}
-												disabled={paginaPreguntas === totalPaginasPreguntas}
-											>
-												&gt;
-											</button>
-										</div>
-									</>
-								) : (
-									<div className="text-gray-400">
-										No hay preguntas respondidas.
-									</div>
-								)}
+													<div className="text-left">
+														<span className="font-semibold text-blue-700">Pregunta:</span>
+														<div>
+															{preguntaSinHashtags}
+															<div className="flex flex-wrap gap-1 mt-1">
+																{hashtags.map((tag, i) => (
+																	<span
+																		key={i}
+																		className="inline-block bg-blue-100 text-blue-700 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm"
+																	>
+																		{tag}
+																	</span>
+																))}
+															</div>
+														</div>
+													</div>
+												</div>
+											);
+										})
+									) : (
+										<div className="text-gray-400 col-span-3">No hay preguntas respondidas.</div>
+									)}
+								</div>
+								<div className="flex justify-center gap-2 mt-2 mb-6">
+									<button
+										className="px-2 py-1 rounded bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white disabled:opacity-50"
+										onClick={() => setPaginaPreguntas((p) => Math.max(1, p - 1))}
+										disabled={paginaPreguntas === 1}
+									>
+										&lt;
+									</button>
+									{Array.from({ length: totalPaginasPreguntas }, (_, i) => i + 1).map((num) => (
+										<button
+											key={num}
+											className={`px-3 py-1 rounded-full font-semibold text-sm ${
+												paginaPreguntas === num
+													? "bg-blue-800 text-white"
+													: "bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white"
+											}`}
+											onClick={() => setPaginaPreguntas(num)}
+										>
+											{num}
+										</button>
+									))}
+									<button
+										className="px-2 py-1 rounded bg-[#e3f0fa] text-blue-800 hover:bg-blue-800 hover:text-white disabled:opacity-50"
+										onClick={() =>
+											setPaginaPreguntas((p) =>
+												Math.min(totalPaginasPreguntas, p + 1),
+											)
+										}
+										disabled={paginaPreguntas === totalPaginasPreguntas}
+									>
+										&gt;
+									</button>
+								</div>
 							</div>
-							<div className="bg-white rounded-xl shadow-md p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2 text-[#FF00CC]">
-									<Bell size={18} className="text-[#FF00CC]" /> Alertas Emitidas
+							<div className="bg-gradient-to-br from-pink-50 to-white rounded-2xl shadow-xl p-6 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black">
+								<h2 className="font-bold text-xl mb-4 flex items-center gap-2 text-[#FF00CC]">
+									<Bell size={20} className="text-[#FF00CC] animate-bounce" />
+									Alertas Emitidas
 								</h2>
 								{alertasPagina.length > 0 ? (
 									<>
-										<ul className="flex flex-wrap gap-2">
+										<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4">
 											{alertasPagina.map((alerta, idx) => {
 												const [id, fecha] = Object.entries(alerta)[0];
+												let fechaFormateada = "Sin fecha";
+												if (fecha) {
+													const [year, month, day] = fecha.split("-");
+													const nombreMes = [
+														"enero", "febrero", "marzo", "abril", "mayo", "junio",
+														"julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+													][Number(month) - 1];
+													fechaFormateada = `${Number(day)} de ${nombreMes} de ${year}`;
+												}
 												return (
-													<li
+													<div
 														key={idx}
-														className="bg-[#ffe3ed] text-[#FF00CC] px-3 py-1 rounded-full text-sm font-semibold shadow-sm"
+														className="flex items-center gap-2 bg-white/80 dark:bg-white/20 border border-pink-200 rounded-lg px-3 py-2 shadow-sm hover:scale-105 hover:shadow-md transition-all duration-200 text-sm"
 													>
-														<span className="font-bold">ID:</span> {id}{" "}
-														<span className="ml-2 font-medium">Fecha:</span>{" "}
-														{fecha}
-													</li>
+														<span className="flex items-center gap-1 text-pink-600 font-semibold">
+															<Bell size={14} className="text-pink-400" />
+															ID: {id}
+														</span>
+														<span className="flex items-center gap-1 text-pink-700 font-normal ml-2">
+															<svg className="w-4 h-4 text-pink-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+																<rect x="3" y="4" width="18" height="18" rx="2" strokeWidth="2" />
+																<path d="M16 2v4M8 2v4M3 10h18" strokeWidth="2" />
+															</svg>
+															{fechaFormateada}
+														</span>
+													</div>
 												);
 											})}
-										</ul>
-										<div className="flex flex-wrap gap-2 justify-center mt-4">
+										</div>
+										<div className="flex justify-center gap-1 mt-2">
 											<button
-												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
-												onClick={() =>
-													setPaginaAlertas((p) => Math.max(1, p - 1))
-												}
+												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50 text-xs"
+												onClick={() => setPaginaAlertas((p) => Math.max(1, p - 1))}
 												disabled={paginaAlertas === 1}
 											>
 												&lt;
 											</button>
-											{Array.from(
-												{ length: totalPaginasAlertas },
-												(_, i) => i + 1,
-											).map((num) => (
+											{Array.from({ length: Math.ceil((adminData?.emmitedAlerts?.length || 0) / alertasPorPagina) }, (_, i) => i + 1).map((num) => (
 												<button
 													key={num}
-													className={`px-3 py-1 rounded-full font-semibold text-sm ${paginaAlertas === num ? "bg-[#FF00CC] text-white" : "bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white"}`}
+													className={`px-2 py-1 rounded-full font-semibold text-xs ${paginaAlertas === num ? "bg-[#FF00CC] text-white" : "bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white"}`}
 													onClick={() => setPaginaAlertas(num)}
 												>
 													{num}
 												</button>
 											))}
 											<button
-												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50"
-												onClick={() =>
-													setPaginaAlertas((p) =>
-														Math.min(totalPaginasAlertas, p + 1),
-													)
-												}
-												disabled={paginaAlertas === totalPaginasAlertas}
+												className="px-2 py-1 rounded bg-[#ffe3ed] text-[#FF00CC] hover:bg-[#FF00CC] hover:text-white disabled:opacity-50 text-xs"
+												onClick={() => setPaginaAlertas((p) => Math.min(Math.ceil((adminData?.emmitedAlerts?.length || 0) / alertasPorPagina), p + 1))}
+												disabled={paginaAlertas === Math.ceil((adminData?.emmitedAlerts?.length || 0) / alertasPorPagina)}
 											>
 												&gt;
 											</button>
 										</div>
 									</>
 								) : (
-									<div className="text-gray-400">No hay alertas emitidas.</div>
+									<div className="text-gray-400 text-sm">No hay alertas emitidas.</div>
 								)}
 							</div>
 						</div>
 					</div>
 				</div>
 				{preguntaSeleccionada && (
-					<>
-						{console.log("role:", role, "showIds:", role === "ADMIN")}
-						<QuestionDetailModal
-							question={preguntaSeleccionada}
-							onClose={() => setPreguntaSeleccionada(null)}
-							showIds={role === "ADMIN"}
-							hideDate={role !== "ADMIN"}
-						/>
-					</>
+					<QuestionDetailModal
+						question={preguntaSeleccionada}
+						onClose={() => setPreguntaSeleccionada(null)}
+						showIds={role === "ADMIN"}
+						hideDate={role !== "ADMIN"}
+					/>
 				)}
 			</div>
 		);

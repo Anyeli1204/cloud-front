@@ -1,58 +1,34 @@
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
-import NavBar from "@components/Navbar";
+import { Navigate } from "react-router-dom";
 import { useAuthContext } from "@contexts/AuthContext";
-import React, { useState } from "react";
+import * as React from "react";
+import { jwtDecode } from "jwt-decode";
 
-export function ProtectedRoute() {
-	const navigate = useNavigate();
-	const [activeTab, setActiveTab] = useState<
-		"global" | "queries" | "apify" | "users"
-	>("global");
-
-	const { logout, session, isLoading } = useAuthContext(); // asumo que tienes un método logout en tu contexto
-	if (isLoading) {
-		return null; // o un spinner si quieres
-	}
-	if (!session) {
-		return <Navigate to="/auth" replace />;
-	}
-	const handleLogout = () => {
-		logout(); // limpia token / sessionStorage
-		navigate("/auth"); // lleva al login/register
-	};
-
-	const handleSelect = (key: string) => {
-		setActiveTab(key as any);
-
-		// Navega según la pestaña clicada
-		switch (key) {
-			case "global":
-				navigate("/dashboard");
-				break;
-			case "queries":
-				navigate("/queries");
-				break;
-			case "apify":
-				navigate("/apify-call");
-				break;
-			case "qa":
-				navigate("/qa");
-				break;
-			case "users":
-				navigate("/users");
-				break;
-			default:
-				navigate("/dashboard");
-		}
-	};
-	return (
-		<>
-			<NavBar
-				active={activeTab}
-				onSelect={handleSelect}
-				onLogout={handleLogout}
-			/>
-			<Outlet context={{ activeTab }} />
-		</>
-	);
+interface MyJwtPayload {
+	role: string;
 }
+
+interface ProtectedRouteProps {
+	element: React.ReactElement;
+	roles?: string[];
+}
+
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, roles }) => {
+	const { session, isLoading } = useAuthContext();
+
+	if (isLoading) return null;
+	if (!session) return <Navigate to="/auth" replace />;
+
+	let role = "";
+	try {
+		const decoded = jwtDecode<MyJwtPayload>(session);
+		role = decoded.role;
+	} catch {
+		// Si falla el decode, el rol queda vacío y no pasa la protección de roles
+	}
+
+	if (roles && !roles.includes(role)) {
+		return <Navigate to="/" replace />;
+	}
+
+	return element;
+};

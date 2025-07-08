@@ -25,7 +25,7 @@ export default function CommonQuestions() {
 			answer:
 				"Regístrate con el endpoint SignUp para obtener un token JWT. Luego, incluye ese token en los headers de cada petición: Authorization: Bearer <tu_token>, para validar identidad y permisos.",
 			image:
-				"https://scrapfly.io/blog/content/images/how-to-scrape-tiktok-python-json_banner_light.svg",
+				"https://cdn.scrapfly.io/static/blog/posts/how-to-scrape-tiktok-python-json/feature-light.svg?v=162aa9a2",
 		},
 	];
 
@@ -35,14 +35,14 @@ export default function CommonQuestions() {
 				{faqs.map((faq) => (
 					<div
 						key={faq.id}
-						className="bg-white rounded-xl shadow-lg overflow-hidden border border-purple-100 hover:shadow-xl transition-shadow duration-300"
+						className="bg-white rounded-xl shadow-lg overflow-hidden border border-purple-100 hover:shadow-xl transition-shadow duration-300 dark:bg-white/80 flex flex-col"
 					>
 						<img
 							src={faq.image}
 							alt={`FAQ ${faq.id}`}
-							className="w-full h-40 object-cover"
+							className="w-full h-40 object-cover flex-shrink-0"
 						/>
-						<div className="p-4">
+						<div className="p-4 flex-1 flex flex-col justify-between">
 							<h3 className="font-semibold text-lg text-purple-600 mb-2">
 								{faq.question}
 							</h3>

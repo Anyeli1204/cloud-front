@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { Maximize2 } from "lucide-react";
 import chunk from "lodash/chunk";
+import { useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "@contexts/AuthContext";
 import { adminApify } from "@services/apifyCall/adminApifyCall";
@@ -18,6 +19,8 @@ import type { AdminApifyRequest } from "@interfaces/apify-call/AdminApifyRequest
 import type { ApifyCallResponse } from "@interfaces/apify-call/ApifyCallResponse";
 import { mapRawToApifyResponse } from "@interfaces/apify-call/ApifyCallResponse";
 import { ApifyFilterForm } from "@components/ApifyFilterForm";
+import { sendTopGlobalEmail } from "@services/TopGlobalEmail/sendEmailTG";
+import type { TopGlobalesEmailRequest } from "@interfaces/send-email-topGlobales/TopGlobalesEmailRequest";
 
 const BLUE = "#007BFF"; // un azul vivo
 const PURPLE = "#FF4081"; // tu púrpura neón
@@ -37,6 +40,7 @@ export default function DashboardPage() {
 		{ soundId: string; totalViews: number }[]
 	>([]);
 	const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		{
@@ -52,7 +56,7 @@ export default function DashboardPage() {
 		}
 	}, []);
 
-	const handlePublish = () => {
+	const handlePublish = async () => {
 		if (!lastFilters) {
 			Swal.fire("Atención", "No hay datos para publicar aún.", "warning");
 			return;
@@ -64,7 +68,29 @@ export default function DashboardPage() {
 			const data = JSON.parse(raw);
 			console.log("Datos publicados:", data);
 		}
-		Swal.fire("Publicado", "Los datos se guardaron correctamente.", "success");
+
+		// Enviar email a todos los usuarios con todos los posts en un solo request
+		try {
+			if (Array.isArray(posts) && posts.length > 0) {
+				const emailReqs: TopGlobalesEmailRequest[] = posts.map((p) => ({
+					adminId: Number(adminId),
+					usedHashTag: p.hashtags.split(",")[0]?.replace("#", "") || "",
+					datePosted: p.datePosted, // debe ser YYYY-MM-DD
+					usernameTiktokAccount: p.tiktokAccountUsername,
+					postURL: p.postLink,
+					views: Math.round(p.views),
+					likes: Math.round(p.likes),
+					engagement: Number(p.engagementRate),
+				}));
+				await sendTopGlobalEmail(emailReqs);
+			}
+			Swal.fire("¡Publicado!", "Puedes ver la alerta en tu perfil.", "success").then(() => {
+				navigate("/users");
+			});
+		} catch (error) {
+			Swal.fire("Error", "Ocurrió un error al enviar los emails.", "error");
+			console.error(error);
+		}
 	};
 
 	const handleApify = async (filters: AdminApifyRequest) => {
@@ -145,7 +171,7 @@ export default function DashboardPage() {
 		return (
 			<div
 				key={key}
-				className="relative bg-white rounded shadow p-4"
+				className="relative bg-white rounded shadow p-4 dark:bg-white/80"
 				style={{ height: fullScreenChart === key ? "92%" : "auto" }}
 			>
 				<div className="flex justify-between items-center mb-2">
@@ -184,52 +210,64 @@ export default function DashboardPage() {
 	// aquellos que lo incluyan y muestra su top 3 más virales.
 	const renderCards = () => {
 		if (!lastFilters) return null;
-		const terms = lastFilters.hashtags
-			? lastFilters.hashtags
-					.split(",")
-					.map((t) => t.trim())
-					.filter(Boolean)
-			: lastFilters.keyWords
-				? lastFilters.keyWords
-						.split(",")
-						.map((t) => t.trim())
-						.filter(Boolean)
-				: [];
+		// Unifica hashtags y palabras clave
+		const hashtags = lastFilters.hashtags
+			? lastFilters.hashtags.split(",").map((t) => t.trim()).filter(Boolean)
+			: [];
+		const keyWords = lastFilters.keyWords
+			? lastFilters.keyWords.split(",").map((t) => t.trim()).filter(Boolean)
+			: [];
+		const terms = [...hashtags, ...keyWords];
 
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 				{terms.map((term) => {
-					// Filtra todos los posts que incluyan este término
+					// Filtra posts que incluyan el término en hashtags o en la descripción
 					const candidates = posts.filter((p) =>
 						p.hashtags
 							.split(",")
-							.map((h) => h.trim())
-							.includes(term),
+							.map((h) => h.trim().replace(/^#/, "").toLowerCase())
+							.includes(term.replace(/^#/, "").toLowerCase()) ||
+						(p.description && p.description.toLowerCase().includes(term.replace(/^#/, "").toLowerCase()))
 					);
 					if (candidates.length === 0) return null;
-					// Ordena y toma top 3
 					const top3 = candidates.sort((a, b) => b.views - a.views).slice(0, 3);
 
 					return (
-						<div key={term} className="bg-white rounded-lg shadow p-4">
-							<h4 className="text-xl font-semibold mb-4">🎯 {term}</h4>
-							<ul className="space-y-4">
-								{top3.map((p) => (
+						<div key={term} className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-violet-900 dark:to-violet-700 rounded-2xl shadow-xl p-6 flex flex-col items-start dark:bg-opacity-80">
+							<h4 className="text-lg font-semibold mb-3 text-purple-700 dark:text-purple-200 uppercase tracking-wide flex items-center gap-2">
+								<span className="text-2xl">🎯</span>
+								{term.startsWith("#") ? (
+									<span className="inline-block bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 font-bold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide">
+										#{term.replace(/^#/, "").toUpperCase()}
+									</span>
+								) : (
+									<span className="inline-block bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 font-semibold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide flex items-center gap-1">
+										<svg className="inline h-5 w-5 text-blue-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+											<line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+										</svg>
+										{term.toUpperCase()}
+									</span>
+								)}
+							</h4>
+							<ul className="space-y-4 w-full">
+								{top3.map((p, idx) => (
 									<li
-										key={p.postCode}
-										className="border-b pb-3 last:border-none"
+										key={`${p.postCode}-${idx}`}
+										className="border-b border-purple-100 dark:border-violet-600 pb-3 last:border-none w-full"
 									>
 										<a
 											href={p.postLink}
 											target="_blank"
-											className="font-medium text-blue-600 hover:underline"
+											className="font-medium text-blue-600 dark:text-blue-300 hover:underline text-base"
 										>
 											{p.postCode}
 										</a>
-										<p className="text-sm text-gray-600">
+										<p className="text-xs text-gray-600 dark:text-gray-200 mt-1">
 											📅 {p.datePosted} | 👤 {p.tiktokAccountUsername}
 										</p>
-										<div className="mt-2 flex gap-4 text-sm">
+										<div className="mt-2 flex gap-4 text-xs text-gray-700 dark:text-gray-100">
 											<span>👁️ {p.views.toLocaleString()}</span>
 											<span>❤️ {p.likes.toLocaleString()}</span>
 											<span>📊 {p.engagementRate}%</span>
@@ -245,30 +283,70 @@ export default function DashboardPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
-			<h1 className="text-5xl font-bold mt-2 text-center">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
+			<h1 className="text-5xl font-bold mt-2 text-center drop-shadow-[0_4px_24px_rgba(127,0,255,0.15)] animate-fade-in text-purple-700 dark:text-white">
 				Dashboard ScrapeTok
 			</h1>
-			<h2 className="text-base font-light mb-1 text-center text-gray-600 ">
-				🔥 ¿Buscas lo más trending? seleccionamos para ti los 3 vídeos más
-				virales de cada hashtag a nivel global 🌎
+			<h2 className="text-base font-light mb-1 text-center text-gray-600 dark:text-white flex items-center justify-center gap-2 animate-fade-in">
+				<span className="text-2xl animate-bounce">🔥</span>
+				¿Buscas lo más trending? seleccionamos para ti los 3 vídeos más virales de cada hashtag a nivel global
+				<span className="text-2xl animate-pulse">🌍</span>
 			</h2>
 
-			{/* Si es ADMIN, muestro el form; si no, solo le enseño lo publicado */}
+			{/* Caja de filtros mejorada */}
 			{isAdmin && (
-				<div className="mt-8">
-					<ApifyFilterForm
-						onSubmit={handleApify}
-						loading={loading}
-						onPublish={handlePublish}
-					/>
+				<div className="w-full max-w-5xl mx-auto mt-8 p-8 rounded-3xl shadow-2xl bg-white/80 dark:bg-white/20 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 animate-fade-in">
+					<div className="flex items-center w-full md:w-1/2 bg-gray-100 dark:bg-gray-800 rounded-xl px-3 py-2 shadow-inner gap-2">
+						<span className="text-lg text-gray-400">#</span>
+						<input
+							className="bg-transparent flex-1 outline-none text-base text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 placeholder:text-sm"
+							placeholder="#hashtags (separados por comas)"
+							value={lastFilters?.hashtags || ""}
+							onChange={e => setLastFilters({ ...lastFilters, hashtags: e.target.value })}
+						/>
+					</div>
+					<div className="flex items-center w-full md:w-1/2 bg-gray-100 dark:bg-gray-800 rounded-xl px-3 py-2 shadow-inner gap-2">
+						<span className="text-lg text-gray-400">
+							{/* Icono de lupa simple */}
+							<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+								<line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+							</svg>
+						</span>
+						<input
+							className="bg-transparent flex-1 outline-none text-base text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 placeholder:text-sm"
+							placeholder="Palabras clave (separadas por comas)"
+							value={lastFilters?.keyWords || ""}
+							onChange={e => setLastFilters({ ...lastFilters, keyWords: e.target.value })}
+						/>
+					</div>
+					<div className="flex gap-2 mt-4 md:mt-0">
+						<button
+							className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+							onClick={() => lastFilters && handleApify(lastFilters)}
+						>
+							Buscar
+						</button>
+						<button
+							className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 animate-pulse"
+							onClick={handlePublish}
+						>
+							Publicar
+						</button>
+						<button
+							className="px-6 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white font-bold shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition-all focus:outline-none"
+							onClick={() => setLastFilters({ ...lastFilters, hashtags: '', keyWords: '' })}
+						>
+							Limpiar
+						</button>
+					</div>
 				</div>
 			)}
 
 			{posts.length > 0 && renderCards()}
 
 			{hashtagData.length + soundData.length === 0 && !loading ? (
-				<div className="text-center text-gray-600 mt-12">
+				<div className="text-center text-gray-600 dark:text-white mt-12">
 					No data available yet.
 				</div>
 			) : (
@@ -296,7 +374,7 @@ export default function DashboardPage() {
 
 			{fullScreenChart && (
 				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-					<div className="relative bg-white rounded-xl shadow-xl w-11/12 h-5/6 p-6 overflow-auto">
+					<div className="relative bg-white rounded-xl shadow-xl w-11/12 h-5/6 p-6 overflow-auto dark:bg-white/80">
 						<button
 							className="absolute top-4 right-4 p-2 rounded hover:bg-gray-100"
 							onClick={() => setFullScreenChart(null)}

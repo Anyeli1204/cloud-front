@@ -3,7 +3,7 @@ export interface QA {
 }
 
 export interface AlertaEmitida {
-	[id: string]: string;
+	[id: number]: string;
 }
 
 export interface AdminInformationResponse {
@@ -19,5 +19,5 @@ export interface AdminInformationResponse {
 	totalQuestionsAnswered: number;
 	isActive: boolean;
 	questionAndAnswer: QA[];
-	emmitedAlert: AlertaEmitida[];
+	emmitedAlerts: AlertaEmitida[];
 }

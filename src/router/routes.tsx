@@ -7,8 +7,9 @@ import ApifyCallPage from "src/pages/ApifyCallPage";
 import DatabaseQueriesPage from "src/pages/DatabaseQueriesPage";
 import UserInformationPage from "src/pages/UserInformationPage";
 import QuestionsAnswersPage from "src/pages/QuestionsAnswersPage";
-
+import AdminUsersPage from "@pages/AdminUsersPage";
 import NotFoundPage from "src/pages/NotFoundPage";
+
 export const router = createBrowserRouter([
 	{
 		path: "/",
@@ -19,24 +20,15 @@ export const router = createBrowserRouter([
 				path: "auth",
 				element: <AuthPage />,
 			},
+			{ path: "dashboard", element: <ProtectedRoute element={<DashboardPage />} /> },
+			{ path: "apify-call", element: <ProtectedRoute element={<ApifyCallPage />} /> },
+			{ path: "queries", element: <ProtectedRoute element={<DatabaseQueriesPage />} /> },
+			{ path: "users", element: <ProtectedRoute element={<UserInformationPage />} /> },
+			{ path: "qa", element: <ProtectedRoute element={<QuestionsAnswersPage />} /> },
 			{
-				// 2) Grupo de rutas protegidas SIN `path`, solo actúa como layout
-				element: <ProtectedRoute />,
-				children: [
-					{ path: "dashboard", element: <DashboardPage /> },
-					{ path: "apify-call", element: <ApifyCallPage /> },
-					{ path: "queries", element: <DatabaseQueriesPage /> },
-					{
-						path: "/users",
-						children: [{ path: "", element: <UserInformationPage /> }],
-					},
-					{
-						path: "/qa",
-						children: [{ path: "", element: <QuestionsAnswersPage /> }],
-					},
-				],
+				path: "/admin/users",
+				element: <ProtectedRoute roles={["ADMIN"]} element={<AdminUsersPage />} />,
 			},
-
 			{
 				path: "*",
 				element: <NotFoundPage />,

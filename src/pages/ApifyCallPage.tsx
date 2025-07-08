@@ -24,7 +24,7 @@ export default function ApifyCallPage() {
 		setLoading(true);
 		setError(null);
 		try {
-			// Si tu endpoint devuelve objetos “raw”, los mapeamos:
+			// Si tu endpoint devuelve objetos "raw", los mapeamos:
 			const raw = await userApify(filters);
 			const mapped = raw.map(mapRawToApifyResponse);
 			setData(mapped);
@@ -72,14 +72,14 @@ export default function ApifyCallPage() {
 	];
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 p-6 space-y-6">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
 			<FilterPanel onApply={handleApplyFilters} onReset={handleReset} />
 
 			{error && <div className="text-red-600 text-center">{error}</div>}
 
 			{/* NUEVO: Mensaje cuando no hay datos y no estamos cargando */}
 
-			<div className="bg-white rounded-lg shadow overflow-x-auto">
+			<div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-white/80">
 				<table className="min-w-full divide-y divide-gray-200">
 					<thead className="bg-purple-600">
 						<tr>
@@ -94,7 +94,7 @@ export default function ApifyCallPage() {
 						</tr>
 					</thead>
 
-					<tbody className="divide-y divide-gray-200 bg-white">
+					<tbody className="divide-y divide-gray-200 bg-white dark:bg-white/80">
 						{loading ? (
 							<tr>
 								<td colSpan={headers.length} className="p-4 text-center">
@@ -111,7 +111,7 @@ export default function ApifyCallPage() {
 							data.map((row, i) => (
 								<tr
 									key={`${row.postCode}-${i}`}
-									className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}
+									className={i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"}
 									onClick={() => setSelectedPost(row)}
 								>
 									<td className="px-4 py-2 text-sm font-medium text-gray-800">
