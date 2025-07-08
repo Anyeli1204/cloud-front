@@ -228,7 +228,7 @@ export default function DashboardPage() {
 							.split(",")
 							.map((h) => h.trim().replace(/^#/, "").toLowerCase())
 							.includes(term.replace(/^#/, "").toLowerCase()) ||
-						(p.description && p.description.toLowerCase().includes(term.replace(/^#/, "").toLowerCase()))
+						(p.hashtags && p.hashtags.toLowerCase().includes(term.replace(/^#/, "").toLowerCase()))
 					);
 					if (candidates.length === 0) return null;
 					const top3 = candidates.sort((a, b) => b.views - a.views).slice(0, 3);

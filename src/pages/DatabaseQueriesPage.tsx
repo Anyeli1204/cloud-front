@@ -28,6 +28,8 @@ import { FilterPanelDb } from "@components/FilterPanelDb";
 
 type OutletContext = { activeTab: "global" | "queries" | "apify" | "users" };
 
+const PAGE_WINDOW_SIZE = 10;
+
 export default function DatabaseQueriesPage() {
 	const [filters, setFilters] = useState<UserDBQueryRequest | null>(null);
 	const [posts, setPosts] = useState<UserDbPost[]>([]);

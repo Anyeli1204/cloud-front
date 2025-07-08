@@ -28,11 +28,13 @@ export default function NavBar({
 	onSelect,
 	onLogout,
 	tabs,
+	isAdmin,
 }: {
 	active: string;
 	onSelect: (key: string) => void;
 	onLogout: () => void;
 	tabs?: { key: string; label: string; icon?: React.ReactNode }[];
+	isAdmin?: boolean;
 }) {
 	const { theme, toggleTheme } = useTheme();
 	const { role } = useAuthContext();

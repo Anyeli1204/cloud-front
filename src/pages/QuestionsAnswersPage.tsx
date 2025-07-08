@@ -58,9 +58,10 @@ export default function QuestionsAnswersPage() {
 		setLoading(true);
 		try {
 			let res;
-			if (filter === "ANSWERED") {
+			const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
+			if (typedFilter === "ANSWERED") {
 				res = await getAnsweredQuestionsPaged(page, PAGE_SIZE);
-			} else if (filter === "PENDING") {
+			} else if (typedFilter === "PENDING") {
 				res = await getPendingQuestionsPaged(page, PAGE_SIZE);
 			} else {
 				res = await getQuestionsPaged(page, PAGE_SIZE);
@@ -83,9 +84,10 @@ export default function QuestionsAnswersPage() {
 		setError(null);
 		try {
 			let res;
-			if (filter === "ANSWERED") {
+			const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
+			if (typedFilter === "ANSWERED") {
 				res = await getAnsweredQuestionsPaged(0, PAGE_SIZE);
-			} else if (filter === "PENDING") {
+			} else if (typedFilter === "PENDING") {
 				res = await getPendingQuestionsPaged(0, PAGE_SIZE);
 			} else {
 				res = await getQuestionsPaged(0, PAGE_SIZE);
@@ -124,11 +126,12 @@ export default function QuestionsAnswersPage() {
 				setError(null);
 				try {
 					const res = await getQuestionsPaged(0, 1000);
-					const all: QuestionAnswerResponse[] = (res.data as { content: QuestionAnswerResponse[] }).content || [];
+					const all: QuestionAnswerResponse[] = (res.data as any).content || [];
 					let filtered: QuestionAnswerResponse[] = all;
-					if (filter === "ANSWERED") {
+					const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
+					if (typedFilter === "ANSWERED") {
 						filtered = all.filter((q) => q.status === "ANSWERED");
-					} else if (filter === "PENDING") {
+					} else if (typedFilter === "PENDING") {
 						filtered = all.filter((q) => q.status === "PENDING");
 					}
 					setQuestions(filtered);
@@ -198,8 +201,9 @@ export default function QuestionsAnswersPage() {
 	const filteredQuestions = questions
 		.filter((q: QuestionAnswerResponse) => {
 			// Filtro por estado
-			if (filter === "ANSWERED" && q.status !== "ANSWERED") return false;
-			if (filter === "PENDING" && q.status !== "PENDING") return false;
+			const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
+			if (typedFilter === "ANSWERED" && q.status !== "ANSWERED") return false;
+			if (typedFilter === "PENDING" && q.status !== "PENDING") return false;
 			
 			// Filtro por búsqueda de texto
 			if (searchText.trim()) {
