@@ -153,27 +153,46 @@ export default function QuestionsAnswersPage() {
 		loadQuestionsCount();
 	}, [activeTab, successMsg]);
 
-	// useEffect para cargar preguntas según el filtro activo
+	// useEffect para cargar preguntas según el filtro activo y el orden
 	useEffect(() => {
 		if (activeTab === "QNA") {
-			if (shouldUseInfiniteScroll) {
-				loadQuestions();
-			} else {
+			const hasActiveFilters = filter !== "ALL" || searchText.trim() || hashtagFilter.length > 0 || sortOrder !== "NEWEST";
+			if (hasActiveFilters) {
 				loadAllQuestionsForFiltering();
+			} else {
+				loadQuestions();
 			}
 		}
-	}, [activeTab, filter, searchText, hashtagFilter]);
+	}, [activeTab, filter, searchText, hashtagFilter, sortOrder]);
 
-	// Recargar preguntas solo cuando se cambia a la pestaña QNA
+	// Cambia el useEffect de cambio de tab para que solo resetee filtros, sin cargar preguntas manualmente
 	useEffect(() => {
 		if (activeTab === "QNA") {
-			// Limpiar filtros al cambiar a QNA
+			setFilter("ALL");
 			setSearchText("");
 			setHashtagFilter([]);
-			setFilter("ALL");
 			setSortOrder("NEWEST");
 		}
 	}, [activeTab]);
+
+	// Refresca la lista de preguntas cada vez que se cambia de tab y el filtro es PENDING o ANSWERED
+	useEffect(() => {
+		if (activeTab === "QNA" && (filter === "PENDING" || filter === "ANSWERED")) {
+			loadAllQuestionsForFiltering();
+		}
+	}, [activeTab, filter]);
+
+	// Cuando el usuario cambie el orden, desactiva el infinity scroll y carga todas las preguntas ordenadas
+	useEffect(() => {
+		if (activeTab === "QNA" && shouldUseInfiniteScroll) {
+			// Si cambia el orden, forzamos un filtro activo para desactivar el infinity scroll
+			setSearchText(" "); // Espacio para forzar el filtro y desactivar el scroll infinito
+			setTimeout(() => {
+				setSearchText(""); // Limpia el filtro después para que el usuario pueda buscar normalmente
+			}, 0);
+			loadAllQuestionsForFiltering();
+		}
+	}, [sortOrder]);
 
 	// Recargar preguntas cuando se envía una respuesta
 	const handleSendAnswer = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -218,48 +237,55 @@ export default function QuestionsAnswersPage() {
 		setSearchText(text);
 	};
 
-	// Aplicar filtros y búsqueda solo cuando no usamos infinity scroll
-	const filteredQuestions = shouldUseInfiniteScroll ? questions : questions
+	// Ordena el array questions según sortOrder ANTES de aplicar filtros si hay infinity scroll
+	const orderedQuestions = shouldUseInfiniteScroll
+		? [...questions].sort((a: QuestionAnswerResponse, b: QuestionAnswerResponse) => {
+			try {
+				const dateA = new Date(`${a.questionDate}T${a.questionHour || '00:00:00'}`);
+				const dateB = new Date(`${b.questionDate}T${b.questionHour || '00:00:00'}`);
+				if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+				if (sortOrder === "NEWEST") {
+					return dateB.getTime() - dateA.getTime();
+				} else {
+					return dateA.getTime() - dateB.getTime();
+				}
+			} catch {
+				return 0;
+			}
+		})
+		: questions;
+
+	const filteredQuestions = shouldUseInfiniteScroll ? orderedQuestions : questions
 		.filter((q: QuestionAnswerResponse) => {
-			// Filtro por estado
 			const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
-			if (typedFilter === "ANSWERED" && q.status !== "ANSWERED") return false;
-			if (typedFilter === "PENDING" && q.status !== "PENDING") return false;
-			
-			// Filtro por búsqueda de texto
+			if (typedFilter === "ANSWERED") return q.status === "ANSWERED";
+			if (typedFilter === "PENDING") return q.status === "PENDING";
 			if (searchText.trim()) {
 				const textoSinHashtags = q.questionDescription.replace(/#[\wáéíóúÁÉÍÓÚñÑ]+/g, "").trim();
 				if (!textoSinHashtags.toLowerCase().includes(searchText.toLowerCase())) {
 					return false;
 				}
 			}
-			
-			// Filtro por hashtags
 			if (hashtagFilter.length > 0) {
 				const hashtags = q.questionDescription.match(/#[\wáéíóúÁÉÍÓÚñÑ]+/g) || [];
 				if (!hashtags.some((tag) => hashtagFilter.includes(tag))) {
 					return false;
 				}
 			}
-			
 			return true;
 		})
 		.sort((a: QuestionAnswerResponse, b: QuestionAnswerResponse) => {
-			// Mejorar el manejo de fechas para evitar errores
 			try {
 				const dateA = new Date(`${a.questionDate}T${a.questionHour || '00:00:00'}`);
 				const dateB = new Date(`${b.questionDate}T${b.questionHour || '00:00:00'}`);
-				
-				// Verificar que las fechas son válidas
-				if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-					return 0; // Si hay fechas inválidas, mantener el orden original
+				if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+				if (sortOrder === "NEWEST") {
+					return dateB.getTime() - dateA.getTime();
+				} else {
+					return dateA.getTime() - dateB.getTime();
 				}
-				
-				return sortOrder === "NEWEST"
-					? dateB.getTime() - dateA.getTime()
-					: dateA.getTime() - dateB.getTime();
 			} catch {
-				return 0; // En caso de error, mantener el orden original
+				return 0;
 			}
 		});
 
