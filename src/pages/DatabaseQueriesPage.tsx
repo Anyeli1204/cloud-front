@@ -25,6 +25,7 @@ import {
 } from "recharts";
 
 import { FilterPanelDb } from "@components/FilterPanelDb";
+import { PostDetailModal } from "@components/PostDetailModal";
 
 type OutletContext = { activeTab: "global" | "queries" | "apify" | "users" };
 
@@ -40,6 +41,7 @@ export default function DatabaseQueriesPage() {
 	const [page, setPage] = useState(1);
 	const [pageWindowStart, setPageWindowStart] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
+	const [selectedPost, setSelectedPost] = useState<UserDbPost | null>(null);
 
 	useEffect(() => {
 		if (!filters) {
@@ -215,7 +217,7 @@ export default function DatabaseQueriesPage() {
 				style={{ height: fullScreenChart === key ? "92%" : "auto" }}
 			>
 				<div className="flex justify-between items-center mb-2">
-					<h4 className="font-semibold">{title}</h4>
+					<h4 className="font-semibold text-gray-900">{title}</h4>
 					<button
 						onClick={() =>
 							setFullScreenChart((prev) => (prev === key ? null : key))
@@ -255,6 +257,32 @@ export default function DatabaseQueriesPage() {
 		);
 	};
 
+	// Función para mapear UserDbPost a ApifyCallResponse (props del modal)
+	function mapUserDbPostToApifyCallResponse(post: UserDbPost) {
+		return {
+			postCode: post.postId,
+			datePosted: post.datePosted,
+			timePosted: post.hourPosted,
+			tiktokAccountUsername: post.usernameTiktokAccount,
+			postLink: post.postURL,
+			views: post.views,
+			likes: post.likes,
+			comments: post.comments,
+			saves: post.saves,
+			reposted: post.reposts,
+			interactions: post.totalInteractions,
+			engagementRate: post.engagement,
+			numberOfHashtags: post.numberHashtags,
+			hashtags: post.hashtags,
+			soundId: post.soundId,
+			soundUrl: post.soundURL,
+			regionOfPosting: post.regionPost,
+			trackingDate: post.dateTracking,
+			trackingTime: post.timeTracking,
+			user: post.userId !== undefined && post.userId !== null ? String(post.userId) : undefined,
+			admin: undefined,
+		};
+	}
 
 	const headers = [
 		"Post Code",
@@ -278,6 +306,9 @@ export default function DatabaseQueriesPage() {
 		"Track Time",
 		"User",
 	];
+
+	// Justo antes del return, calcula los posts a mostrar en la página actual
+	const paginatedPosts = posts.slice((page - 1) * PAGE_WINDOW_SIZE, page * PAGE_WINDOW_SIZE);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
@@ -320,7 +351,7 @@ export default function DatabaseQueriesPage() {
 							{headers.map((h) => (
 								<th
 									key={h}
-									className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+									className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider bg-purple-100"
 								>
 									{h}
 								</th>
@@ -336,25 +367,27 @@ export default function DatabaseQueriesPage() {
 							</tr>
 						) : posts.length === 0 ? (
 							<tr>
-								<td colSpan={headers.length} className="text-center py-8 text-gray-400 dark:text-gray-400">
+								<td colSpan={headers.length} className="p-4 text-center text-gray-700">
 									No data yet
 								</td>
 							</tr>
 						) : (
-							posts.map((row, i) => (
+							paginatedPosts.map((row, i) => (
 								<tr
 									key={`${row.postId}-${i}`}
 									className={i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"}
+									onClick={() => setSelectedPost(row)}
+									style={{ cursor: 'pointer' }}
 								>
-									<td className="px-4 py-2 text-sm font-medium text-gray-800">
+									<td className="px-4 py-2 text-sm font-medium text-gray-900">
 										{row.postId}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.datePosted}</td>
-									<td className="px-4 py-2 text-sm">{row.hourPosted}</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">{row.datePosted}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">{row.hourPosted}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.usernameTiktokAccount}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.postURL ? (
 											<a
 												href={row.postURL}
@@ -368,33 +401,33 @@ export default function DatabaseQueriesPage() {
 											"–"
 										)}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.views.toLocaleString()}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.likes.toLocaleString()}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.comments.toLocaleString()}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.reposts.toLocaleString()}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.saves.toLocaleString()}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.engagement.toFixed(2)}%
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.totalInteractions.toLocaleString()}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.hashtags || "–"}</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">{row.hashtags || "–"}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.numberHashtags.toString()}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.soundId}</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">{row.soundId}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.soundURL ? (
 											<a
 												href={row.soundURL}
@@ -408,10 +441,10 @@ export default function DatabaseQueriesPage() {
 											"–"
 										)}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.regionPost}</td>
-									<td className="px-4 py-2 text-sm">{row.dateTracking}</td>
-									<td className="px-4 py-2 text-sm">{row.timeTracking}</td>
-									<td className="px-4 py-2 text-sm">{row.userId}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">{row.regionPost}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">{row.dateTracking}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">{row.timeTracking}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">{row.userId}</td>
 								</tr>
 							))
 						)}
@@ -421,29 +454,33 @@ export default function DatabaseQueriesPage() {
 			<div className="mt-4 flex justify-center">
 				<button
 					onClick={() => {
-						if (pageWindowStart > 1) {
-							const newWindowStart = pageWindowStart - PAGE_WINDOW_SIZE;
-							setPageWindowStart(newWindowStart);
-							setPage(Math.min(newWindowStart + PAGE_WINDOW_SIZE - 1, totalPages));
+						if (page > 1) {
+							setPage(page - 1);
 						}
 					}}
-					className="px-4 py-2 bg-purple-600 text-white rounded-l"
+					className="px-4 py-2 bg-purple-600 text-white rounded-l disabled:opacity-50"
+					disabled={page === 1}
 				>
 					Previous
 				</button>
+				<span className="px-4 py-2 bg-white border-t border-b border-purple-600 text-purple-600 font-semibold">
+					Página {page} de {totalPages}
+				</span>
 				<button
 					onClick={() => {
 						if (page < totalPages) {
-							const newWindowStart = pageWindowStart + PAGE_WINDOW_SIZE;
-							setPageWindowStart(newWindowStart);
-							setPage(newWindowStart);
+							setPage(page + 1);
 						}
 					}}
-					className="px-4 py-2 bg-purple-600 text-white rounded-r"
+					className="px-4 py-2 bg-purple-600 text-white rounded-r disabled:opacity-50"
+					disabled={page === totalPages}
 				>
 					Next
 				</button>
 			</div>
+			{selectedPost && (
+				<PostDetailModal post={mapUserDbPostToApifyCallResponse(selectedPost)} onClose={() => setSelectedPost(null)} />
+			)}
 		</div>
 	);
 }

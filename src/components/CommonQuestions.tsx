@@ -43,10 +43,10 @@ export default function CommonQuestions() {
 							className="w-full h-40 object-cover flex-shrink-0"
 						/>
 						<div className="p-4 flex-1 flex flex-col justify-between">
-							<h3 className="font-semibold text-lg text-purple-600 mb-2">
+							<h3 className="font-semibold text-lg text-purple-600 mb-2 text-center">
 								{faq.question}
 							</h3>
-							<p className="text-gray-700 text-sm">{faq.answer}</p>
+							<p className="text-gray-700 text-sm text-justify">{faq.answer}</p>
 						</div>
 					</div>
 				))}

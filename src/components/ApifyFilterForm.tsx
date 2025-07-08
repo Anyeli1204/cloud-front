@@ -64,7 +64,7 @@ export function ApifyFilterForm({
 						value={hashtags}
 						onChange={(e) => setHashtags(e.target.value)}
 						placeholder="#cocina, #futbol"
-						className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition"
+						className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition text-gray-900"
 					/>
 				</div>
 				<div className="flex-1 min-w-[200px] relative">
@@ -75,7 +75,7 @@ export function ApifyFilterForm({
 						value={keyWords}
 						onChange={(e) => setKeyWords(e.target.value)}
 						placeholder="viajes, gastronomía"
-						className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition"
+						className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition text-gray-900"
 					/>
 				</div>
 				<div className="flex-none flex items-center gap-2">

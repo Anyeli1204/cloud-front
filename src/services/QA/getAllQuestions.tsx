@@ -44,11 +44,11 @@ export async function getPendingQuestionsPaged(page = 0, size = 10) {
 	return response;
 }
 
-// Obtener contador total de preguntas por estado
-export async function getQuestionsCount() {
+// Obtener todas las preguntas (para conteo en frontend)
+export async function getAllQuestion() {
 	const api = await Api.getInstance();
-	const response = await api.get<void, CountResponse>({
-		url: `/user/getQuestionsCount`,
+	const response = await api.get<void, QuestionsResponse>({
+		url: `/user/getAllQuestions`,
 	});
 	return response;
 }

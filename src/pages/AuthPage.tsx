@@ -38,6 +38,10 @@ export default function AuthPage() {
 	const location = useLocation();
 	const [loginError, setLoginError] = useState<string | null>(null);
 
+	useEffect(() => {
+		document.documentElement.classList.remove("dark");
+	}, []);
+
 	const handleLogin = async (email: string, password: string) => {
 		const payload: LoginRequest = { email, password };
 		try {
@@ -135,11 +139,11 @@ export default function AuthPage() {
 							<h3 className="text-2xl md:text-3xl font-semibold text-gray-800 mt-2">
 								{mode === "login" ? "¡Bienvenido de vuelta!" : "¡Crea tu cuenta!"}
 							</h3>
-							<p className="text-gray-600 text-center px-4">
+							<div className="text-sm text-gray-500 dark:text-gray-100 text-lg mb-2">
 								{mode === "login"
 									? "Inicia sesión para empezar a usar ScrapeTok y ver tus Tiktok metrics."
 									: "Regístrate para acceder a todas las funcionalidades de ScrapeTok."}
-							</p>
+							</div>
 							<Logo mode={mode} animate={false} className="h-60 w-60 mt-2" />
 						</div>
 					</motion.div>

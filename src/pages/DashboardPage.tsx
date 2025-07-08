@@ -10,7 +10,6 @@ import {
 	Legend,
 } from "recharts";
 import { Maximize2 } from "lucide-react";
-import chunk from "lodash/chunk";
 import { useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "@contexts/AuthContext";
@@ -18,7 +17,6 @@ import { adminApify } from "@services/apifyCall/adminApifyCall";
 import type { AdminApifyRequest } from "@interfaces/apify-call/AdminApifyRequest";
 import type { ApifyCallResponse } from "@interfaces/apify-call/ApifyCallResponse";
 import { mapRawToApifyResponse } from "@interfaces/apify-call/ApifyCallResponse";
-import { ApifyFilterForm } from "@components/ApifyFilterForm";
 import { sendTopGlobalEmail } from "@services/TopGlobalEmail/sendEmailTG";
 import type { TopGlobalesEmailRequest } from "@interfaces/send-email-topGlobales/TopGlobalesEmailRequest";
 
@@ -66,7 +64,6 @@ export default function DashboardPage() {
 		const raw = localStorage.getItem("publishedData");
 		if (raw) {
 			const data = JSON.parse(raw);
-			console.log("Datos publicados:", data);
 		}
 
 		// Enviar email a todos los usuarios con todos los posts en un solo request
@@ -89,7 +86,6 @@ export default function DashboardPage() {
 			});
 		} catch (error) {
 			Swal.fire("Error", "Ocurrió un error al enviar los emails.", "error");
-			console.error(error);
 		}
 	};
 
@@ -114,7 +110,6 @@ export default function DashboardPage() {
 			).map(mapRawToApifyResponse);
 
 			setPosts(mapped);
-			console.log(mapped);
 
 			// vistas por hashtag
 			const hMap = new Map<string, number>();
@@ -175,21 +170,21 @@ export default function DashboardPage() {
 				style={{ height: fullScreenChart === key ? "92%" : "auto" }}
 			>
 				<div className="flex justify-between items-center mb-2">
-					<h3 className="font-semibold">{title}</h3>
+					<h3 className="font-semibold text-gray-900 flex items-center gap-2">{title}</h3>
 					<button
 						onClick={() =>
 							setFullScreenChart((prev) => (prev === key ? null : key))
 						}
 						className="p-1 rounded hover:bg-gray-100"
 					>
-						<Maximize2 size={18} />
+						<Maximize2 size={18} className="text-gray-900 dark:text-white" />
 					</button>
 				</div>
 				<ResponsiveContainer
 					width="100%"
 					height={fullScreenChart === key ? "92%" : 250}
 				>
-					<BarChart data={toPlot as any}>
+					<BarChart data={toPlot as T[]}>
 						<XAxis dataKey={xKey as string} />
 						<YAxis
 							width={95}
@@ -234,16 +229,19 @@ export default function DashboardPage() {
 					const top3 = candidates.sort((a, b) => b.views - a.views).slice(0, 3);
 
 					return (
-						<div key={term} className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-violet-900 dark:to-violet-700 rounded-2xl shadow-xl p-6 flex flex-col items-start dark:bg-opacity-80">
-							<h4 className="text-lg font-semibold mb-3 text-purple-700 dark:text-purple-200 uppercase tracking-wide flex items-center gap-2">
-								<span className="text-2xl">🎯</span>
+						<div
+							key={term}
+							className="bg-gradient-to-br from-white via-gray-50 to-gray-200 dark:bg-none dark:bg-white/80 border border-transparent dark:border-white/30 rounded-3xl shadow-2xl p-6 flex flex-col items-start transition-all duration-300"
+						>
+							<h4 className="text-lg font-semibold mb-3 uppercase tracking-wide flex items-center gap-2 text-gray-900">
+								<span className="text-2xl text-gray-900">🎯</span>
 								{term.startsWith("#") ? (
-									<span className="inline-block bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 font-bold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide">
+									<span className="inline-block bg-purple-100 dark:bg-purple-200 text-purple-800 font-bold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide">
 										#{term.replace(/^#/, "").toUpperCase()}
 									</span>
 								) : (
-									<span className="inline-block bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 font-semibold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide flex items-center gap-1">
-										<svg className="inline h-5 w-5 text-blue-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<span className="inline-block bg-blue-100 dark:bg-blue-200 text-blue-800 font-semibold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide flex items-center gap-1">
+										<svg className="inline h-5 w-5 text-blue-800 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 											<circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
 											<line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
 										</svg>
@@ -260,14 +258,14 @@ export default function DashboardPage() {
 										<a
 											href={p.postLink}
 											target="_blank"
-											className="font-medium text-blue-600 dark:text-blue-300 hover:underline text-base"
+											className="font-bold text-gray-900 hover:underline text-base"
 										>
 											{p.postCode}
 										</a>
-										<p className="text-xs text-gray-600 dark:text-gray-200 mt-1">
+										<p className="text-xs text-gray-800 mt-1">
 											📅 {p.datePosted} | 👤 {p.tiktokAccountUsername}
 										</p>
-										<div className="mt-2 flex gap-4 text-xs text-gray-700 dark:text-gray-100">
+										<div className="mt-2 flex gap-4 text-xs text-gray-900">
 											<span>👁️ {p.views.toLocaleString()}</span>
 											<span>❤️ {p.likes.toLocaleString()}</span>
 											<span>📊 {p.engagementRate}%</span>
@@ -346,7 +344,7 @@ export default function DashboardPage() {
 			{posts.length > 0 && renderCards()}
 
 			{hashtagData.length + soundData.length === 0 && !loading ? (
-				<div className="text-center text-gray-600 dark:text-white mt-12">
+				<div className="text-center text-gray-700 dark:text-gray-100 mt-12">
 					No data available yet.
 				</div>
 			) : (

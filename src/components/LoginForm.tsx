@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Input } from "@components/Input";
+import { Eye, EyeOff } from "lucide-react";
 
 interface LoginFormProps {
 	onSubmit: (email: string, password: string) => void;
@@ -8,6 +9,7 @@ interface LoginFormProps {
 export function LoginForm({ onSubmit }: LoginFormProps) {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [showPassword, setShowPassword] = useState(false);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -40,14 +42,24 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 				>
 					Password
 				</label>
-				<Input
-					id="login-password"
-					type="password"
-					placeholder="********"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					required
-				/>
+				<div className="relative">
+					<Input
+						id="login-password"
+						type={showPassword ? "text" : "password"}
+						placeholder="********"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						required
+					/>
+					<button
+						type="button"
+						className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+						onClick={() => setShowPassword((v) => !v)}
+						tabIndex={-1}
+					>
+						{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+					</button>
+				</div>
 			</div>
 
 			<button

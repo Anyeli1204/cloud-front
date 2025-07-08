@@ -79,7 +79,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 	};
 
 	const inputCls =
-		"w-full border-2 border-purple-200 bg-white pl-10 pr-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm";
+		"w-full border-2 border-purple-200 bg-white pl-10 pr-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm text-gray-900";
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -208,7 +208,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 							type="date"
 							value={f.datePostedFrom}
 							onChange={(e) => handleChange("datePostedFrom", e.target.value)}
-							className={inputCls + " dark:placeholder-gray-500 dark:text-gray-400"}
+							className={inputCls + " dark:placeholder-gray-500"}
 						/>
 					</div>
 				</div>
@@ -224,7 +224,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 							type="date"
 							value={f.datePostedTo}
 							onChange={(e) => handleChange("datePostedTo", e.target.value)}
-							className={inputCls + " dark:placeholder-gray-500 dark:text-gray-400"}
+							className={inputCls + " dark:placeholder-gray-500"}
 						/>
 					</div>
 				</div>
@@ -244,7 +244,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 								placeholder="Min"
 								value={f[key] ?? ""}
 								onChange={(e) => handleChange(key, e.target.valueAsNumber)}
-								className="w-1/2 border-2 border-purple-200 bg-white px-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm"
+								className="w-1/2 border-2 border-purple-200 bg-white px-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm text-gray-900"
 							/>
 							<input
 								type="number"
@@ -252,7 +252,7 @@ export function FilterPanelDb({ onApply, onReset }: FilterPanelDbProps) {
 								placeholder="Max"
 								value={f[max] ?? ""}
 								onChange={(e) => handleChange(max, e.target.valueAsNumber)}
-								className="w-1/2 border-2 border-purple-200 bg-white px-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm"
+								className="w-1/2 border-2 border-purple-200 bg-white px-3 py-1.5 rounded-lg focus:outline-none focus:ring-purple-300 transition text-sm text-gray-900"
 							/>
 						</div>
 					</div>

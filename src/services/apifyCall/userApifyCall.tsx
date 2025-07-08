@@ -11,7 +11,6 @@ export async function userApify(
 		throw new Error("No se encontró el userId en el storage");
 	}
 	const userId = Number(idStr);
-	console.log(userId);
 	const payload: UserApifyCallRequest = {
 		...params,
 		userId,

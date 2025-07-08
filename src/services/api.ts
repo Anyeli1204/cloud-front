@@ -16,8 +16,6 @@ export default class Api {
 	public static async getInstance() {
 		if (!this._instance) {
 			const basePath = import.meta.env.VITE_API_BASE_URL || "/api";
-			console.log("[Api] URL base configurada:", basePath);
-			console.log("[Api] VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
 			this._instance = new Api(basePath);
 		}
 		return this._instance;
@@ -38,14 +36,6 @@ export default class Api {
 			baseURL: this._basePath,
 			headers: headers,
 		};
-
-		console.log("[Api] Realizando petición:", {
-			method: configOptions.method,
-			url: configOptions.url,
-			baseURL: configOptions.baseURL,
-			fullURL: `${configOptions.baseURL}${configOptions.url}`,
-			hasToken: !!token
-		});
 
 		return axios<RequestType, AxiosResponse<ResponseType>>(
 			config.url!,

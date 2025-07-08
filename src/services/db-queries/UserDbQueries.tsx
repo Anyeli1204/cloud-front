@@ -14,7 +14,6 @@ export async function dbQueries(userDBQueryRequest: UserDBQueryRequest) {
 		...userDBQueryRequest,
 		userId,
 	};
-	console.log(payload);
 	const response = await api.post<UserDBQueryRequest, UserDbQueryResponse>(
 		payload,
 		{

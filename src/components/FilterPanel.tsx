@@ -145,7 +145,7 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 						placeholder="#cocina,#futbol"
 						value={filters.hashtags}
 						onChange={(e) => handleChange("hashtags", e.target.value)}
-						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300"
+						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 text-gray-900"
 					/>
 					<div className="mt-2 flex flex-wrap gap-2">
 						{POPULAR_HASHTAGS.map((tag) => (
@@ -180,7 +180,7 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 						placeholder="usuario1,usuario2"
 						value={filters.tiktokAccount}
 						onChange={(e) => handleChange("tiktokAccount", e.target.value)}
-						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300"
+						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 text-gray-900"
 					/>
 					<div className="mt-2 flex flex-wrap gap-2">
 						{POPULAR_USERS.map((u) => (
@@ -215,7 +215,7 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 						placeholder="ej: pizza, recetas"
 						value={filters.keyWords}
 						onChange={(e) => handleChange("keyWords", e.target.value)}
-						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300"
+						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 text-gray-900"
 					/>
 					<div className="mt-2 flex flex-wrap gap-2">
 						{POPULAR_KEYWORDS.map((kw) => (
@@ -251,7 +251,7 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 						type="date"
 						value={filters.dateFrom}
 						onChange={(e) => handleChange("dateFrom", e.target.value)}
-						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 dark:text-gray-400 dark:placeholder-gray-500"
+						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 text-gray-900 dark:text-gray-400 dark:placeholder-gray-500"
 					/>
 				</div>
 				<div>
@@ -262,7 +262,7 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 						type="date"
 						value={filters.dateTo}
 						onChange={(e) => handleChange("dateTo", e.target.value)}
-						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 dark:text-gray-400 dark:placeholder-gray-500"
+						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 text-gray-900 dark:text-gray-400 dark:placeholder-gray-500"
 					/>
 				</div>
 				<div>
@@ -279,7 +279,7 @@ export function FilterPanel({ onApply, onReset }: FilterPanelProps) {
 								e.target.value ? Number(e.target.value) : undefined,
 							)
 						}
-						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300"
+						className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-purple-300 text-gray-900"
 					/>
 				</div>
 			</div>

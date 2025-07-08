@@ -32,42 +32,31 @@ export default function AdminUsersPage() {
   const PAGE_WINDOW_SIZE = 4;
 
   useEffect(() => {
-    console.log("[AdminUsersPage] useEffect ejecutado");
-    console.log("[AdminUsersPage] Rol actual:", role);
-    console.log("[AdminUsersPage] ID actual:", id);
-    
     if (role !== "ADMIN") {
-      console.warn("[AdminUsersPage] Acceso denegado. Rol actual:", role);
       setLoading(false);
       return;
     }
     if (!id) {
       setError("No se encontró el ID del admin actual.");
-      console.error("[AdminUsersPage] ID de admin no encontrado en contexto.");
       setLoading(false);
       return;
     }
     
     setLoading(true);
     setError(null);
-    console.log("[AdminUsersPage] Llamando a getAllUsers...");
     
     getAllUsers()
       .then((res) => {
-        console.log("[AdminUsersPage] Respuesta cruda getAllUsers:", res);
-        console.log("[AdminUsersPage] Datos recibidos:", res.data);
         setRaw(res.data);
         setUsers(res.data);
         setPage(1);
         setPageWindowStart(1);
       })
       .catch((e) => {
-        console.error("[AdminUsersPage] Error en getAllUsers:", e);
         setError("Error al cargar usuarios");
         setRaw(e?.response?.data || e?.message || e);
       })
       .finally(() => {
-        console.log("[AdminUsersPage] Finalizando carga");
         setLoading(false);
       });
   }, [role, id]);
@@ -84,7 +73,6 @@ export default function AdminUsersPage() {
       const err = e as { response?: { data?: { message?: string } }, message?: string };
       const backendMsg = err?.response?.data?.message || err?.message || "Error desconocido";
       setError("No se pudo actualizar el usuario: " + backendMsg);
-      console.error("Error al hacer upgrade:", err, err?.response?.data);
     } finally {
       setUpgrading(null);
     }
@@ -163,7 +151,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="max-w-5xl mx-auto mt-10 bg-white dark:bg-neutral-900 rounded-3xl shadow-lg p-8">
-      <h1 className="text-3xl font-bold mb-8 text-purple-700 flex items-center gap-2">
+      <h1 className="text-3xl font-bold mb-8 text-purple-700 dark:text-white flex items-center gap-2">
         <UserPlus /> Gestión de Usuarios
       </h1>
       {error && <div className="mb-4 text-red-500">{error}</div>}
@@ -193,7 +181,11 @@ export default function AdminUsersPage() {
             ) : (
               pagedUsers.map((user) => (
                 <tr key={user.id} className="border-b last:border-b-0 hover:bg-purple-50/40 dark:hover:bg-neutral-800/40 transition">
-                  <td className="p-3 font-semibold text-purple-700">{user.username}</td>
+                  <td className="p-3 font-semibold">
+                    <span className="text-purple-700 dark:bg-purple-700 dark:text-white dark:px-3 dark:py-1 dark:rounded-full dark:shadow-sm transition-all">
+                      {user.username}
+                    </span>
+                  </td>
                   <td className="p-3">{user.email}</td>
                   <td className="p-3">{user.firstname}</td>
                   <td className="p-3">{user.lastname}</td>

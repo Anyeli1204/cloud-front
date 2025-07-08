@@ -7,14 +7,16 @@ import {
 	Sun,
 	Moon,
 	UserPlus,
+	Bot,
+	Database,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuthContext } from "@contexts/AuthContext";
 
 const baseOptions = [
 	{ key: "global", label: "Daily Top Global", icon: <Home size={18} /> },
-	{ key: "apify", label: "Apify Call", icon: null },
-	{ key: "queries", label: "Database Queries", icon: null },
+	{ key: "apify", label: "Apify Call", icon: <Bot size={18} /> },
+	{ key: "queries", label: "Database Queries", icon: <Database size={18} /> },
 	{
 		key: "qa",
 		label: "Preguntas y Respuestas",
@@ -64,6 +66,7 @@ export default function NavBar({
 				const isActive =
 					(opt.key === "admin-users" && isAdminUsersActive) ||
 					(opt.key !== "admin-users" && !isAdminUsersActive && active === opt.key);
+				const iconClass = `${isActive ? 'text-white' : 'text-gray-700 dark:text-white'}`;
 				return (
 					<button
 						key={opt.key}
@@ -78,12 +81,12 @@ export default function NavBar({
 							isActive
 								? "bg-purple-600 text-white"
 								: opt.key === "admin-users"
-								? "text-purple-700 hover:bg-purple-100 font-semibold"
+								? "hover:bg-purple-100 font-semibold"
 								: "text-gray-700 hover:bg-gray-100"
 						}`}
 					>
-						{opt.icon}
-						<span className="font-medium">{opt.label}</span>
+						{opt.icon && React.cloneElement(opt.icon as React.ReactElement, { className: iconClass })}
+						<span className={`font-medium dark:text-white`}>{opt.label}</span>
 					</button>
 				);
 			})}

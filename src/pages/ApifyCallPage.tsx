@@ -103,7 +103,7 @@ export default function ApifyCallPage() {
 							</tr>
 						) : data.length === 0 ? (
 							<tr>
-								<td colSpan={headers.length} className="p-4 text-center">
+								<td colSpan={headers.length} className="p-4 text-center text-gray-700">
 									No data yet
 								</td>
 							</tr>
@@ -114,15 +114,15 @@ export default function ApifyCallPage() {
 									className={i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"}
 									onClick={() => setSelectedPost(row)}
 								>
-									<td className="px-4 py-2 text-sm font-medium text-gray-800">
+									<td className="px-4 py-2 text-sm font-medium text-gray-900">
 										{row.postCode}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.datePosted}</td>
-									<td className="px-4 py-2 text-sm">{row.timePosted}</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">{row.datePosted}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">{row.timePosted}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.tiktokAccountUsername}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.postLink ? (
 											<a
 												href={row.postLink}
@@ -136,33 +136,33 @@ export default function ApifyCallPage() {
 											"–"
 										)}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.views?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.likes?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.comments?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.reposted?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.saves?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.engagementRate?.toFixed(2) ?? "0.00"}%
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.interactions?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.hashtags ?? "–"}</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">{row.hashtags ?? "–"}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.numberOfHashtags?.toString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.soundId ?? "–"}</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">{row.soundId ?? "–"}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.soundUrl ? (
 											<a
 												href={row.soundUrl}
@@ -176,16 +176,16 @@ export default function ApifyCallPage() {
 											"–"
 										)}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.regionOfPosting ?? "–"}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.trackingDate ?? "–"}
 									</td>
-									<td className="px-4 py-2 text-sm">
+									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.trackingTime ?? "–"}
 									</td>
-									<td className="px-4 py-2 text-sm">{row.user ?? "–"}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">{row.user ?? "–"}</td>
 								</tr>
 							))
 						)}

@@ -69,7 +69,7 @@ export default function AskQuestionForm({
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="w-full max-w-4xl mx-auto bg-white dark:bg-white/80 dark:backdrop-blur-md p-6 rounded-2xl shadow-md dark:shadow-lg border border-purple-100 dark:border-white/30 flex flex-col gap-3"
+			className="w-full max-w-[1100px] mx-auto bg-white dark:bg-white/80 dark:backdrop-blur-md p-6 rounded-2xl shadow-md dark:shadow-lg border border-purple-100 dark:border-white/30 flex flex-col gap-3"
 		>
 			<h2 className="text-2xl font-bold text-center text-purple-700 dark:text-purple-900">
 				Haz una pregunta

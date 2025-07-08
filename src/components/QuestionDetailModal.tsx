@@ -5,7 +5,6 @@ import {
 	MessageCircle,
 	CheckCircle,
 	Clock,
-	Calendar,
 	UserCheck,
 	User2Icon,
 	User,
@@ -39,7 +38,7 @@ export const QuestionDetailModal = ({
 						<MessageCircle className="w-7 h-7 text-purple-400" /> Detalle de la
 						Pregunta
 					</h2>
-					<div className="space-y-3 text-base text-gray-700">
+					<div className="space-y-3 text-base text-gray-700 text-left">
 						{/* Solo mostrar IDs si showIds es true */}
 						{showIds && (
 							<>

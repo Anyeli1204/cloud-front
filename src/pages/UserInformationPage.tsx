@@ -227,11 +227,56 @@ export default function UserInformationPage() {
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 text-sm items-start">
 									{scrapeosPagina.map((f, i) => (
 										<div key={i} className="bg-blue-50 rounded-xl p-2 shadow-md flex flex-col gap-1 border border-blue-100 max-w-xs w-full mx-auto min-h-40">
-											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> <span className="font-semibold">Fecha desde:</span> {f["Date From"]}</div>
-											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> <span className="font-semibold">Fecha hasta:</span> {f["Date to"]}</div>
-											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m8 0a4 4 0 11-8 0 4 4 0 018 0zm0 0v1a4 4 0 01-8 0v-1" /></svg> <span className="font-semibold">Palabra clave:</span> {f["Key Word"]}</div>
-											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2H7a2 2 0 00-2 2v5a2 2 0 002 2z" /></svg> <span className="font-semibold">N° de posts:</span> {f["N Last Post By Hashtags"]}</div>
-											<div className="flex items-center gap-2 text-blue-900 text-sm"><svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" /></svg> <span className="font-semibold">Tiempo de ejecución:</span> {f["Execution Time"]}</div>
+											{f["Date From"] && (
+												<div className="flex items-center gap-2 text-blue-900 text-sm">
+													<svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> <span className="font-semibold">Fecha desde:</span> {f["Date From"]}
+												</div>
+											)}
+											{f["Date to"] && (
+												<div className="flex items-center gap-2 text-blue-900 text-sm">
+													<svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> <span className="font-semibold">Fecha hasta:</span> {f["Date to"]}
+												</div>
+											)}
+											{f["Key Word"] && (
+												<div className="flex items-center gap-2 text-blue-900 text-sm">
+													<svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m8 0a4 4 0 11-8 0 4 4 0 018 0zm0 0v1a4 4 0 01-8 0v-1" /></svg> <span className="font-semibold">Palabra clave:</span> {f["Key Word"]}
+												</div>
+											)}
+											{f["N Last Post By Hashtags"] && (
+												<div className="flex items-center gap-2 text-blue-900 text-sm">
+													<svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2H7a2 2 0 00-2 2v5a2 2 0 002 2z" /></svg> <span className="font-semibold">N° de posts:</span> {f["N Last Post By Hashtags"]}
+												</div>
+											)}
+											{f["Execution Time"] && (
+												<div className="flex items-center gap-2 text-blue-900 text-sm">
+													<svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" /></svg> <span className="font-semibold">Tiempo de ejecución:</span> {f["Execution Time"]}
+												</div>
+											)}
+											{(() => {
+												const hashtagsRaw = f.hashtags || f.Hashtags || f["hashtags"] || f["Hashtags"] || "";
+												if (typeof hashtagsRaw === "string" && hashtagsRaw.trim().length > 0) {
+													return (
+														<div className="flex flex-wrap gap-1 mt-2 items-center text-blue-900 text-sm">
+															<span className="font-semibold">Hashtags:</span>
+															{hashtagsRaw
+																.split(",")
+																.filter((tag: string) => tag && tag.trim() !== "null" && tag.trim() !== "undefined")
+																.map((tag: string, idx: number) => {
+																	const cleanTag = tag.trim().startsWith("#") ? tag.trim() : `#${tag.trim()}`;
+																	return (
+																		<span
+																			key={idx}
+																			className="inline-block bg-white text-blue-700 border border-blue-300 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm"
+																		>
+																			{cleanTag}
+																		</span>
+																	);
+																})}
+														</div>
+													);
+												}
+												return null;
+											})()}
 										</div>
 									))}
 								</div>
@@ -378,9 +423,10 @@ export default function UserInformationPage() {
 							</div>
 						</div>
 						<div className="md:col-span-3 flex flex-col gap-4 h-full justify-between w-full mt-8 md:mt-0 md:ml-8">
-							<div className="bg-white/90 dark:bg-white/60 rounded-2xl shadow-2xl p-4 border-2 border-blue-100 animate-fade-in w-full">
-								<h2 className="text-xl font-bold mb-4 mt-4 flex items-center gap-2 text-blue-700">
-									<MessageCircle size={28} className="text-blue-500" /> Preguntas Respondidas
+							<div className="bg-white/80 rounded-2xl shadow-xl p-6 border border-pink-100">
+								<h2 className="font-bold text-xl mb-4 flex items-center gap-2 text-blue-800">
+									<MessageCircle size={20} className="text-blue-800 animate-bounce" />
+									Preguntas Respondidas
 								</h2>
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 text-sm items-start">
 									{preguntasPagina.length > 0 ? (
@@ -392,7 +438,7 @@ export default function UserInformationPage() {
 											return (
 												<div
 													key={idx}
-													className="bg-blue-50 rounded-xl p-4 shadow-md flex flex-col gap-2 border border-blue-100 w-full max-w-xs mx-auto cursor-pointer hover:scale-105 transition break-words"
+													className="bg-blue-50 dark:bg-blue-100 rounded-xl p-4 shadow-md flex flex-col gap-2 border border-blue-100 dark:border-blue-200 w-full max-w-xs mx-auto cursor-pointer hover:scale-105 transition break-words"
 													onClick={() =>
 														setPreguntaSeleccionada({
 															id: Number(qa.id),
@@ -407,14 +453,14 @@ export default function UserInformationPage() {
 													}
 												>
 													<div className="text-left">
-														<span className="font-semibold text-blue-700">Pregunta:</span>
-														<div>
+														<span className="font-semibold text-blue-800">Pregunta:</span>
+														<div className="text-blue-800">
 															{preguntaSinHashtags}
 															<div className="flex flex-wrap gap-1 mt-1">
 																{hashtags.map((tag, i) => (
 																	<span
 																		key={i}
-																		className="inline-block bg-blue-100 text-blue-700 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm"
+																		className="inline-block bg-blue-100 dark:bg-blue-200 text-blue-700 dark:text-blue-400 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm"
 																	>
 																		{tag}
 																	</span>
@@ -426,7 +472,7 @@ export default function UserInformationPage() {
 											);
 										})
 									) : (
-										<div className="text-gray-400 col-span-3">No hay preguntas respondidas.</div>
+										<div className="text-gray-400 dark:text-gray-200 col-span-3">No hay preguntas respondidas.</div>
 									)}
 								</div>
 								<div className="flex justify-center gap-2 mt-2 mb-6">
@@ -463,8 +509,8 @@ export default function UserInformationPage() {
 									</button>
 								</div>
 							</div>
-							<div className="bg-gradient-to-br from-pink-50 to-white rounded-2xl shadow-xl p-6 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black">
-								<h2 className="font-bold text-xl mb-4 flex items-center gap-2 text-[#FF00CC]">
+							<div className="bg-white/80 rounded-2xl shadow-xl p-6 border border-pink-100">
+								<h2 className="font-bold text-xl mb-4 flex items-center gap-2 text-[#FF00CC] dark:text-[#FF00CC]">
 									<Bell size={20} className="text-[#FF00CC] animate-bounce" />
 									Alertas Emitidas
 								</h2>
@@ -485,7 +531,7 @@ export default function UserInformationPage() {
 												return (
 													<div
 														key={idx}
-														className="flex items-center gap-2 bg-white/80 dark:bg-white/20 border border-pink-200 rounded-lg px-3 py-2 shadow-sm hover:scale-105 hover:shadow-md transition-all duration-200 text-sm"
+														className="flex items-center gap-2 bg-pink-100/60 border border-pink-200 rounded-lg px-3 py-2 shadow-sm hover:scale-105 hover:shadow-md transition-all duration-200 text-sm"
 													>
 														<span className="flex items-center gap-1 text-pink-600 font-semibold">
 															<Bell size={14} className="text-pink-400" />

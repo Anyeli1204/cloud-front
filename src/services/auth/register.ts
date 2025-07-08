@@ -9,7 +9,6 @@ function saveAuthSession(data: AuthResponse) {
 	sessionStorage.setItem("password", data.password);
 	sessionStorage.setItem("username", data.username);
 	sessionStorage.setItem("role", data.role);
-	console.log(data);
 }
 
 export async function register(registerRequest: RegisterRequest) {
@@ -21,6 +20,5 @@ export async function register(registerRequest: RegisterRequest) {
 		},
 	);
 	saveAuthSession(response.data);
-	console.log(response.data);
 	return response;
 }
