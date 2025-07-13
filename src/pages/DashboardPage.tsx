@@ -10,7 +10,6 @@ import {
 	Legend,
 } from "recharts";
 import { Maximize2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "@contexts/AuthContext";
 import { adminApify } from "@services/apifyCall/adminApifyCall";
@@ -19,14 +18,45 @@ import type { ApifyCallResponse } from "@interfaces/apify-call/ApifyCallResponse
 import { mapRawToApifyResponse } from "@interfaces/apify-call/ApifyCallResponse";
 import { sendTopGlobalEmail } from "@services/TopGlobalEmail/sendEmailTG";
 import type { TopGlobalesEmailRequest } from "@interfaces/send-email-topGlobales/TopGlobalesEmailRequest";
+import type { DashboardInfo } from "@interfaces/dashboard/DashboardInfo";
+import type { TopGlobalEmailDTO } from "@interfaces/send-email-topGlobales/TopGlobalEmailDTO";
+import { getDashboardInfo } from "@services/dashboard/getDashboardInfo";
 
-const BLUE = "#007BFF"; // un azul vivo
-const PURPLE = "#FF4081"; // tu púrpura neón
+// Tipo unión para manejar tanto datos de scraping como datos publicados
+type PostData = ApifyCallResponse | DashboardInfo;
+
+// Funciones helper para acceder a propiedades de manera segura
+const isApifyData = (post: PostData): post is ApifyCallResponse => {
+	return 'hashtags' in post && 'postCode' in post;
+};
+
+const getPostId = (post: PostData): string => {
+	return isApifyData(post) ? post.postCode : post.postId;
+};
+
+const getPostLink = (post: PostData): string => {
+	return isApifyData(post) ? post.postLink : post.postURL;
+};
+
+const getUsername = (post: PostData): string => {
+	return isApifyData(post) ? post.tiktokAccountUsername : post.usernameTiktokAccount;
+};
+
+const getHashtags = (post: PostData): string => {
+	return isApifyData(post) ? post.hashtags : post.usedHashTag;
+};
+
+const getEngagement = (post: PostData): number => {
+	return isApifyData(post) ? post.engagementRate : post.engagement;
+};
+
+const BLUE = "#007BFF"; 
+const PURPLE = "#FF4081"; 
 export default function DashboardPage() {
 	const { id: adminId, role } = useAuthContext();
 	const isAdmin = role === "ADMIN";
 	const [loading, setLoading] = useState(false);
-	const [posts, setPosts] = useState<ApifyCallResponse[]>([]);
+	const [posts, setPosts] = useState<PostData[]>([]);
 	const [lastFilters, setLastFilters] = useState<AdminApifyRequest | null>(
 		null,
 	);
@@ -38,19 +68,19 @@ export default function DashboardPage() {
 		{ soundId: string; totalViews: number }[]
 	>([]);
 	const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
-	const navigate = useNavigate();
+	const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+	const [showPublishedList, setShowPublishedList] = useState(false);
+	const [publishedPosts, setPublishedPosts] = useState<TopGlobalEmailDTO[]>([]);
 
 	useEffect(() => {
-		{
-			const stored = localStorage.getItem("publishedData");
-			if (stored) {
-				const { posts, hashtagData, soundData, lastFilters } =
-					JSON.parse(stored);
-				setPosts(posts);
-				setHashtagData(hashtagData);
-				setSoundData(soundData);
-				setLastFilters(lastFilters);
-			}
+		const stored = localStorage.getItem("publishedData");
+		if (stored) {
+			const { posts, hashtagData, soundData, lastFilters } =
+				JSON.parse(stored);
+			setPosts(Array.isArray(posts) ? posts : []);
+			setHashtagData(Array.isArray(hashtagData) ? hashtagData : []);
+			setSoundData(Array.isArray(soundData) ? soundData : []);
+			setLastFilters(lastFilters || null);
 		}
 	}, []);
 
@@ -59,40 +89,88 @@ export default function DashboardPage() {
 			Swal.fire("Atención", "No hay datos para publicar aún.", "warning");
 			return;
 		}
-		const payload = { posts, hashtagData, soundData, lastFilters };
-		localStorage.setItem("publishedData", JSON.stringify(payload));
-		const raw = localStorage.getItem("publishedData");
-		if (raw) {
-			const data = JSON.parse(raw);
-		}
 
-		// Enviar email a todos los usuarios con todos los posts en un solo request
 		try {
 			if (Array.isArray(posts) && posts.length > 0) {
-				const emailReqs: TopGlobalesEmailRequest[] = posts.map((p) => ({
-					adminId: Number(adminId),
-					usedHashTag: p.hashtags.split(",")[0]?.replace("#", "") || "",
-					datePosted: p.datePosted, // debe ser YYYY-MM-DD
-					usernameTiktokAccount: p.tiktokAccountUsername,
-					postURL: p.postLink,
-					views: Math.round(p.views),
-					likes: Math.round(p.likes),
-					engagement: Number(p.engagementRate),
-				}));
-				await sendTopGlobalEmail(emailReqs);
+				// Obtener solo los datos que se muestran en las tarjetas (top 3 por hashtag/palabra clave)
+				const emailReqs: TopGlobalesEmailRequest[] = [];
+				
+				// Obtener los términos (hashtags y palabras clave)
+				const hashtags = lastFilters.hashtags
+					? lastFilters.hashtags.split(",").map((t) => t.trim()).filter(Boolean)
+					: [];
+				const keyWords = lastFilters.keyWords
+					? lastFilters.keyWords.split(",").map((t) => t.trim()).filter(Boolean)
+					: [];
+				const terms = [...hashtags, ...keyWords];
+
+				// Para cada término, obtener solo los top 3 videos
+				terms.forEach((term) => {
+					const candidates = posts.filter((p: PostData) => {
+						const postHashtags = getHashtags(p);
+						return (
+							postHashtags &&
+							postHashtags
+								.split(",")
+								.map((h: string) => h.trim().replace(/^#/, "").toLowerCase())
+								.includes(term.replace(/^#/, "").toLowerCase())
+						);
+					});
+
+					// Tomar solo los top 3 videos con más vistas
+					const top3 = candidates
+						.sort((a, b) => b.views - a.views)
+						.slice(0, 3);
+
+					// Convertir a formato TopGlobalesEmailRequest
+					top3.forEach((p) => {
+						emailReqs.push({
+							adminId: Number(adminId),
+							usedHashTag: term.startsWith("#") ? term : `#${term}`,
+							postId: getPostId(p), // <--- AGREGADO
+							datePosted: p.datePosted.split('T')[0], // <--- SOLO FECHA
+							usernameTiktokAccount: getUsername(p),
+							postURL: getPostLink(p),
+							views: Math.round(p.views),
+							likes: Math.round(p.likes),
+							engagement: Number(getEngagement(p)),
+						});
+					});
+				});
+
+				// Enviar solo los datos de las tarjetas
+				if (emailReqs.length > 0) {
+					await sendTopGlobalEmail(emailReqs);
+					
+					// Guardar en localStorage solo los datos de las tarjetas
+					const cardData = { 
+						posts: emailReqs.map(req => ({
+							usedHashTag: req.usedHashTag,
+							postId: req.postId, // <--- AGREGADO
+							datePosted: req.datePosted,
+							usernameTiktokAccount: req.usernameTiktokAccount,
+							postURL: req.postURL,
+							views: req.views,
+							likes: req.likes,
+							engagement: req.engagement
+						})),
+						lastFilters 
+					};
+					localStorage.setItem("publishedData", JSON.stringify(cardData));
+				}
 			}
-			Swal.fire("¡Publicado!", "Puedes ver la alerta en tu perfil.", "success").then(() => {
-				navigate("/users");
-			});
+			
+			setShowPublishedList(true);
+			setShowSuccessAlert(true);
+			await fetchPublishedPosts(); // <--- Agrega esta línea aquí
 		} catch (error) {
-			Swal.fire("Error", "Ocurrió un error al enviar los emails.", "error");
+			console.error("Error al enviar emails o al navegar:", error);
+			Swal.fire("Error", "Ocurrió un error inesperado. Revisa la consola para más detalles.", "error");
 		}
 	};
-
 	const handleApify = async (filters: AdminApifyRequest) => {
 		setLoading(true);
 		setLastFilters(filters);
-		// pop-up de carga
 		Swal.fire({
 			title: "Cargando…",
 			html: "Obteniendo datos de TikTok, por favor espera.",
@@ -106,12 +184,11 @@ export default function DashboardPage() {
 				adminId: Number(adminId),
 			});
 			const mapped: ApifyCallResponse[] = (
-				rawPosts as Record<string, any>[]
+				rawPosts as unknown as Record<string, unknown>[]
 			).map(mapRawToApifyResponse);
 
 			setPosts(mapped);
-
-			// vistas por hashtag
+			setShowPublishedList(false);
 			const hMap = new Map<string, number>();
 			mapped.forEach((p) =>
 				p.hashtags
@@ -120,23 +197,15 @@ export default function DashboardPage() {
 					.forEach((tag) => {
 						if (!tag) return;
 						hMap.set(tag, (hMap.get(tag) || 0) + p.views);
-					}),
+					})
 			);
-			setHashtagData(
-				Array.from(hMap, ([hashtag, views]) => ({ hashtag, views })),
-			);
+			setHashtagData(Array.from(hMap, ([hashtag, views]) => ({ hashtag, views })));
 
-			// vistas por soundId
 			const sMap = new Map<string, number>();
 			mapped.forEach((p) =>
-				sMap.set(p.soundId, (sMap.get(p.soundId) || 0) + p.views),
+				sMap.set(p.soundId, (sMap.get(p.soundId) || 0) + p.views)
 			);
-			setSoundData(
-				Array.from(sMap, ([soundId, totalViews]) => ({
-					soundId,
-					totalViews,
-				})),
-			);
+			setSoundData(Array.from(sMap, ([soundId, totalViews]) => ({ soundId, totalViews })));
 
 			Swal.close();
 		} catch (err) {
@@ -148,7 +217,23 @@ export default function DashboardPage() {
 		}
 	};
 
-	// muestra max 15 al azar
+	const fetchPublishedPosts = async () => {
+		try {
+			const data = await getDashboardInfo();
+			setPublishedPosts(Array.isArray(data) ? data : []);
+		} catch (error) {
+			setPublishedPosts([]);
+			console.error("Error al obtener datos publicados:", error);
+		}
+	};
+
+	useEffect(() => {
+		if (showPublishedList) {
+			fetchPublishedPosts();
+		}
+		// eslint-disable-next-line
+	}, [showPublishedList]);
+
 	const sample = <T,>(arr: T[]): T[] =>
 		arr.length <= 15
 			? arr
@@ -201,30 +286,45 @@ export default function DashboardPage() {
 		);
 	};
 
-	// Para cada bloque de 6 videos, mostrar top 3 por vistas
-	// aquellos que lo incluyan y muestra su top 3 más virales.
 	const renderCards = () => {
-		if (!lastFilters) return null;
-		// Unifica hashtags y palabras clave
-		const hashtags = lastFilters.hashtags
-			? lastFilters.hashtags.split(",").map((t) => t.trim()).filter(Boolean)
-			: [];
-		const keyWords = lastFilters.keyWords
-			? lastFilters.keyWords.split(",").map((t) => t.trim()).filter(Boolean)
-			: [];
-		const terms = [...hashtags, ...keyWords];
+		if (!Array.isArray(posts) || posts.length === 0) return null;
+
+		// Detecta el tipo de dato
+		const isScrapeData = 'hashtags' in posts[0];
+
+		// Obtén los términos a mostrar
+		let terms: string[] = [];
+		if (isScrapeData) {
+			const hashtags = lastFilters?.hashtags
+				? lastFilters.hashtags.split(",").map((t) => t.trim()).filter(Boolean)
+				: [];
+			const keyWords = lastFilters?.keyWords
+				? lastFilters.keyWords.split(",").map((t) => t.trim()).filter(Boolean)
+				: [];
+			terms = [...hashtags, ...keyWords];
+		} else {
+			terms = Array.from(new Set(posts.map((p: PostData) => getHashtags(p)))).filter(Boolean);
+		}
 
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 				{terms.map((term) => {
-					// Filtra posts que incluyan el término en hashtags o en la descripción
-					const candidates = posts.filter((p) =>
-						p.hashtags
-							.split(",")
-							.map((h) => h.trim().replace(/^#/, "").toLowerCase())
-							.includes(term.replace(/^#/, "").toLowerCase()) ||
-						(p.hashtags && p.hashtags.toLowerCase().includes(term.replace(/^#/, "").toLowerCase()))
-					);
+					const candidates = posts.filter((p: PostData) => {
+						if (isScrapeData) {
+							return (
+								getHashtags(p) &&
+								getHashtags(p)
+									.split(",")
+									.map((h: string) => h.trim().replace(/^#/, "").toLowerCase())
+									.includes(term.replace(/^#/, "").toLowerCase())
+							);
+						} else {
+							return (
+								getHashtags(p) &&
+								getHashtags(p).replace(/^#/, "").toLowerCase() === term.replace(/^#/, "").toLowerCase()
+							);
+						}
+					});
 					if (candidates.length === 0) return null;
 					const top3 = candidates.sort((a, b) => b.views - a.views).slice(0, 3);
 
@@ -252,23 +352,23 @@ export default function DashboardPage() {
 							<ul className="space-y-4 w-full">
 								{top3.map((p, idx) => (
 									<li
-										key={`${p.postCode}-${idx}`}
+										key={`${getPostId(p)}-${idx}`}
 										className="border-b border-purple-100 dark:border-violet-600 pb-3 last:border-none w-full"
 									>
 										<a
-											href={p.postLink}
+											href={getPostLink(p)}
 											target="_blank"
 											className="font-bold text-gray-900 hover:underline text-base"
 										>
-											{p.postCode}
+											{getPostId(p)}
 										</a>
 										<p className="text-xs text-gray-800 mt-1">
-											📅 {p.datePosted} | 👤 {p.tiktokAccountUsername}
+											📅 {p.datePosted} | 👤 {getUsername(p)}
 										</p>
 										<div className="mt-2 flex gap-4 text-xs text-gray-900">
 											<span>👁️ {p.views.toLocaleString()}</span>
 											<span>❤️ {p.likes.toLocaleString()}</span>
-											<span>📊 {p.engagementRate}%</span>
+											<span>📊 {getEngagement(p)}%</span>
 										</div>
 									</li>
 								))}
@@ -280,15 +380,79 @@ export default function DashboardPage() {
 		);
 	};
 
+	const renderPublishedCards = () => {
+		if (!Array.isArray(publishedPosts) || publishedPosts.length === 0) {
+			return <div className="text-center mt-12">No hay datos publicados.</div>;
+		}
+		// Palabras clave/hashtags buscados
+		const scrapedTags = lastFilters?.hashtags
+			? lastFilters.hashtags.split(",").map((t) => t.trim()).filter(Boolean)
+			: [];
+
+		return scrapedTags.map((tag) => {
+			// Filtra los videos que correspondan a ese tag
+			const group = publishedPosts.filter((p: PostData) => {
+				// El backend te envía el campo usedHashTag para cada video
+				const postTag = getHashtags(p);
+				return postTag.replace(/^#/, "").toLowerCase() === tag.replace(/^#/, "").toLowerCase();
+			});
+			if (!group.length) return null;
+			return (
+				<div key={tag} className="bg-white/80 dark:bg-white/80 rounded-3xl shadow-2xl p-8">
+					<div className="flex items-center gap-2 mb-4">
+						<span className="text-2xl">🎯</span>
+						<span className="bg-purple-200 text-purple-800 font-bold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide">
+							{`#${tag}`.toUpperCase()}
+						</span>
+					</div>
+					{group.slice(0, 3).map((p: PostData, idx: number) => (
+						<div key={getPostId(p) || idx} className="mb-8 last:mb-0">
+							<div className="font-extrabold text-lg mb-1 text-gray-900 dark:text-white">
+								{getPostId(p)}
+							</div>
+							<div className="flex items-center gap-2 text-gray-700 dark:text-gray-200 text-sm mb-1">
+								<span>📅 {p.datePosted}</span>
+								<span>| 👤 {getUsername(p)}</span>
+							</div>
+							<div className="flex items-center gap-6 text-lg font-semibold text-gray-900 dark:text-white">
+								<span>👁️ {p.views?.toLocaleString?.() || p.views}</span>
+								<span>❤️ {p.likes?.toLocaleString?.() || p.likes}</span>
+								<span>📊 {(getEngagement(p) * 100).toFixed(2)}%</span>
+							</div>
+							<hr className="my-4 border-purple-200 dark:border-violet-600" />
+						</div>
+					))}
+				</div>
+			);
+		});
+	};
+
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
-			<h1 className="text-5xl font-bold mt-2 text-center drop-shadow-[0_4px_24px_rgba(127,0,255,0.15)] animate-fade-in text-purple-700 dark:text-white">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6 mt-8">
+			{/* Título principal con degradado morado más oscuro en modo claro y pastel en modo oscuro */}
+			<h1
+				className="text-5xl md:text-5xl font-extrabold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 dark:from-pink-200 dark:via-purple-200 dark:to-blue-200"
+				style={{ fontFamily: 'Nunito, sans-serif' }}
+			>
 				Dashboard ScrapeTok
 			</h1>
-			<h2 className="text-base font-light mb-1 text-center text-gray-600 dark:text-white flex items-center justify-center gap-2 animate-fade-in">
-				<span className="text-2xl animate-bounce">🔥</span>
-				¿Buscas lo más trending? seleccionamos para ti los 3 vídeos más virales de cada hashtag a nivel global
-				<span className="text-2xl animate-pulse">🌍</span>
+			<h2 className="mb-1 text-center animate-fade-in">
+				<div className="flex items-center justify-center gap-2 mb-2 w-full">
+					<span className="text-base md:text-lg">🧠</span>
+					<span
+						className="text-lg md:text-2xl font-extrabold drop-shadow-sm dark:text-white text-gray-900"
+						style={{ fontFamily: 'Montserrat, Nunito, sans-serif' }}
+					>
+						Lo trending, al instante. Lo relevante, al alcance.
+					</span>
+					<span className="text-base md:text-lg">📊</span>
+				</div>
+				<span
+					className="text-xs md:text-sm font-semibold w-full text-center max-w-3xl mx-auto block dark:text-gray-200 text-gray-800"
+					style={{ fontFamily: 'Nunito, Montserrat, sans-serif' }}
+				>
+					🎬 Accede a los videos, hashtags, sonidos y métricas que están marcando el ritmo digital global en TikTok 🌎
+				</span>
 			</h2>
 
 			{/* Caja de filtros mejorada */}
@@ -326,14 +490,34 @@ export default function DashboardPage() {
 							Buscar
 						</button>
 						<button
-							className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 animate-pulse"
+							className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-pink-400"
 							onClick={handlePublish}
 						>
 							Publicar
 						</button>
 						<button
 							className="px-6 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white font-bold shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition-all focus:outline-none"
-							onClick={() => setLastFilters({ ...lastFilters, hashtags: '', keyWords: '' })}
+							onClick={async () => {
+								const result = await Swal.fire({
+									title: '¿Estás seguro?',
+									text: 'Esta acción limpiará todos los datos y filtros actuales. ¿Deseas continuar?',
+									icon: 'warning',
+									showCancelButton: true,
+									confirmButtonText: 'Sí, limpiar',
+									cancelButtonText: 'Cancelar',
+									confirmButtonColor: '#6366f1',
+									cancelButtonColor: '#d1d5db',
+									reverseButtons: true
+								});
+								if (result.isConfirmed) {
+									setPosts([]);
+									setHashtagData([]);
+									setSoundData([]);
+									setLastFilters(null);
+									localStorage.removeItem('publishedData');
+									Swal.fire('¡Limpieza exitosa!', 'Los datos han sido eliminados.', 'success');
+								}
+							}}
 						>
 							Limpiar
 						</button>
@@ -341,33 +525,41 @@ export default function DashboardPage() {
 				</div>
 			)}
 
-			{posts.length > 0 && renderCards()}
-
-			{hashtagData.length + soundData.length === 0 && !loading ? (
+			{posts.length === 0 ? (
 				<div className="text-center text-gray-700 dark:text-gray-100 mt-12">
-					No data available yet.
+					No data yet.
 				</div>
 			) : (
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-					{renderBar(
-						"hashtags",
-						"Vistas vs Hashtag",
-						// si está full screen, mostrar hasta 12; si no, hasta 6
-						hashtagData.slice(0, fullScreenChart === "hashtags" ? 10 : 6),
-						"hashtag",
-						"views",
-						BLUE,
+				<>
+					{showPublishedList ? (
+						<div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+							{renderPublishedCards()}
+						</div>
+					) : renderCards()}
+					{hashtagData.length + soundData.length === 0 && !loading && (
+						<div className="text-center text-gray-700 dark:text-gray-100 mt-12">
+							No data available yet.
+						</div>
 					)}
-					{renderBar(
-						"sounds",
-						"Total Views vs Sound ID",
-						// si está full screen, mostrar hasta 8; si no, hasta 4
-						soundData.slice(0, fullScreenChart === "sounds" ? 6 : 3),
-						"soundId",
-						"totalViews",
-						PURPLE,
-					)}
-				</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+						{renderBar(
+							"hashtags",
+							"Vistas vs Hashtag",
+							hashtagData.slice(0, fullScreenChart === "hashtags" ? 10 : 6),
+							"hashtag",
+							"views",
+							BLUE,
+						)}
+						{renderBar(
+							"sounds",
+							"Total Views vs Sound ID",
+							soundData.slice(0, fullScreenChart === "sounds" ? 6 : 3),
+							"soundId",
+							"totalViews",
+							PURPLE,
+						)}
+					</div>
+				</>
 			)}
 
 			{fullScreenChart && (
@@ -399,6 +591,27 @@ export default function DashboardPage() {
 								"totalViews",
 								PURPLE,
 							)}
+					</div>
+				</div>
+			)}
+			{showSuccessAlert && (
+				<div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50 bg-black/40">
+					<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-md w-full relative flex flex-col items-center">
+						<button
+							className="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
+							onClick={() => setShowSuccessAlert(false)}
+							aria-label="Cerrar alerta"
+						>
+							×
+						</button>
+						<div className="flex flex-col items-center">
+							<svg className="w-16 h-16 mb-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12l2 2l4-4" />
+							</svg>
+							<h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">¡Publicado!</h2>
+							<p className="text-gray-700 dark:text-gray-200 text-center">Puedes ver la alerta en tu perfil.</p>
+						</div>
 					</div>
 				</div>
 			)}

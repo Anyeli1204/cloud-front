@@ -425,7 +425,7 @@ export default function UserInformationPage() {
 						<div className="md:col-span-3 flex flex-col gap-4 h-full justify-between w-full mt-8 md:mt-0 md:ml-8">
 							<div className="bg-white/80 rounded-2xl shadow-xl p-6 border border-pink-100">
 								<h2 className="font-bold text-xl mb-4 flex items-center gap-2 text-blue-800">
-									<MessageCircle size={20} className="text-blue-800 animate-bounce" />
+									<MessageCircle size={20} />
 									Preguntas Respondidas
 								</h2>
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 text-sm items-start">
@@ -511,7 +511,7 @@ export default function UserInformationPage() {
 							</div>
 							<div className="bg-white/80 rounded-2xl shadow-xl p-6 border border-pink-100">
 								<h2 className="font-bold text-xl mb-4 flex items-center gap-2 text-[#FF00CC] dark:text-[#FF00CC]">
-									<Bell size={20} className="text-[#FF00CC] animate-bounce" />
+									<Bell size={20} />
 									Alertas Emitidas
 								</h2>
 								{alertasPagina.length > 0 ? (
