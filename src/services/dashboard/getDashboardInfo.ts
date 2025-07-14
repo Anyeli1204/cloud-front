@@ -1,14 +1,11 @@
-import { getDashboardInfo, TopGlobalEmailDTO } from "@services/dashboard/getDashboardInfo";
+import { DashboardInfo } from "@interfaces/dashboard/DashboardInfo";
+import Api from "@services/api";
 
-export interface TopGlobalEmailDTO extends TopGlobalesEmailRequest {
-  postId: string;
+export async function getDashboardInfo(): Promise<DashboardInfo[]> {
+	const api = await Api.getInstance();
+	const response = await api.get<void, DashboardInfo[]>({
+		url: "/user/getDashboardInfo",
+	});
+	console.log(response.data);
+	return response.data;
 }
-
-export async function getDashboardInfo(): Promise<TopGlobalEmailDTO[]> {
-  const api = await Api.getInstance();
-  const response = await api.get<TopGlobalEmailDTO[]>({
-    url: "/user/getDashboardInfo",
-  });
-  console.log(response.data);
-  return response.data;
-} 
