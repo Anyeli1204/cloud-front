@@ -1,6 +1,5 @@
 // src/pages/DatabaseQueriesPage.tsx
 import React, { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Maximize2 } from "lucide-react";
 
@@ -27,8 +26,6 @@ import {
 import { FilterPanelDb } from "@components/FilterPanelDb";
 import { PostDetailModal } from "@components/PostDetailModal";
 
-type OutletContext = { activeTab: "global" | "queries" | "apify" | "users" };
-
 const PAGE_WINDOW_SIZE = 10;
 
 export default function DatabaseQueriesPage() {
@@ -39,7 +36,6 @@ export default function DatabaseQueriesPage() {
 	const [loading, setLoading] = useState(false);
 	const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
-	const [pageWindowStart, setPageWindowStart] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
 	const [selectedPost, setSelectedPost] = useState<UserDbPost | null>(null);
 
@@ -64,9 +60,9 @@ export default function DatabaseQueriesPage() {
 				setMetrics(metricList);
 				setError(null);
 				setTotalPages(Math.ceil(postList.length / PAGE_WINDOW_SIZE));
-			} catch (e: any) {
+			} catch (e: unknown) {
 				console.error(e);
-				setError(e.message || "Error al solicitar datos");
+				setError((e as Error).message || "Error al solicitar datos");
 				setPosts([]);
 				setMetrics([]);
 			} finally {
@@ -109,7 +105,6 @@ export default function DatabaseQueriesPage() {
 		(m): m is MetricByDayOfWeek => m.type === "byDayOfWeek",
 	);
 
-	const hasPrimary = effectivePrimary.length > 0;
 	const primaryLabel =
 		effectivePrimary[0]?.type === "metricsByUsername"
 			? "Usernames"
@@ -196,19 +191,21 @@ export default function DatabaseQueriesPage() {
 		return [...arr].sort(() => Math.random() - 0.5);
 	}
 
+	type ChartData = {
+		key: string;
+		title: string;
+		data: Record<string, unknown>[];
+		bars: { dataKey: string; name?: string }[];
+		xKey: string;
+	};
+
 	const renderChart = ({
 		key,
 		title,
 		data,
 		bars,
 		xKey,
-	}: {
-		key: string;
-		title: string;
-		data: any[];
-		bars: { dataKey: string; name?: string }[];
-		xKey: string;
-	}) => {
+	}: ChartData) => {
 		const colors = shuffle(PALETTE);
 		return (
 			<div
@@ -318,8 +315,8 @@ export default function DatabaseQueriesPage() {
 				<div className="text-red-600 text-center font-medium">{error}</div>
 			)}
 
-			{/* si aún no se ha aplicado filtro */}
-			{filters !== null && (
+			{/* Renderizar solo cuando loading es false */}
+			{filters !== null && !loading && (
 				<>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						{charts.map(renderChart)}
@@ -343,114 +340,119 @@ export default function DatabaseQueriesPage() {
 					)}
 				</>
 			)}
-			{/* POSTS TABLE */}
-			<div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-white/80">
-				<table className="min-w-full divide-y divide-gray-200">
-					<thead className="bg-purple-600">
-						<tr>
-							{headers.map((h) => (
-								<th
-									key={h}
-									className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider bg-purple-100"
-								>
-									{h}
-								</th>
-							))}
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-gray-200 bg-white dark:bg-white/80">
-						{loading ? (
+			{/* POSTS TABLE solo cuando loading es false */}
+			{!loading && (
+				<div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-white/80">
+					<table className="min-w-full divide-y divide-gray-200">
+						<thead className="bg-purple-600">
 							<tr>
-								<td colSpan={headers.length} className="p-4 text-center">
-									Cargando…
-								</td>
+								{headers.map((h) => (
+									<th
+										key={h}
+										className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider bg-purple-100"
+									>
+										{h}
+									</th>
+								))}
 							</tr>
-						) : posts.length === 0 ? (
-							<tr>
-								<td colSpan={headers.length} className="p-4 text-center text-gray-700">
-									No data yet
-								</td>
-							</tr>
-						) : (
-							paginatedPosts.map((row, i) => (
-								<tr
-									key={`${row.postId}-${i}`}
-									className={i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"}
-									onClick={() => setSelectedPost(row)}
-									style={{ cursor: 'pointer' }}
-								>
-									<td className="px-4 py-2 text-sm font-medium text-gray-900">
-										{row.postId}
+						</thead>
+						<tbody className="divide-y divide-gray-200 bg-white dark:bg-white/80">
+							{posts.length === 0 ? (
+								<tr>
+									<td colSpan={headers.length} className="p-8 text-center">
+										<div className="flex flex-col items-center justify-center gap-4">
+											<div className="rounded-full bg-purple-200 flex items-center justify-center w-16 h-16 mb-2">
+												<svg className="w-8 h-8 text-white/80" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+													<circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2.5" />
+													<line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+												</svg>
+											</div>
+											<div className="text-2xl font-bold text-gray-700">No hay datos aún</div>
+											<div className="text-gray-500 text-base mb-2">Configura tus filtros y ejecuta el scraping para ver los resultados</div>
+										</div>
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.datePosted}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.hourPosted}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.usernameTiktokAccount}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.postURL ? (
-											<a
-												href={row.postURL}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="text-purple-600 hover:underline"
-											>
-												{row.postURL.split("/").pop()}
-											</a>
-										) : (
-											"–"
-										)}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.views.toLocaleString()}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.likes.toLocaleString()}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.comments.toLocaleString()}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.reposts.toLocaleString()}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.saves.toLocaleString()}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.engagement.toFixed(2)}%
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.totalInteractions.toLocaleString()}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.hashtags || "–"}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.numberHashtags.toString()}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.soundId}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.soundURL ? (
-											<a
-												href={row.soundURL}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="text-purple-600 hover:underline"
-											>
-												{row.soundURL.split("/").pop()}
-											</a>
-										) : (
-											"–"
-										)}
-									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.regionPost}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.dateTracking}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.timeTracking}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.userId}</td>
 								</tr>
-							))
-						)}
-					</tbody>
-				</table>
-			</div>
+							) : (
+								paginatedPosts.map((row, i) => (
+									<tr
+										key={`${row.postId}-${i}`}
+										className={i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"}
+										onClick={() => setSelectedPost(row)}
+										style={{ cursor: 'pointer' }}
+									>
+										<td className="px-4 py-2 text-sm font-medium text-gray-900">
+											{row.postId}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">{row.datePosted}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">{row.hourPosted}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.usernameTiktokAccount}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.postURL ? (
+												<a
+													href={row.postURL}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-purple-600 hover:underline"
+												>
+													{row.postURL.split("/").pop()}
+												</a>
+											) : (
+												"–"
+											)}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.views.toLocaleString()}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.likes.toLocaleString()}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.comments.toLocaleString()}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.reposts.toLocaleString()}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.saves.toLocaleString()}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.engagement.toFixed(2)}%
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.totalInteractions.toLocaleString()}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">{row.hashtags || "–"}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.numberHashtags.toString()}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">{row.soundId}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.soundURL ? (
+												<a
+													href={row.soundURL}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-purple-600 hover:underline"
+												>
+													{row.soundURL.split("/").pop()}
+												</a>
+											) : (
+												"–"
+											)}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">{row.regionPost}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">{row.dateTracking}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">{row.timeTracking}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">{row.userId}</td>
+									</tr>
+								))
+							)}
+						</tbody>
+					</table>
+				</div>
+			)}
 			<div className="mt-4 flex justify-center">
 				<button
 					onClick={() => {
