@@ -9,6 +9,7 @@ import UserInformationPage from "src/pages/UserInformationPage";
 import QuestionsAnswersPage from "src/pages/QuestionsAnswersPage";
 import AdminUsersPage from "@pages/AdminUsersPage";
 import NotFoundPage from "src/pages/NotFoundPage";
+import AiPage from "@pages/AiPage";
 
 export const router = createBrowserRouter([
 	{
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
 			{ path: "queries", element: <ProtectedRoute element={<DatabaseQueriesPage />} /> },
 			{ path: "users", element: <ProtectedRoute element={<UserInformationPage />} /> },
 			{ path: "qa", element: <ProtectedRoute element={<QuestionsAnswersPage />} /> },
+			{
+				path:"/ai",
+				element: <ProtectedRoute roles={["USER"]} element={<AiPage />} />,
+			},
 			{
 				path: "/admin/users",
 				element: <ProtectedRoute roles={["ADMIN"]} element={<AdminUsersPage />} />,

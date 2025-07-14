@@ -13,6 +13,7 @@ export default function App() {
 		"/apify-call": "apify",
 		"/queries": "queries",
 		"/qa": "qa",
+		"/ai": "ai", // ✅ agregado
 		"/admin/users": "admin-users",
 		"/users": "users",
 	};
@@ -31,6 +32,9 @@ export default function App() {
 				break;
 			case "qa":
 				navigate("/qa");
+				break;
+			case "ai": // ✅ agregado
+				navigate("/ai");
 				break;
 			case "admin-users":
 				navigate("/admin/users");
@@ -60,3 +64,4 @@ export default function App() {
 		</div>
 	);
 }
+
