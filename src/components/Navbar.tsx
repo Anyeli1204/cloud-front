@@ -22,6 +22,7 @@ const baseOptions = [
 		label: "Preguntas y Respuestas",
 		icon: <MessageCircle size={18} />,
 	},
+	{ key: "ai", label: "AI Content Creator", icon: <Bot size={18} /> },
 	{ key: "users", label: "Account Information", icon: <User size={18} /> },
 ];
 
