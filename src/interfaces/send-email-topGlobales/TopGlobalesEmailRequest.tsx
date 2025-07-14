@@ -1,5 +1,6 @@
 export interface TopGlobalesEmailRequest {
 	adminId: number;
+	postId: string;
 	usedHashTag: string;
 	datePosted: string;
 	usernameTiktokAccount: string;
