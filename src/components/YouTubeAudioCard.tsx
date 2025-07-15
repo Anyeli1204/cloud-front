@@ -14,14 +14,14 @@ export const YouTubeAudioCard: React.FC<YouTubeAudioCardProps> = ({ name, url, i
   const videoId = extractVideoId(url);
   const isYouTubeVideo = isValidYouTubeUrl(url);
   
-  const { thumbnailUrl, isLoading, error, shouldLoadImage, videoAvailable } = useYouTubeThumbnail({ 
+  const { thumbnailUrl, isLoading, error, videoAvailable } = useYouTubeThumbnail({ 
     videoId, 
     customImage: imagen,
     url
   });
 
-  // Mostrar imagen si no es un video de YouTube válido, si el video no está disponible, o si no se puede reproducir
-  const shouldShowImage = !isYouTubeVideo || !videoAvailable || shouldLoadImage;
+  // Mostrar imagen si no es un video de YouTube válido o si el video no está disponible
+  const shouldShowImage = !isYouTubeVideo || !videoAvailable;
 
   const handleCloseModal = () => {
     setShowVideoModal(false);
