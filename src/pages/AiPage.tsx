@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Sparkles, Hash, Music, Target, Search, Loader2 } from "lucide-react";
+import { Sparkles, Hash, Music, Target, Search, Loader2, Lightbulb } from "lucide-react";
 import { handleGenerate } from "@components/HandleGenerate";
 import ScrapiLogo from "@assets/ScrapiLogo.png";
 import { AiResponse } from "@interfaces/AiResponse";
 import { AudioGallery } from "@components/AudioGallery";
 import { recommendContent } from "@services/ia/recommendContent";
+import { MODERATION_MESSAGE } from "../utils/aiModeration";
 
 export default function AiPage() {
   const [hashtags, setHashtags] = useState("");
@@ -12,7 +13,6 @@ export default function AiPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [aiResponse, setAiResponse] = useState<AiResponse | null>(null);
   const [activeTab, setActiveTab] = useState("hashtags");
-  const [soundIndex, setSoundIndex] = useState(0);
 
   // Estados para autocompletado de hashtags
   const [suggestedHashtags, setSuggestedHashtags] = useState<string[]>([]);
@@ -40,6 +40,11 @@ export default function AiPage() {
       if (response.response) {
         try {
           const data = JSON.parse(response.response);
+          // Verificar si la respuesta está vacía (indicando moderación)
+          if (!data || !data.hashtags || data.hashtags.length === 0) {
+            setErrorMessage(MODERATION_MESSAGE);
+            return;
+          }
           if (data.hashtags && Array.isArray(data.hashtags)) {
             setSuggestedHashtags(data.hashtags);
             setShowSuggestions(true);
@@ -118,6 +123,13 @@ export default function AiPage() {
       if (response.response) {
         try {
           const data = JSON.parse(response.response);
+          
+          // Verificar si la respuesta está vacía (indicando moderación)
+          if (!data || !data.hashtags || data.hashtags.length === 0) {
+            setErrorMessage(MODERATION_MESSAGE);
+            return;
+          }
+          
           setScrapiResponse({
             hashtags: data.hashtags || []
           });
@@ -233,13 +245,13 @@ export default function AiPage() {
               Scrapi IA - Asistente de Scraping
             </h3>
             <p className="text-xs text-purple-600 mb-3">
-              Describe lo que quieres scrapear y te daré recomendaciones inteligentes
+              Describe el contenido que deseas hacer y te daré recomendaciones inteligentes
             </p>
             <div className="space-y-3">
               <textarea
                 value={recommendationText}
                 onChange={(e) => setRecommendationText(e.target.value)}
-                placeholder="Ej: Quiero scrapear contenido de cocina saludable, recetas veganas y tips de nutrición..."
+                placeholder="Ej: Quiero crear contenido de cocina saludable, recetas veganas y tips de nutrición..."
                 className="w-full px-3 py-2 border border-purple-200 rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 resize-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
                 rows={3}
                 maxLength={300}
@@ -269,36 +281,39 @@ export default function AiPage() {
 
             {scrapiResponse && (
               <div className="mt-4 space-y-3">
-                <div className="bg-white rounded-lg p-3 border border-purple-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-semibold text-purple-700">Hashtags sugeridos:</h4>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (scrapiResponse.hashtags && scrapiResponse.hashtags.length > 0) {
-                          const hashtagsString = scrapiResponse.hashtags.join(", ");
+                {/* Hashtags */}
+                {scrapiResponse.hashtags && scrapiResponse.hashtags.length > 0 && (
+                  <div className="bg-white rounded-lg p-3 border border-purple-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-xs font-semibold text-purple-700">Hashtags sugeridos:</h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const hashtagsString = scrapiResponse.hashtags!.join(", ");
                           setHashtags(hashtagsString);
                           setInputValue(hashtagsString);
-                        }
-                      }}
-                      className="px-2 py-1 bg-purple-600 text-white rounded text-xs font-semibold hover:bg-purple-700 transition-colors"
-                    >
-                      Autocompletar
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {scrapiResponse.hashtags?.map((tag, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => handleSuggestionClick(tag)}
-                        className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold hover:bg-purple-200 transition-colors"
+                        }}
+                        className="px-2 py-1 bg-purple-600 text-white rounded text-xs font-semibold hover:bg-purple-700 transition-colors"
                       >
-                        {tag}
+                        Autocompletar
                       </button>
-                    ))}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {scrapiResponse.hashtags.map((tag, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => handleSuggestionClick(tag)}
+                          className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold hover:bg-purple-200 transition-colors"
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+
               </div>
             )}
           </div>
@@ -310,7 +325,6 @@ export default function AiPage() {
                 setRecommendationText("");
                 setScrapiResponse(null);
                 setAiResponse(null);
-                setSoundIndex(0);
                 setActiveTab("hashtags");
                 setShowSuggestions(false);
                 setSuggestedHashtags([]);
@@ -466,75 +480,28 @@ export default function AiPage() {
 
                   {activeTab === "sounds" &&
                     Array.isArray(aiResponse.sonidos_sugeridos) &&
-                    aiResponse.sonidos_sugeridos.length > 0 &&
-                    (() => {
-                      // Función para extraer videoId de YouTube
-                      function getVideoId(url: string) {
-                        try {
-                          const u = new URL(url);
-                          if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
-                            return u.searchParams.get("v");
-                          }
-                          if (u.hostname.includes("youtu.be")) {
-                            return u.pathname.replace("/", "");
-                          }
-                          return null;
-                        } catch {
-                          return null;
-                        }
-                      }
-
-                      // Convertir strings a objetos con url + nombre
-                      const toSoundObject = (url: string, index: number) => ({
-                        url,
-                        nombre: `Sonido ${index + 1}`,
-                      });
-
-                      const validSounds = aiResponse.sonidos_sugeridos
-                        .map((url, i) => toSoundObject(url, i))
-                        .filter((s) => getVideoId(s.url));
-
-                      const invalidSounds = aiResponse.sonidos_sugeridos
-                        .map((url, i) => toSoundObject(url, i + validSounds.length))
-                        .filter((s) => !getVideoId(s.url));
-
-                      const orderedSounds = [...validSounds, ...invalidSounds];
-                      const total = orderedSounds.length;
-                      const currentSound = orderedSounds[soundIndex];
-
-                      return (
-                        <div className="bg-green-50 rounded-2xl shadow-lg p-6 border border-green-100 flex flex-col items-center">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Music className="text-green-500" size={20} />
-                            <h2 className="text-lg font-extrabold text-green-800">
-                              Sonidos Virales Recomendados
-                            </h2>
-                          </div>
-
-                          {/* Paginación interna de sonidos */}
-                          <div className="w-full max-w-lg flex flex-col items-center relative">
-                            <div className="w-full relative">
-                              <AudioGallery sonidos={[currentSound]} />
-
-                              <button
-                                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-green-100 text-green-700 font-bold text-sm disabled:opacity-40 flex items-center justify-center shadow-md hover:bg-green-200 transition"
-                                onClick={() => setSoundIndex((prev) => Math.max(0, prev - 1))}
-                                disabled={soundIndex === 0}
-                              >
-                                ←
-                              </button>
-                              <button
-                                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-green-100 text-green-700 font-bold text-sm disabled:opacity-40 flex items-center justify-center shadow-md hover:bg-green-200 transition"
-                                onClick={() => setSoundIndex((prev) => Math.min(total - 1, prev + 1))}
-                                disabled={soundIndex === total - 1}
-                              >
-                                →
-                              </button>
-                            </div>
-                          </div>
+                    aiResponse.sonidos_sugeridos.length > 0 && (
+                      <div className="bg-green-50 rounded-2xl shadow-lg p-6 border border-green-100 flex flex-col items-center">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Music className="text-green-500" size={20} />
+                          <h2 className="text-lg font-extrabold text-green-800">
+                            Sonidos Virales Recomendados
+                          </h2>
                         </div>
-                      );
-                    })()}
+
+                        {/* Galería de sonidos con separación automática */}
+                        <div className="w-full max-w-4xl">
+                          <AudioGallery 
+                            sonidos={aiResponse.sonidos_sugeridos} 
+                            variant="thumbnail"
+                            onSoundClick={(sound) => {
+                              // Opcional: Aquí podrías agregar lógica adicional cuando se hace clic en un sonido
+                              console.log('Sonido seleccionado:', sound.nombre);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
 
 
                 </div>
@@ -549,22 +516,22 @@ export default function AiPage() {
               </div>
               <p className="text-sm text-gray-600 mb-6 text-center max-w-lg">Describe tu idea de contenido y deja que nuestra IA genere sugerencias optimizadas para tu video de TikTok.</p>
               <div className="flex flex-col items-center justify-center flex-1">
-                <div className="rounded-full bg-purple-50 p-6 mb-4">
-                  <Sparkles className="text-purple-400" size={32} />
+                <div className="rounded-full bg-pink-50 p-6 mb-4">
+                  <Lightbulb className="text-pink-400" size={32} />
                 </div>
                 <p className="text-sm text-gray-400 text-center mb-4">Completa los campos y genera contenido para ver sugerencias personalizadas</p>
-                <div className="flex gap-6 mt-2">
-                  <div className="flex flex-col items-center">
+                <div className="flex gap-6 mt-2 justify-center">
+                  <div className="flex flex-col items-center text-center">
                     <Hash className="text-blue-400 mb-1" size={24} />
                     <span className="font-semibold text-gray-800 text-sm">Hashtags inteligentes</span>
                     <span className="text-xs text-gray-400">Tendencias y etiquetas virales</span>
                   </div>
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center text-center">
                     <Music className="text-purple-400 mb-1" size={24} />
                     <span className="font-semibold text-gray-800 text-sm">Sonidos virales</span>
                     <span className="text-xs text-gray-400">Audios recomendados</span>
                   </div>
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center text-center">
                     <Target className="text-green-400 mb-1" size={24} />
                     <span className="font-semibold text-gray-800 text-sm">Tips de alcance</span>
                     <span className="text-xs text-gray-400">Estrategias para más vistas</span>
