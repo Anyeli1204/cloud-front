@@ -13,7 +13,7 @@ export default function AiPage() {
   const [aiResponse, setAiResponse] = useState<AiResponse | null>(null);
   const [activeTab, setActiveTab] = useState("hashtags");
   const [soundIndex, setSoundIndex] = useState(0);
-  
+
   // Estados para autocompletado de hashtags
   const [suggestedHashtags, setSuggestedHashtags] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
@@ -95,15 +95,15 @@ export default function AiPage() {
   const handleSuggestionClick = (suggestion: string) => {
     const cleanSuggestion = suggestion.replace(/^#/, "");
     const currentHashtags = hashtags.split(",").map(tag => tag.trim()).filter(Boolean);
-    
+
     if (!currentHashtags.includes(cleanSuggestion)) {
-      const newHashtags = currentHashtags.length > 0 
+      const newHashtags = currentHashtags.length > 0
         ? `${hashtags}, ${cleanSuggestion}`
         : cleanSuggestion;
       setHashtags(newHashtags);
       setInputValue(newHashtags);
     }
-    
+
     setShowSuggestions(false);
   };
 
@@ -208,7 +208,7 @@ export default function AiPage() {
                 <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
               </div>
             )}
-            
+
             {/* Dropdown de sugerencias */}
             {showSuggestions && suggestedHashtags.length > 0 && (
               <div
@@ -277,7 +277,7 @@ export default function AiPage() {
                 </button>
               </div>
             </div>
-            
+
             {/* Resultados de la IA */}
             {scrapiResponse && (
               <div className="mt-4 space-y-3">
@@ -433,31 +433,31 @@ export default function AiPage() {
                             const matches = [...text.matchAll(regex)];
                             const descriptions = [];
                             let lastIndex = 0;
-                            
+
                             matches.forEach((match) => {
                               const matchIndex = match.index!;
-                              
+
                               // Agregar la parte antes de la coma (sin la coma)
                               const beforeComma = text.substring(lastIndex, matchIndex).trim();
                               if (beforeComma) {
                                 descriptions.push(beforeComma);
                               }
-                              
+
                               // Actualizar el índice para incluir la palabra con mayúscula en la siguiente descripción
                               lastIndex = matchIndex + 1; // Solo avanzar después de la coma, manteniendo la palabra
                             });
-                            
+
                             // Agregar la parte final (que incluye todas las palabras con mayúscula)
                             const finalPart = text.substring(lastIndex).trim();
                             if (finalPart) {
                               descriptions.push(finalPart);
                             }
-                            
+
                             return descriptions;
                           };
-                          
+
                           const descriptions = splitDescriptions(aiResponse.descripcion);
-                          
+
                           return descriptions.map((descripcion, index) => (
                             <div key={index} className="p-4 text-sm text-gray-700 text-justify bg-white rounded-lg shadow-sm">
                               <span className="font-semibold text-pink-700">Descripción {index + 1}:</span> {descripcion}
@@ -480,58 +480,80 @@ export default function AiPage() {
                       </div>
                     </div>
                   )}
-                  {activeTab === "sounds" && Array.isArray(aiResponse.sonidos_sugeridos) && aiResponse.sonidos_sugeridos.length > 0 && (() => {
-                    // Función para extraer videoId de YouTube
-                    function getVideoId(url: string) {
-                      try {
-                        const u = new URL(url);
-                        if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
-                          return u.searchParams.get("v");
+
+                  {activeTab === "sounds" &&
+                    Array.isArray(aiResponse.sonidos_sugeridos) &&
+                    aiResponse.sonidos_sugeridos.length > 0 &&
+                    (() => {
+                      // Función para extraer videoId de YouTube
+                      function getVideoId(url: string) {
+                        try {
+                          const u = new URL(url);
+                          if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
+                            return u.searchParams.get("v");
+                          }
+                          if (u.hostname.includes("youtu.be")) {
+                            return u.pathname.replace("/", "");
+                          }
+                          return null;
+                        } catch {
+                          return null;
                         }
-                        if (u.hostname.includes("youtu.be")) {
-                          return u.pathname.replace("/", "");
-                        }
-                        return null;
-                      } catch {
-                        return null;
                       }
-                    }
-                    // Filtrar y ordenar sonidos
-                    const validSounds = aiResponse.sonidos_sugeridos.filter(s => getVideoId(s.url));
-                    const invalidSounds = aiResponse.sonidos_sugeridos.filter(s => !getVideoId(s.url));
-                    const orderedSounds = [...validSounds, ...invalidSounds];
-                    const total = orderedSounds.length;
-                    const currentSound = orderedSounds[soundIndex];
-                    return (
-                      <div className="bg-green-50 rounded-2xl shadow-lg p-6 border border-green-100 flex flex-col items-center">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Music className="text-green-500" size={20} />
-                          <h2 className="text-lg font-extrabold text-green-800">Sonidos Virales Recomendados</h2>
-                        </div>
-                        {/* Paginación interna de sonidos */}
-                        <div className="w-full max-w-lg flex flex-col items-center relative">
-                          <div className="w-full relative">
-                            <AudioGallery sonidos={[currentSound]} />
-                            {/* Flechas de navegación a los costados */}
-                            <button
-                              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-green-100 text-green-700 font-bold text-sm disabled:opacity-40 flex items-center justify-center shadow-md hover:bg-green-200 transition"
-                              onClick={() => setSoundIndex((prev) => Math.max(0, prev - 1))}
-                              disabled={soundIndex === 0}
-                            >
-                              ←
-                            </button>
-                            <button
-                              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-green-100 text-green-700 font-bold text-sm disabled:opacity-40 flex items-center justify-center shadow-md hover:bg-green-200 transition"
-                              onClick={() => setSoundIndex((prev) => Math.min(total - 1, prev + 1))}
-                              disabled={soundIndex === total - 1}
-                            >
-                              →
-                            </button>
+
+                      // Convertir strings a objetos con url + nombre
+                      const toSoundObject = (url: string, index: number) => ({
+                        url,
+                        nombre: `Sonido ${index + 1}`,
+                      });
+
+                      const validSounds = aiResponse.sonidos_sugeridos
+                        .map((url, i) => toSoundObject(url, i))
+                        .filter((s) => getVideoId(s.url));
+
+                      const invalidSounds = aiResponse.sonidos_sugeridos
+                        .map((url, i) => toSoundObject(url, i + validSounds.length))
+                        .filter((s) => !getVideoId(s.url));
+
+                      const orderedSounds = [...validSounds, ...invalidSounds];
+                      const total = orderedSounds.length;
+                      const currentSound = orderedSounds[soundIndex];
+
+                      return (
+                        <div className="bg-green-50 rounded-2xl shadow-lg p-6 border border-green-100 flex flex-col items-center">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Music className="text-green-500" size={20} />
+                            <h2 className="text-lg font-extrabold text-green-800">
+                              Sonidos Virales Recomendados
+                            </h2>
+                          </div>
+
+                          {/* Paginación interna de sonidos */}
+                          <div className="w-full max-w-lg flex flex-col items-center relative">
+                            <div className="w-full relative">
+                              <AudioGallery sonidos={[currentSound]} />
+
+                              <button
+                                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-green-100 text-green-700 font-bold text-sm disabled:opacity-40 flex items-center justify-center shadow-md hover:bg-green-200 transition"
+                                onClick={() => setSoundIndex((prev) => Math.max(0, prev - 1))}
+                                disabled={soundIndex === 0}
+                              >
+                                ←
+                              </button>
+                              <button
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-green-100 text-green-700 font-bold text-sm disabled:opacity-40 flex items-center justify-center shadow-md hover:bg-green-200 transition"
+                                onClick={() => setSoundIndex((prev) => Math.min(total - 1, prev + 1))}
+                                disabled={soundIndex === total - 1}
+                              >
+                                →
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })()}
+                      );
+                    })()}
+
+
                 </div>
               </div>
             </>

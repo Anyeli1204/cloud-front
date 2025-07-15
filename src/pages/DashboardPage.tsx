@@ -381,7 +381,7 @@ export default function DashboardPage() {
 									<div className="flex items-center gap-4 text-sm font-semibold text-gray-900 dark:text-white">
 										<span>👁️ {p.views?.toLocaleString?.() || p.views}</span>
 										<span>❤️ {p.likes?.toLocaleString?.() || p.likes}</span>
-										<span>📊 {(getEngagement(p) * 100).toFixed(2)}%</span>
+										<span>📊 {(getEngagement(p) ).toFixed(2)}%</span>
 									</div>
 									<hr className="my-4 border-purple-200 dark:border-violet-600" />
 								</div>
