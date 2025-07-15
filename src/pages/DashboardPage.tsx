@@ -381,7 +381,7 @@ export default function DashboardPage() {
 									<div className="flex items-center gap-4 text-sm font-semibold text-gray-900 dark:text-white">
 										<span>👁️ {p.views?.toLocaleString?.() || p.views}</span>
 										<span>❤️ {p.likes?.toLocaleString?.() || p.likes}</span>
-										<span>📊 {(getEngagement(p) * 100).toFixed(2)}%</span>
+										<span>📊 {(getEngagement(p)).toFixed(2)}%</span>
 									</div>
 									<hr className="my-4 border-purple-200 dark:border-violet-600" />
 								</div>
@@ -663,40 +663,47 @@ export default function DashboardPage() {
 				</div>
 			)}
 			{showModal && modalUrl && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+				<div
+					className="fixed top-0 left-0 w-screen h-screen z-[9999] flex items-center justify-center"
+					style={{ margin: 0, padding: 0 }}
+				>
+					{/* Fondo oscuro absoluto sin rayas */}
 					<div
-						className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl relative flex flex-col items-center justify-center"
+					className="absolute top-0 left-0 w-full h-full bg-black"
+					style={{ opacity: 0.8, zIndex: 0 }}
+					/>
+
+					{/* Modal pequeño, centrado */}
+					<div
+					className="relative z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
+					style={{
+						width: "360px",
+						padding: "1rem",
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+					}}
+					>
+					{/* Botón de cerrar */}
+					<button
+						onClick={() => setShowModal(false)}
+						className="absolute top-3 right-5 text-3xl font-bold text-gray-500 hover:text-red-600 z-20"
+						aria-label="Cerrar"
+						>
+						×
+					</button>
+					{/* Contenido del video */}
+					<div
 						style={{
-							padding: "1.5rem 1.5rem 1.5rem 1.5rem",
-							boxSizing: "border-box",
-							width: 360,
-							minHeight: 576 + 48, // alto video + padding-top/bottom + boton X
-							display: "flex",
-							justifyContent: "center",
-							alignItems: "center",
+						width: "325px",
+						height: "576px",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
 						}}
 					>
-						{/* Botón de cerrar */}
-						<button
-							onClick={() => setShowModal(false)}
-							className="absolute top-3 right-5 text-3xl font-bold text-gray-500 hover:text-red-600"
-							aria-label="Cerrar"
-							style={{ zIndex: 10 }}
-						>
-							×
-						</button>
-						{/* Video TikTok, centrado, nunca cortado */}
-						<div
-							style={{
-								width: 325,
-								height: 576,
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}
-						>
-							<TikTokEmbed url={modalUrl} />
-						</div>
+						<TikTokEmbed url={modalUrl} />
+					</div>
 					</div>
 				</div>
 			)}
