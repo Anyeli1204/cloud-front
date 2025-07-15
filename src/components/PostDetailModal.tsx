@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import { ApifyCallResponse } from "@interfaces/apify-call/ApifyCallResponse";
 import {
 	XIcon,
@@ -18,7 +19,7 @@ import {
 	UserCircle2Icon,
 	ShieldCheckIcon,
 } from "lucide-react";
-import ReactDOM from "react-dom";
+import TikTokEmbed from "./TikTokEmbedProps";
 
 interface Props {
 	post: ApifyCallResponse;
@@ -27,138 +28,125 @@ interface Props {
 
 export const PostDetailModal = ({ post, onClose }: Props) => {
 	return ReactDOM.createPortal(
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-pink-200/60 via-purple-200/60 to-sky-200/60 backdrop-blur-sm">
-			<div className="bg-white border-2 border-purple-200 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-10 relative flex flex-col justify-between dark:bg-white/80">
-				<button
-					onClick={onClose}
-					className="absolute top-6 right-6 text-purple-400 hover:text-purple-700 bg-white rounded-full shadow p-2 transition-colors dark:bg-white/80"
-				>
-					<XIcon className="w-7 h-7" />
-				</button>
-				<h2 className="text-3xl font-extrabold mb-8 text-center text-purple-700 tracking-tight">
-					Detalles del Post
-				</h2>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 text-base text-gray-700">
-					<div className="space-y-3">
-						<div className="flex items-center gap-2">
-							<User2Icon className="w-5 h-5 text-sky-400" />
-							<span className="font-semibold">Usuario TikTok:</span>{" "}
-							{post.tiktokAccountUsername}
-						</div>
-						<div className="flex items-center gap-2">
-							<CalendarIcon className="w-5 h-5 text-pink-400" />
-							<span className="font-semibold">Fecha:</span> {post.datePosted} -{" "}
-							{post.timePosted}
-						</div>
-						<div className="flex items-center gap-2">
-							<HeartIcon className="w-5 h-5 text-rose-400" />
-							<span className="font-semibold">Likes:</span> {post.likes}
-						</div>
-						<div className="flex items-center gap-2">
-							<MessageCircleIcon className="w-5 h-5 text-purple-400" />
-							<span className="font-semibold">Comentarios:</span>{" "}
-							{post.comments}
-						</div>
-						<div className="flex items-center gap-2">
-							<EyeIcon className="w-5 h-5 text-blue-400" />
-							<span className="font-semibold">Vistas:</span> {post.views}
-						</div>
-						<div className="flex items-center gap-2">
-							<BookmarkIcon className="w-5 h-5 text-yellow-400" />
-							<span className="font-semibold">Guardados:</span> {post.saves}
-						</div>
-						<div className="flex items-center gap-2">
-							<Repeat2Icon className="w-5 h-5 text-green-400" />
-							<span className="font-semibold">Reposteado:</span>{" "}
-							{post.reposted ? "Sí" : "No"}
-						</div>
-						<div className="flex items-center gap-2">
-							<BarChart2Icon className="w-5 h-5 text-indigo-400" />
-							<span className="font-semibold">Interacciones:</span>{" "}
-							{post.interactions}
-						</div>
-					</div>
-					<div className="space-y-3">
-						<div className="flex items-center gap-2">
-							<HashIcon className="w-5 h-5 text-purple-400" />
-							<span className="font-semibold">Hashtags:</span>
-						</div>
-						<div className="flex flex-wrap gap-1 mt-1 mb-2">
-							{post.hashtags
-								.split(/[\s,]+/)
-								.filter(Boolean)
-								.map((tag, idx) => (
-									<span
-										key={idx}
-										className="inline-block bg-purple-100 text-purple-700 rounded px-2 py-0.5 text-xs font-semibold shadow-sm"
-									>
-										#{tag.replace(/^#/, "")}
-									</span>
-								))}
-						</div>
-						<div className="flex items-center gap-2">
-							<HashIcon className="w-5 h-5 text-purple-300" />
-							<span className="font-semibold">Cantidad de Hashtags:</span>{" "}
-							{post.numberOfHashtags}
-						</div>
-						<div className="flex items-center gap-2">
-							<Globe2Icon className="w-5 h-5 text-green-400" />
-							<span className="font-semibold">Región:</span>{" "}
-							{post.regionOfPosting}
-						</div>
-					</div>
-					<div className="space-y-3">
-						<div className="flex items-center gap-2">
-							<MusicIcon className="w-5 h-5 text-pink-400" />
-							<span className="font-semibold">Sound ID:</span> {post.soundId}
-						</div>
-						<div className="flex items-center gap-2">
-							<MusicIcon className="w-5 h-5 text-sky-400" />
-							<span className="font-semibold">Sound URL:</span>{" "}
-							<a
-								href={post.soundUrl}
-								target="_blank"
-								className="text-purple-600 underline break-all"
-							>
-								{post.soundUrl}
-							</a>
-						</div>
-						<div className="flex items-center gap-2">
-							<LinkIcon className="w-5 h-5 text-purple-400" />
-							<span className="font-semibold">Post URL:</span>{" "}
-							<a
-								href={post.postLink}
-								target="_blank"
-								className="text-purple-600 underline break-all"
-							>
-								{post.postLink}
-							</a>
-						</div>
-						<div className="flex items-center gap-2">
-							<CalendarIcon className="w-5 h-5 text-purple-300" />
-							<span className="font-semibold">Track Date:</span>{" "}
-							{post.trackingDate}
-						</div>
-						<div className="flex items-center gap-2">
-							<ClockIcon className="w-5 h-5 text-blue-400" />
-							<span className="font-semibold">Track Time:</span>{" "}
-							{post.trackingTime}
-						</div>
-						<div className="flex items-center gap-2">
-							<UserCircle2Icon className="w-5 h-5 text-sky-400" />
-							<span className="font-semibold">Usuario (scrapeo):</span>{" "}
-							{post.user}
-						</div>
-						{post.admin && (
-							<div className="flex items-center gap-2">
-								<ShieldCheckIcon className="w-5 h-5 text-purple-500" />
-								<span className="font-semibold">Admin:</span> {post.admin}
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-pink-200/60 via-purple-200/60 to-sky-200/60 backdrop-blur-sm p-4">
+			<div className="flex flex-col md:flex-row gap-4 w-full max-w-6xl bg-transparent">
+				{/* Tarjeta izquierda (detalles) */}
+				<div className="bg-white border-2 border-purple-200 rounded-3xl shadow-2xl w-full md:w-[58%] p-6 relative flex flex-col dark:bg-white/80 max-h-[90vh] overflow-y-auto">
+					{/* Botón cerrar arriba a la derecha */}
+					<button
+						onClick={onClose}
+						className="absolute top-6 right-6 text-purple-400 hover:text-purple-700 bg-white rounded-full shadow p-2 transition-colors dark:bg-white/80"
+					>
+						<XIcon className="w-6 h-6" />
+					</button>
+
+					<h2 className="text-2xl font-extrabold mb-6 text-center text-purple-700 tracking-tight">
+						Detalles del Post
+					</h2>
+
+					<div className="space-y-6 text-sm text-gray-700">
+						{/* Datos generales */}
+						<div>
+							<h3 className="text-lg font-semibold text-purple-600 mb-2">Datos generales</h3>
+							<div className="flex flex-wrap gap-x-6 gap-y-1 items-center text-sm">
+								<p className="flex items-center">
+									<User2Icon className="inline w-4 h-4 text-sky-400 mr-1" />
+									<strong>Usuario:</strong>&nbsp;{post.tiktokAccountUsername}
+								</p>
+								<p className="flex items-center">
+									<CalendarIcon className="inline w-4 h-4 text-pink-400 mr-1" />
+									<strong>Fecha:</strong>&nbsp;{post.datePosted} - {post.timePosted}
+								</p>
+								<p className="flex items-center">
+									<Globe2Icon className="inline w-4 h-4 text-green-400 mr-1" />
+									<strong>Región:</strong>&nbsp;{post.regionOfPosting}
+								</p>
 							</div>
-						)}
+							<hr className="my-4 border-purple-200" />
+						</div>
+
+						{/* Estadísticas */}
+						{/* Estadísticas */}
+						<div>
+							<h3 className="text-lg font-semibold text-purple-600 mb-2">Estadísticas</h3>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8">
+								<p>
+									<HeartIcon className="inline w-4 h-4 text-rose-400 mr-1" />
+									<strong>Likes:</strong> {post.likes}
+								</p>
+								<p>
+									<BookmarkIcon className="inline w-4 h-4 text-yellow-400 mr-1" />
+									<strong>Guardados:</strong> {post.saves}
+								</p>
+								<p>
+									<MessageCircleIcon className="inline w-4 h-4 text-purple-400 mr-1" />
+									<strong>Comentarios:</strong> {post.comments}
+								</p>
+								<p>
+									<Repeat2Icon className="inline w-4 h-4 text-green-400 mr-1" />
+									<strong>Reposteado:</strong> {post.reposted ? "Sí" : "No"}
+								</p>
+								<p>
+									<EyeIcon className="inline w-4 h-4 text-blue-400 mr-1" />
+									<strong>Vistas:</strong> {post.views}
+								</p>
+								<p>
+									<BarChart2Icon className="inline w-4 h-4 text-indigo-400 mr-1" />
+									<strong>Interacciones:</strong> {post.interactions}
+								</p>
+							</div>
+							<hr className="my-4 border-purple-200" />
+						</div>
+
+
+						{/* Hashtags */}
+						<div>
+							<h3 className="text-lg font-semibold text-purple-600 mb-2">Hashtags</h3>
+							<div className="flex flex-wrap gap-1">
+								{post.hashtags
+									.split(/[\s,]+/)
+									.filter(Boolean)
+									.map((tag, idx) => (
+										<span
+											key={idx}
+											className="bg-purple-100 text-purple-700 rounded px-2 py-0.5 text-xs font-semibold shadow-sm"
+										>
+											#{tag.replace(/^#/, "")}
+										</span>
+									))}
+							</div>
+							<p className="mt-1"><HashIcon className="inline w-4 h-4 text-purple-300 mr-1" /> <strong>Cantidad:</strong> {post.numberOfHashtags}</p>
+							<hr className="my-4 border-purple-200" />
+						</div>
+
+						{/* Audio */}
+						<div>
+							<h3 className="text-lg font-semibold text-purple-600 mb-2">Audio</h3>
+							<p><MusicIcon className="inline w-4 h-4 text-pink-400 mr-1" /> <strong>ID:</strong> {post.soundId}</p>
+							<p><MusicIcon className="inline w-4 h-4 text-sky-400 mr-1" /> <strong>URL:</strong> <a href={post.soundUrl} target="_blank" className="text-purple-600 underline break-all">{post.soundUrl}</a></p>
+							<hr className="my-4 border-purple-200" />
+						</div>
+
+						{/* Enlaces y seguimiento */}
+						<div>
+							<h3 className="text-lg font-semibold text-purple-600 mb-2">Enlaces y seguimiento</h3>
+							<p><LinkIcon className="inline w-4 h-4 text-purple-400 mr-1" /> <strong>Post:</strong> <a href={post.postLink} target="_blank" className="text-purple-600 underline break-all">{post.postLink}</a></p>
+							<p><CalendarIcon className="inline w-4 h-4 text-purple-300 mr-1" /> <strong>Track Date:</strong> {post.trackingDate}</p>
+							<p><ClockIcon className="inline w-4 h-4 text-blue-400 mr-1" /> <strong>Track Time:</strong> {post.trackingTime}</p>
+							<p><UserCircle2Icon className="inline w-4 h-4 text-sky-400 mr-1" /> <strong>Usuario (scrapeo):</strong> {post.user}</p>
+							{post.admin && (
+								<p><ShieldCheckIcon className="inline w-4 h-4 text-purple-500 mr-1" /> <strong>Admin:</strong> {post.admin}</p>
+							)}
+						</div>
 					</div>
+				</div>
+
+				{/* Tarjeta derecha (TikTok Video) */}
+				<div className="bg-white border-2 border-purple-200 rounded-3xl shadow-2xl w-full md:w-[38%] px-2 py-6 flex items-center justify-center dark:bg-white/80 self-center">
+					<TikTokEmbed url={post.postLink} />
 				</div>
 			</div>
 		</div>,
-		document.body,
+		document.body
 	);
 };
