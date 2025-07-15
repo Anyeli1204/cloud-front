@@ -9,7 +9,12 @@ export async function downloadExcel(
 		// Log para debugging
 		console.log("🔗 Excel download - Request body size:", requestBody.length);
 		console.log("🔗 Excel download - API base URL:", import.meta.env.VITE_API_BASE_URL);
-		console.log("🔗 Excel download - Full URL will be:", import.meta.env.VITE_API_BASE_URL + "/user/excel/download");
+		
+		// Corregir la URL para evitar doble barra
+		const baseUrl = import.meta.env.VITE_API_BASE_URL?.endsWith('/') 
+			? import.meta.env.VITE_API_BASE_URL.slice(0, -1) 
+			: import.meta.env.VITE_API_BASE_URL;
+		console.log("🔗 Excel download - Full URL will be:", baseUrl + "/user/excel/download");
 
 		const response = await api.post<any, Blob>(requestBody, {
 			url: "user/excel/download",
