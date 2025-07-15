@@ -425,7 +425,7 @@ export default function DatabaseQueriesPage() {
 	console.log("Estado actual de profileAvatars:", profileAvatars);
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-4 lg:p-6 space-y-4 lg:space-y-6">
 			<FilterPanelDb onApply={setFilters} onReset={() => {
 				setFilters(null);
 				setProfileAvatars({});
@@ -462,14 +462,15 @@ export default function DatabaseQueriesPage() {
 			)}
 			{/* POSTS TABLE solo cuando loading es false */}
 			{!loading && (
-				<div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-white/80">
-					<table className="min-w-full divide-y divide-gray-200">
+							<div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-white/80">
+				<div className="min-w-full">
+					<table className="w-full divide-y divide-gray-200">
 						<thead className="bg-purple-600">
 							<tr>
 								{headers.map((h) => (
 									<th
 										key={h}
-										className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider bg-purple-100"
+										className="px-2 lg:px-4 py-2 lg:py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider bg-purple-100"
 									>
 										{h}
 									</th>
@@ -527,8 +528,8 @@ export default function DatabaseQueriesPage() {
 										onClick={() => setSelectedPost(row)}
 										style={{ cursor: "pointer" }}
 									>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{profileAvatars[row.usernameTiktokAccount] ? (
+																			<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
+										{profileAvatars[row.usernameTiktokAccount] ? (
 												<img
 													src={profileAvatars[row.usernameTiktokAccount]}
 													alt={`Avatar de ${row.usernameTiktokAccount}`}
@@ -546,22 +547,22 @@ export default function DatabaseQueriesPage() {
 												</span>
 											</div>
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.datePosted}
-										</td>
+																			<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
+										{row.datePosted}
+									</td>
 
-										<td className="px-4 py-2 text-sm text-gray-900">
-											<button
-												onClick={(e) => {
-													e.stopPropagation();
-													setSelectedUsername(row.usernameTiktokAccount);
-													setIsProfileModalOpen(true);
-												}}
-												className="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer transition-colors"
-											>
-												{row.usernameTiktokAccount}
-											</button>
-										</td>
+																			<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
+										<button
+											onClick={(e) => {
+												e.stopPropagation();
+												setSelectedUsername(row.usernameTiktokAccount);
+												setIsProfileModalOpen(true);
+											}}
+											className="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer transition-colors"
+										>
+											{row.usernameTiktokAccount}
+										</button>
+									</td>
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.postURL ? (
 												<a
@@ -615,7 +616,8 @@ export default function DatabaseQueriesPage() {
 								))
 							)}
 						</tbody>
-					</table>
+											</table>
+					</div>
 				</div>
 			)}
 			{posts.length > 0 && (

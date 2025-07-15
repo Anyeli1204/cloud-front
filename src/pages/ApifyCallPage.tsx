@@ -231,7 +231,7 @@ export default function ApifyCallPage() {
 	];
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6 relative">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-4 lg:p-6 space-y-4 lg:space-y-6 relative">
 			<FilterPanel
 				onApply={handleApplyFilters}
 				onReset={handleReset}
@@ -241,13 +241,14 @@ export default function ApifyCallPage() {
 			{error && <div className="text-red-600 text-center">{error}</div>}
 
 			<div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-white/80">
-				<table className="min-w-full divide-y divide-gray-200">
+				<div className="min-w-full">
+					<table className="w-full divide-y divide-gray-200">
 					<thead className="bg-purple-600">
 						<tr>
 							{headers.map((h) => (
 								<th
 									key={h}
-									className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
+									className="px-2 lg:px-4 py-2 lg:py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
 								>
 									{h}
 								</th>
@@ -311,7 +312,7 @@ export default function ApifyCallPage() {
 									}
 									onClick={() => setSelectedPost(row)}
 								>
-									<td className="px-4 py-2 text-sm font-medium text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm font-medium text-gray-900">
 										{profileAvatars[row.tiktokAccountUsername] ? (
 											<img
 												src={profileAvatars[row.tiktokAccountUsername]}
@@ -330,10 +331,10 @@ export default function ApifyCallPage() {
 											</span>
 										</div>
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
 										{row.datePosted}
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
 										<button
 											onClick={(e) => {
 												e.stopPropagation();
@@ -345,7 +346,7 @@ export default function ApifyCallPage() {
 											{row.tiktokAccountUsername}
 										</button>
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
 										{row.postLink ? (
 											<a
 												href={row.postLink}
@@ -359,32 +360,33 @@ export default function ApifyCallPage() {
 											"–"
 										)}
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
 										{row.views?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
 										{row.likes?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
 										{row.engagementRate?.toFixed(2) ?? "0.00"}%
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
 										{row.interactions?.toLocaleString() ?? "0"}
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">
+									<td className="px-2 lg:px-4 py-2 text-sm text-gray-900">
 										{row.hashtags ?? "–"}
 									</td>
 								</tr>
 							))
 						)}
 					</tbody>
-				</table>
+					</table>
+				</div>
 			</div>
 
 			{data.length > 0 && (
 				<div className="flex justify-center items-center w-full my-4">
 					<button
-						className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-5 rounded-xl shadow-md transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+						className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 lg:px-5 rounded-xl shadow-md transition-all duration-200 text-sm lg:text-base disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
 						onClick={handleDownloadExcel}
 						disabled={loadingExcel}
 					>

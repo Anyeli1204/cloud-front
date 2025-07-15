@@ -185,21 +185,27 @@ export default function NavBar({
 			</div>
 
 			{/* Menú móvil */}
-			<div className={`md:hidden transition-all duration-300 ease-in-out ${
+			<div className={`md:hidden fixed top-0 left-0 w-full h-full bg-white dark:bg-gray-900 z-50 transition-all duration-300 ${
 				isMobileMenuOpen 
-					? 'max-h-screen opacity-100' 
-					: 'max-h-0 opacity-0 overflow-hidden'
+					? 'opacity-100' 
+					: 'opacity-0 pointer-events-none'
 			}`}>
-				<div className="px-4 pb-4 space-y-2 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-					{/* Logo en móvil */}
-					<div className="py-3 border-b border-gray-200 dark:border-gray-700">
+				<div className="flex flex-col h-full">
+					{/* Header del menú móvil */}
+					<div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
 						<img 
 							src={logoBlanco} 
 							alt="Scrapi Logo" 
 							className="h-8 w-auto object-contain"
 						/>
+						<button
+							onClick={() => setIsMobileMenuOpen(false)}
+							className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+						>
+							<X size={24} className="text-gray-700 dark:text-gray-300" />
+						</button>
 					</div>
-
+					
 					{/* Tabs en móvil */}
 					{renderTabs.map((opt) => {
 						const isActive =
@@ -210,7 +216,7 @@ export default function NavBar({
 							<button
 								key={opt.key}
 								onClick={() => handleTabClick(opt.key)}
-								className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-xs font-medium transition-all duration-200 ${
+								className={`w-full flex items-center space-x-3 px-4 py-4 rounded-lg text-base font-medium transition-all duration-200 ${
 									isActive
 										? "bg-purple-600 text-white shadow-md"
 										: opt.key === "admin-users"
@@ -225,12 +231,12 @@ export default function NavBar({
 					})}
 
 					{/* Logout en móvil */}
-					<div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+					<div className="pt-4 border-t border-gray-200 dark:border-gray-700">
 						<button
 							onClick={handleLogout}
-							className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all duration-200"
+							className="w-full flex items-center space-x-3 px-4 py-4 rounded-lg text-base font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all duration-200"
 						>
-							<LogOut size={18} />
+							<LogOut size={20} />
 							<span>Logout</span>
 						</button>
 					</div>
