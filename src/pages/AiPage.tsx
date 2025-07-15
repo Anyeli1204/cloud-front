@@ -55,7 +55,6 @@ export default function AiPage() {
     }
   };
 
-  // Debounce para las sugerencias
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (inputValue.trim()) {
@@ -69,7 +68,6 @@ export default function AiPage() {
     return () => clearTimeout(timeoutId);
   }, [inputValue]);
 
-  // Cerrar sugerencias al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -150,16 +148,13 @@ export default function AiPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6 min-h-screen">
-      {/* Banner moderno */}
       <div className="w-full rounded-2xl bg-white shadow-md flex items-center px-6 py-6 gap-6 mb-6 relative overflow-hidden">
-        {/* Robot icon */}
         <img
           src={ScrapiLogo}
           alt="Scrapi IA"
           className="w-16 h-16 z-10 animate-bounce-slow"
           style={{ filter: "drop-shadow(0 0 4px #e0e0e0)" }}
         />
-        {/* Text */}
         <div className="z-10">
           <h1 className="text-3xl font-extrabold bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent mb-1">
             AI Content Creator
@@ -170,7 +165,6 @@ export default function AiPage() {
         </div>
       </div>
 
-      {/* Popup de error */}
       {errorMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl max-w-sm w-full relative text-center">
@@ -185,9 +179,7 @@ export default function AiPage() {
         </div>
       )}
 
-      {/* Tarjetas */}
       <div className="flex flex-col md:flex-row gap-6 items-stretch">
-        {/* Formulario */}
         <div className="bg-white rounded-2xl shadow-lg p-6 flex-1 border border-purple-100 min-h-[400px] flex flex-col">
           <div className="flex items-center gap-2 mb-3">
             <Hash className="text-purple-400" size={24} />
@@ -209,7 +201,6 @@ export default function AiPage() {
               </div>
             )}
 
-            {/* Dropdown de sugerencias */}
             {showSuggestions && suggestedHashtags.length > 0 && (
               <div
                 ref={suggestionsRef}
@@ -235,9 +226,7 @@ export default function AiPage() {
               </div>
             )}
           </div>
-          {/* Chips sugeridos */}
 
-          {/* Formulario de Scrapi IA */}
           <div className="bg-purple-50 rounded-lg p-4 mb-4 border border-purple-100">
             <h3 className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-1">
               <Sparkles className="w-4 h-4" />
@@ -278,7 +267,6 @@ export default function AiPage() {
               </div>
             </div>
 
-            {/* Resultados de la IA */}
             {scrapiResponse && (
               <div className="mt-4 space-y-3">
                 <div className="bg-white rounded-lg p-3 border border-purple-200">
@@ -343,18 +331,15 @@ export default function AiPage() {
             </button>
           </div>
         </div>
-        {/* Panel derecho: resultados IA */}
         <div className="flex-1 min-h-[400px]">
           {aiResponse ? (
             <>
-              {/* Tabs */}
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-purple-100 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="text-purple-400" size={24} />
                   <h2 className="text-2xl font-extrabold text-gray-900">¿Listo para crear?</h2>
                 </div>
                 <p className="text-sm text-gray-600 mb-4 text-center max-w-lg">Descubre las sugerencias optimizadas para tu video de TikTok.</p>
-                {/* Tabs */}
                 <div className="flex justify-center mb-4">
                   <button
                     className={`px-4 py-1 rounded-t-lg font-semibold text-sm transition border-b-4 ${activeTab === "hashtags" ? "border-purple-400 bg-purple-50 text-purple-700" : "border-transparent text-gray-400 bg-gray-50"}`}
@@ -387,7 +372,6 @@ export default function AiPage() {
                     Sonidos
                   </button>
                 </div>
-                {/* Tab content */}
                 <div className="flex-1">
                   {activeTab === "hashtags" && (
                     <div>
@@ -427,7 +411,6 @@ export default function AiPage() {
                       </div>
                       <div className="w-full max-w-lg space-y-4">
                         {(() => {
-                          // Función para separar por comas solo cuando la siguiente palabra comience con mayúscula
                           const splitDescriptions = (text: string) => {
                             const regex = /,\s*([A-Z][a-z]*)/g;
                             const matches = [...text.matchAll(regex)];

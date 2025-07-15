@@ -39,7 +39,6 @@ export const QuestionDetailModal = ({
 						Pregunta
 					</h2>
 					<div className="space-y-3 text-base text-gray-700 text-left">
-						{/* Solo mostrar IDs si showIds es true */}
 						{showIds && (
 							<>
 								<div className="flex items-center gap-2">
@@ -57,7 +56,6 @@ export const QuestionDetailModal = ({
 							</>
 						)}
 
-						{/* Pregunta */}
 						<div>
 							<div className="flex items-center gap-2 mb-1">
 								<MessageCircle className="w-5 h-5 text-purple-400" />
@@ -67,14 +65,12 @@ export const QuestionDetailModal = ({
 								{question.questionDescription}
 							</div>
 						</div>
-						{/* Estado solo si está pendiente */}
 						{question.status === "PENDING" && (
 							<div className="flex items-center gap-2">
 								<CheckCircle className="w-5 h-5 text-yellow-400" />
 								<span className="font-semibold">Estado:</span> Pendiente
 							</div>
 						)}
-						{/* Respuesta */}
 						{question.answerDescription && (
 							<div>
 								<div className="flex items-center gap-2 mb-1">

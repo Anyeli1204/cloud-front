@@ -17,7 +17,7 @@ export default function ApifyCallPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [selectedPost, setSelectedPost] = useState<ApifyCallResponse | null>(
 		null,
-	); // ESTADO NUEVO
+	);
 
 	// Al cargar la página, intenta restaurar los datos del sessionStorage
 	useEffect(() => {
@@ -107,7 +107,6 @@ export default function ApifyCallPage() {
 				document.body.removeChild(a);
 				window.URL.revokeObjectURL(url);
 			}, 100);
-			// Colocar POP UP
 			await Swal.fire({
 				icon: "success",
 				title: "¡Archivo exportado!",
@@ -127,7 +126,6 @@ export default function ApifyCallPage() {
 	};
 
 	const handleApplyFilters = async (filters: unknown) => {
-		// 1) Abrir modal de carga
 		Swal.fire({
 			title: "Cargando…",
 			html: "Obteniendo datos de TikTok, por favor espera.",
@@ -137,7 +135,6 @@ export default function ApifyCallPage() {
 		setLoading(true);
 		setError(null);
 		try {
-			// Si tu endpoint devuelve objetos "raw", los mapeamos:
 			const raw = await userApify(
 				filters as Omit<UserApifyCallRequest, "userId">,
 			);
@@ -193,8 +190,6 @@ export default function ApifyCallPage() {
 			/>
 
 			{error && <div className="text-red-600 text-center">{error}</div>}
-
-			{/* NUEVO: Mensaje cuando no hay datos y no estamos cargando */}
 
 			<div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-white/80">
 				<table className="min-w-full divide-y divide-gray-200">
