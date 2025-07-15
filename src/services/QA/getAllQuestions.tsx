@@ -26,7 +26,6 @@ export async function getQuestionsPaged(page = 0, size = 10) {
 	return response;
 }
 
-// Obtener preguntas respondidas paginadas
 export async function getAnsweredQuestionsPaged(page = 0, size = 10) {
 	const api = await Api.getInstance();
 	const response = await api.get<void, QuestionsResponse>({
@@ -35,7 +34,6 @@ export async function getAnsweredQuestionsPaged(page = 0, size = 10) {
 	return response;
 }
 
-// Obtener preguntas pendientes paginadas
 export async function getPendingQuestionsPaged(page = 0, size = 10) {
 	const api = await Api.getInstance();
 	const response = await api.get<void, QuestionsResponse>({
@@ -44,7 +42,6 @@ export async function getPendingQuestionsPaged(page = 0, size = 10) {
 	return response;
 }
 
-// Obtener todas las preguntas (para conteo en frontend)
 export async function getAllQuestion() {
 	const api = await Api.getInstance();
 	const response = await api.get<void, QuestionsResponse>({

@@ -112,7 +112,6 @@ export default function AskQuestionForm({
 				</div>
 			)}
 
-			{/* Sugerencias centradas */}
 			<div>
 				<p className="text-sm text-gray-500 dark:text-purple-900 mb-4 text-center">
 					Sugerencias de palabras clave:
@@ -155,7 +154,6 @@ export default function AskQuestionForm({
 				</div>
 			</div>
 
-			{/* Botón centrado */}
 			<button
 				type="submit"
 				disabled={loading}

@@ -12,11 +12,10 @@ import type { TopGlobalesEmailRequest } from "@interfaces/send-email-topGlobales
 import type { DashboardInfo } from "@interfaces/dashboard/DashboardInfo";
 import { getDashboardInfo } from "@services/dashboard/getDashboardInfo";
 
-// Tipo unión para manejar tanto datos de scraping como datos publicados
 type PostData = ApifyCallResponse | DashboardInfo;
 interface RenderUniversalCardsProps {
 	data: PostData[];
-	terms?: string[]; // Nuevo: lista de términos a mostrar
+	terms?: string[];
 	pageIndices?: Record<string, number>;
 	setModalUrl?: (url: string) => void;
 	setShowModal?: (show: boolean) => void;
@@ -120,7 +119,6 @@ export default function DashboardPage() {
 		}
 
 		try {
-			// Muestra el loading mientras enviamos el correo
 			Swal.fire({
 				title: "Enviando correo…",
 				html: "Por favor, espera.",
@@ -221,7 +219,6 @@ export default function DashboardPage() {
 			setPosts(mapped);
 			sessionStorage.setItem(cacheKey, JSON.stringify(mapped)); // <<--- Cache
 			setShowPublishedList(false);
-			console.log(posts);
 			const hMap = new Map<string, number>();
 			mapped.forEach((p) =>
 				p.hashtags
@@ -232,7 +229,6 @@ export default function DashboardPage() {
 						hMap.set(tag, (hMap.get(tag) || 0) + p.views);
 					}),
 			);
-			console.log(hMap);
 
 			Swal.close();
 		} catch (err) {
@@ -265,7 +261,6 @@ export default function DashboardPage() {
 			}).length;
 		}
 		setVideoCount(total);
-		// Solo el primero cargando
 		setVideoLoaded(
 			Array(total)
 				.fill(false)
@@ -287,7 +282,6 @@ export default function DashboardPage() {
 		if (showPublishedList) {
 			fetchPublishedPosts();
 		}
-		// eslint-disable-next-line
 	}, [showPublishedList]);
 
 	const renderUniversalCards = ({
@@ -315,12 +309,11 @@ export default function DashboardPage() {
 
 		if (!terms.length) return null;
 
-		let globalVideoIdx = 0; // ¡No uses un useState aquí! Solo una variable simple
+		let globalVideoIdx = 0;
 
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 				{terms.map((term) => {
-					// Agrupa posts que contengan ese término
 					const group = data.filter((p) => {
 						const hashtags =
 							getHashtags(p)
@@ -382,8 +375,7 @@ export default function DashboardPage() {
 										<span>👁️ {p.views?.toLocaleString?.() || p.views}</span>
 										<span>❤️ {p.likes?.toLocaleString?.() || p.likes}</span>
 
-										<span>📊 {(getEngagement(p)).toFixed(2)}%</span>
-
+										<span>📊 {getEngagement(p).toFixed(2)}%</span>
 									</div>
 									<hr className="my-4 border-purple-200 dark:border-violet-600" />
 								</div>
@@ -608,8 +600,7 @@ export default function DashboardPage() {
 			{showPublishedList
 				? renderUniversalCards({
 						data: publishedPosts,
-						// Aquí puedes decidir qué términos mostrar en published (puedes dejarlo vacío o hacer lógica adicional)
-						// Por simplicidad, solo pasaremos todos los hashtags únicos si quieres mostrar algo:
+
 						terms: getTermsFromPublished(publishedPosts),
 						pageIndices,
 						setModalUrl,
@@ -617,7 +608,7 @@ export default function DashboardPage() {
 					})
 				: renderUniversalCards({
 						data: posts,
-						terms: getTermsFromFilters(lastFilters), // ¡Solo los del filtro!
+						terms: getTermsFromFilters(lastFilters),
 						setModalUrl,
 						setShowModal,
 					})}
@@ -671,41 +662,41 @@ export default function DashboardPage() {
 				>
 					{/* Fondo oscuro absoluto sin rayas */}
 					<div
-					className="absolute top-0 left-0 w-full h-full bg-black"
-					style={{ opacity: 0.8, zIndex: 0 }}
+						className="absolute top-0 left-0 w-full h-full bg-black"
+						style={{ opacity: 0.8, zIndex: 0 }}
 					/>
 
 					{/* Modal pequeño, centrado */}
 					<div
-					className="relative z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
-					style={{
-						width: "360px",
-						padding: "1rem",
-						display: "flex",
-						justifyContent: "center",
-						alignItems: "center",
-					}}
-					>
-					{/* Botón de cerrar */}
-					<button
-						onClick={() => setShowModal(false)}
-						className="absolute top-3 right-5 text-3xl font-bold text-gray-500 hover:text-red-600 z-20"
-						aria-label="Cerrar"
-						>
-						×
-					</button>
-					{/* Contenido del video */}
-					<div
+						className="relative z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
 						style={{
-						width: "325px",
-						height: "576px",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
+							width: "360px",
+							padding: "1rem",
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
 						}}
 					>
-						<TikTokEmbed url={modalUrl} />
-					</div>
+						{/* Botón de cerrar */}
+						<button
+							onClick={() => setShowModal(false)}
+							className="absolute top-3 right-5 text-3xl font-bold text-gray-500 hover:text-red-600 z-20"
+							aria-label="Cerrar"
+						>
+							×
+						</button>
+						{/* Contenido del video */}
+						<div
+							style={{
+								width: "325px",
+								height: "576px",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}
+						>
+							<TikTokEmbed url={modalUrl} />
+						</div>
 					</div>
 				</div>
 			)}

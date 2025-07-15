@@ -1,8 +1,18 @@
-// src/components/RegisterForm.tsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@components/Input";
-import { Eye, EyeOff, Mail, Lock, User, UserCheck, ArrowRight, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
+import {
+	Eye,
+	EyeOff,
+	Mail,
+	Lock,
+	User,
+	UserCheck,
+	ArrowRight,
+	CheckCircle,
+	XCircle,
+	ArrowLeft,
+} from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 
 interface RegisterFormProps {
@@ -18,7 +28,11 @@ interface RegisterFormProps {
 	onBackToLogin?: () => void;
 }
 
-export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: RegisterFormProps) {
+export function RegisterForm({
+	onSubmit,
+	isLoading = false,
+	onBackToLogin,
+}: RegisterFormProps) {
 	const [firstname, setFirstname] = useState("");
 	const [lastname, setLastname] = useState("");
 	const [username, setUsername] = useState("");
@@ -30,15 +44,15 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 	const [error, setError] = useState("");
 
 	const passwordValid =
-		password.length >= 8 &&
-		/[A-Za-z]/.test(password) &&
-		/[0-9]/.test(password);
+		password.length >= 8 && /[A-Za-z]/.test(password) && /[0-9]/.test(password);
 	const passwordsMatch = password === confirmPassword;
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!passwordValid) {
-			setError("La contraseña debe tener al menos 8 caracteres, incluir letras y números.");
+			setError(
+				"La contraseña debe tener al menos 8 caracteres, incluir letras y números.",
+			);
 			return;
 		}
 		if (!passwordsMatch) {
@@ -56,14 +70,14 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 		visible: {
 			opacity: 1,
 			transition: {
-				staggerChildren: 0.1
-			}
-		}
+				staggerChildren: 0.1,
+			},
+		},
 	};
 
 	const itemVariants = {
 		hidden: { opacity: 0, y: 20 },
-		visible: { opacity: 1, y: 0 }
+		visible: { opacity: 1, y: 0 },
 	};
 
 	return (
@@ -74,7 +88,6 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 			onSubmit={handleSubmit}
 			className="space-y-5"
 		>
-			{/* Error message */}
 			<AnimatePresence>
 				{error && (
 					<motion.div
@@ -89,10 +102,12 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 				)}
 			</AnimatePresence>
 
-			{/* Name fields */}
 			<motion.div variants={itemVariants} className="grid grid-cols-2 gap-2">
 				<div>
-					<label htmlFor="first" className="block text-xs font-semibold text-gray-800 mb-1">
+					<label
+						htmlFor="first"
+						className="block text-xs font-semibold text-gray-800 mb-1"
+					>
 						Nombre
 					</label>
 					<div className="relative">
@@ -113,7 +128,10 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 				</div>
 
 				<div>
-					<label htmlFor="last" className="block text-xs font-semibold text-gray-800 mb-1">
+					<label
+						htmlFor="last"
+						className="block text-xs font-semibold text-gray-800 mb-1"
+					>
 						Apellido
 					</label>
 					<div className="relative">
@@ -134,10 +152,12 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 				</div>
 			</motion.div>
 
-			{/* Username and Email */}
 			<motion.div variants={itemVariants} className="grid grid-cols-2 gap-2">
 				<div>
-					<label htmlFor="user" className="block text-xs font-semibold text-gray-800 mb-1">
+					<label
+						htmlFor="user"
+						className="block text-xs font-semibold text-gray-800 mb-1"
+					>
 						Usuario
 					</label>
 					<div className="relative">
@@ -158,7 +178,10 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 				</div>
 
 				<div>
-					<label htmlFor="email" className="block text-xs font-semibold text-gray-800 mb-1">
+					<label
+						htmlFor="email"
+						className="block text-xs font-semibold text-gray-800 mb-1"
+					>
 						Email
 					</label>
 					<div className="relative">
@@ -179,10 +202,12 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 				</div>
 			</motion.div>
 
-			{/* Password fields */}
 			<motion.div variants={itemVariants} className="grid grid-cols-2 gap-2">
 				<div>
-					<label htmlFor="pass" className="block text-xs font-semibold text-gray-800 mb-1">
+					<label
+						htmlFor="pass"
+						className="block text-xs font-semibold text-gray-800 mb-1"
+					>
 						Contraseña
 					</label>
 					<div className="relative">
@@ -216,7 +241,9 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 							) : (
 								<XCircle className="h-4 w-4 text-red-400" />
 							)}
-							<span className={passwordValid ? "text-green-400" : "text-red-400"}>
+							<span
+								className={passwordValid ? "text-green-400" : "text-red-400"}
+							>
 								Mínimo 8 caracteres, letras y números
 							</span>
 						</div>
@@ -224,7 +251,10 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 				</div>
 
 				<div>
-					<label htmlFor="confirm" className="block text-xs font-semibold text-gray-800 mb-1">
+					<label
+						htmlFor="confirm"
+						className="block text-xs font-semibold text-gray-800 mb-1"
+					>
 						Confirmar
 					</label>
 					<div className="relative">
@@ -258,15 +288,22 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 							) : (
 								<XCircle className="h-4 w-4 text-red-400" />
 							)}
-							<span className={passwordsMatch ? "text-green-400 text-xs" : "text-red-400 text-xs"}>
-								{passwordsMatch ? "Las contraseñas coinciden" : "Las contraseñas no coinciden"}
+							<span
+								className={
+									passwordsMatch
+										? "text-green-400 text-xs"
+										: "text-red-400 text-xs"
+								}
+							>
+								{passwordsMatch
+									? "Las contraseñas coinciden"
+									: "Las contraseñas no coinciden"}
 							</span>
 						</div>
 					)}
 				</div>
 			</motion.div>
 
-			{/* Submit button */}
 			<motion.div variants={itemVariants}>
 				<button
 					type="submit"
@@ -287,7 +324,6 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 				</button>
 			</motion.div>
 
-			{/* Back to login */}
 			{onBackToLogin && (
 				<motion.div variants={itemVariants} className="text-center">
 					<button
@@ -302,11 +338,13 @@ export function RegisterForm({ onSubmit, isLoading = false, onBackToLogin }: Reg
 				</motion.div>
 			)}
 
-			{/* Terms and conditions */}
 			<motion.div variants={itemVariants} className="text-center">
 				<p className="text-gray-500 text-xs text-center mt-3">
 					Al registrarte, aceptas nuestros{" "}
-					<button type="button" className="text-purple-400 hover:text-purple-600 underline">
+					<button
+						type="button"
+						className="text-purple-400 hover:text-purple-600 underline"
+					>
 						Términos y Condiciones
 					</button>
 				</p>

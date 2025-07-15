@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuthContext } from "@contexts/AuthContext";
+import { useRef } from "react";
+import clickSound from "../Sounds/clicksound.mp3";
 
 const baseOptions = [
 	{ key: "global", label: "Daily Top Global", icon: <Home size={18} /> },
@@ -39,6 +41,19 @@ export default function NavBar({
 	tabs?: { key: string; label: string; icon?: React.ReactNode }[];
 	isAdmin?: boolean;
 }) {
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	if (!audioRef.current) {
+		audioRef.current = new Audio(clickSound);
+	}
+
+	const playSound = () => {
+		if (!audioRef.current) return;
+		audioRef.current.volume = 0.5;
+		audioRef.current.loop = false;
+		audioRef.current.currentTime = 0;
+		audioRef.current.play();
+	};
+
 	const { theme, toggleTheme } = useTheme();
 	const { role } = useAuthContext();
 
@@ -47,7 +62,11 @@ export default function NavBar({
 		// Solo mostrar las tabs permitidas para admin
 		renderTabs = [
 			{ key: "global", label: "Daily Top Global", icon: <Home size={18} /> },
-			{ key: "qa", label: "Preguntas y Respuestas", icon: <MessageCircle size={18} /> },
+			{
+				key: "qa",
+				label: "Preguntas y Respuestas",
+				icon: <MessageCircle size={18} />,
+			},
 			{
 				key: "admin-users",
 				label: "Gestión de Usuarios",
@@ -58,7 +77,8 @@ export default function NavBar({
 	}
 
 	// Detectar si estamos en /admin/users para resaltar el tab
-	const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+	const currentPath =
+		typeof window !== "undefined" ? window.location.pathname : "";
 	const isAdminUsersActive = currentPath === "/admin/users";
 
 	return (
@@ -66,12 +86,15 @@ export default function NavBar({
 			{renderTabs.map((opt) => {
 				const isActive =
 					(opt.key === "admin-users" && isAdminUsersActive) ||
-					(opt.key !== "admin-users" && !isAdminUsersActive && active === opt.key);
-				const iconClass = `${isActive ? 'text-white' : 'text-gray-700 dark:text-white'}`;
+					(opt.key !== "admin-users" &&
+						!isAdminUsersActive &&
+						active === opt.key);
+				const iconClass = `${isActive ? "text-white" : "text-gray-700 dark:text-white"}`;
 				return (
 					<button
 						key={opt.key}
 						onClick={() => {
+							playSound();
 							if (opt.key === "admin-users") {
 								window.location.href = "/admin/users";
 							} else {
@@ -82,18 +105,24 @@ export default function NavBar({
 							isActive
 								? "bg-purple-600 text-white"
 								: opt.key === "admin-users"
-								? "hover:bg-purple-100 font-semibold"
-								: "text-gray-700 hover:bg-gray-100"
+									? "hover:bg-purple-100 font-semibold"
+									: "text-gray-700 hover:bg-gray-100"
 						}`}
 					>
-						{opt.icon && React.cloneElement(opt.icon as React.ReactElement, { className: iconClass })}
+						{opt.icon &&
+							React.cloneElement(opt.icon as React.ReactElement, {
+								className: iconClass,
+							})}
 						<span className={`font-medium dark:text-white`}>{opt.label}</span>
 					</button>
 				);
 			})}
 			{/* Botón de cambio de tema minimalista */}
 			<button
-				onClick={toggleTheme}
+				onClick={() => {
+					toggleTheme();
+					playSound();
+				}}
 				className="absolute left-6 flex items-center justify-center w-10 h-10 border-2 border-gray-300 dark:border-gray-600 rounded-full bg-transparent transition hover:border-purple-500 focus:outline-none"
 				aria-label="Cambiar tema"
 			>
@@ -105,7 +134,10 @@ export default function NavBar({
 			</button>
 			{/* Logout al final, posición absolute right */}
 			<button
-				onClick={onLogout}
+				onClick={() => {
+					onLogout();
+					playSound();
+				}}
 				className="absolute right-6 flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 transition"
 			>
 				<LogOut size={18} />

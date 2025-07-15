@@ -9,7 +9,11 @@ interface LoginFormProps {
 	onGoToRegister?: () => void;
 }
 
-export function LoginForm({ onSubmit, isLoading = false, onGoToRegister }: LoginFormProps) {
+export function LoginForm({
+	onSubmit,
+	isLoading = false,
+	onGoToRegister,
+}: LoginFormProps) {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
@@ -35,11 +39,15 @@ export function LoginForm({ onSubmit, isLoading = false, onGoToRegister }: Login
 			onSubmit={handleSubmit}
 			className="space-y-6"
 		>
-			{/* Mensaje de error */}
 			{error && (
 				<div className="flex items-center gap-2 bg-red-100 text-red-600 text-sm font-semibold rounded-xl py-2 px-4 border border-red-200 shadow-sm mb-2 whitespace-nowrap">
-					{/* Icono de advertencia */}
-					<svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+					<svg
+						className="w-5 h-5 flex-shrink-0"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						viewBox="0 0 24 24"
+					>
 						<circle cx="12" cy="12" r="10" />
 						<line x1="12" y1="8" x2="12" y2="12" />
 						<line x1="12" y1="16" x2="12.01" y2="16" />
@@ -47,7 +55,6 @@ export function LoginForm({ onSubmit, isLoading = false, onGoToRegister }: Login
 					<span className="truncate">{error}</span>
 				</div>
 			)}
-			{/* Email field */}
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
@@ -76,7 +83,6 @@ export function LoginForm({ onSubmit, isLoading = false, onGoToRegister }: Login
 				</div>
 			</motion.div>
 
-			{/* Password field */}
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
@@ -114,7 +120,6 @@ export function LoginForm({ onSubmit, isLoading = false, onGoToRegister }: Login
 				</div>
 			</motion.div>
 
-			{/* Submit button */}
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
@@ -139,13 +144,12 @@ export function LoginForm({ onSubmit, isLoading = false, onGoToRegister }: Login
 				</button>
 			</motion.div>
 
-			{/* Forgot password and register links */}
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5, delay: 0.4 }}
 				className="space-y-3 text-center"
-			>				
+			>
 				{onGoToRegister && (
 					<div className="pt-2 border-t border-white/10">
 						<button
