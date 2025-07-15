@@ -16,93 +16,93 @@ const POPULAR_HASHTAGS = [
 	"#travel",
 	"#tech",
 	"#beauty",
-	"#parati", 
+	"#parati",
 ];
 const POPULAR_USERS = ["charlidamelio", "khaby.lame", "bellapoarch", "addisonre"];
 const POPULAR_KEYWORDS = ["pizza", "recetas", "cocina", "viajes", "deporte", "universidad"];
 
 const HELP_CARDS = [
-  // 1: Solo la pregunta
-  {
-    title: "¿Cómo uso los filtros para scrapear en ScrapeTok?",
-    subtitle: "",
-    text: "",
-    emoji: "",
-  },
-  // 2: Explicación
-  {
-    title: "",
-    subtitle: "Te guiamos paso a paso para que encuentres contenido viral de TikTok con precisión.",
-    text: "",
-    emoji: "🚀",
-  },
-  // 3
-  {
-    title: "Filtra por Hashtags",
-    subtitle: "",
-    text: "Escribe hashtags separados por comas (#cocina, #futbol) o haz clic en los sugeridos para agregarlos.",
-    emoji: "📌",
-  },
-  // 4
-  {
-    title: "Usuarios de TikTok",
-    subtitle: "",
-    text: "Agrega nombres de usuario (usuario1, usuario2) para analizar su contenido viral.",
-    emoji: "👤🔍",
-  },
-  // 5
-  {
-    title: "Palabras Clave",
-    subtitle: "",
-    text: "Usa conceptos como \"pizza\", \"recetas\", \"viajes\" para encontrar lo más relevante.",
-    emoji: "🧠🗝️",
-  },
-  
-  // 6
-  {
-    title: "Solo una categoría",
-    subtitle: "Recuerda que solo puedes scrapear una categoría por vez: hashtags, palabras clave o usuarios.",
-    text: "",
-    emoji: "⚠️",
-  },
-  {
-    title: "¿No sabes qué hashtags, palabras clave o usuarios scrapear?",
-    subtitle: "",
-    text: "",
-    emoji: "🤔",
-  },
-  {
-    title: "Scrapi",
-    subtitle: "Consulta el tema que deseas analizar, con nuestro asistente de IA: Scrapi.",
-    text: "¡Te ayudará al instante!",
-    emoji: "🤖",
-  },
-  // 8
-  {
-    title: "Filtros obligatorios",
-    subtitle: "",
-    text: "Los filtros obligatorios son: Fechas y # Últimos N Post.",
-    emoji: "🚨",
-  },
-  {
-    title: "Fechas",
-    subtitle: "",
-    text: "Selecciona una fecha de inicio y una fecha final de las publicaciones para enfocarte en un rango específico. ",
-    emoji: "📅",
-  },
-  // 9
-  {
-    title: "Número de Posts",
-    subtitle: "",
-    text: "Ejemplo: 5 vídeos más virales por cada hashtag, palabra clave o usuario.",
-    emoji: "🧾✨",
-  },
-  {
-    title: "Ejecuta o reinicia",
-    subtitle: "",
-    text: "Haz clic en Aplicar Filtros para buscar o Limpiar para reiniciar tu formulario.",
-    emoji: "🟣✅",
-  },
+	// 1: Solo la pregunta
+	{
+		title: "¿Cómo uso los filtros para scrapear en ScrapeTok?",
+		subtitle: "",
+		text: "",
+		emoji: "",
+	},
+	// 2: Explicación
+	{
+		title: "",
+		subtitle: "Te guiamos paso a paso para que encuentres contenido viral de TikTok con precisión.",
+		text: "",
+		emoji: "🚀",
+	},
+	// 3
+	{
+		title: "Filtra por Hashtags",
+		subtitle: "",
+		text: "Escribe hashtags separados por comas (#cocina, #futbol) o haz clic en los sugeridos para agregarlos.",
+		emoji: "📌",
+	},
+	// 4
+	{
+		title: "Usuarios de TikTok",
+		subtitle: "",
+		text: "Agrega nombres de usuario (usuario1, usuario2) para analizar su contenido viral.",
+		emoji: "👤🔍",
+	},
+	// 5
+	{
+		title: "Palabras Clave",
+		subtitle: "",
+		text: "Usa conceptos como \"pizza\", \"recetas\", \"viajes\" para encontrar lo más relevante.",
+		emoji: "🧠🗝️",
+	},
+
+	// 6
+	{
+		title: "Solo una categoría",
+		subtitle: "Recuerda que solo puedes scrapear una categoría por vez: hashtags, palabras clave o usuarios.",
+		text: "",
+		emoji: "⚠️",
+	},
+	{
+		title: "¿No sabes qué hashtags, palabras clave o usuarios scrapear?",
+		subtitle: "",
+		text: "",
+		emoji: "🤔",
+	},
+	{
+		title: "Scrapi",
+		subtitle: "Consulta el tema que deseas analizar, con nuestro asistente de IA: Scrapi.",
+		text: "¡Te ayudará al instante!",
+		emoji: "🤖",
+	},
+	// 8
+	{
+		title: "Filtros obligatorios",
+		subtitle: "",
+		text: "Los filtros obligatorios son: Fechas y # Últimos N Post.",
+		emoji: "🚨",
+	},
+	{
+		title: "Fechas",
+		subtitle: "",
+		text: "Selecciona una fecha de inicio y una fecha final de las publicaciones para enfocarte en un rango específico. ",
+		emoji: "📅",
+	},
+	// 9
+	{
+		title: "Número de Posts",
+		subtitle: "",
+		text: "Ejemplo: 5 vídeos más virales por cada hashtag, palabra clave o usuario.",
+		emoji: "🧾✨",
+	},
+	{
+		title: "Ejecuta o reinicia",
+		subtitle: "",
+		text: "Haz clic en Aplicar Filtros para buscar o Limpiar para reiniciar tu formulario.",
+		emoji: "🟣✅",
+	},
 ];
 
 interface FilterPanelProps {
@@ -126,61 +126,61 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 
 	const [activeTab, setActiveTab] = useState<'hashtags' | 'usuarios' | 'palabras' | 'basico'>('hashtags');
 	const [previousTab, setPreviousTab] = useState<'hashtags' | 'usuarios' | 'palabras'>('hashtags');
-  const [helpIndex, setHelpIndex] = useState(0);
-  const [fade, setFade] = useState<'in' | 'out'>('in');
+	const [helpIndex, setHelpIndex] = useState(0);
+	const [fade, setFade] = useState<'in' | 'out'>('in');
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // setScrapiCircle((prev) => (prev === 'emoji' ? 'text' : 'emoji')); // This line was removed
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+	useEffect(() => {
+		const interval = setInterval(() => {
+			// setScrapiCircle((prev) => (prev === 'emoji' ? 'text' : 'emoji')); // This line was removed
+		}, 2000);
+		return () => clearInterval(interval);
+	}, []);
 
-  // Referencias para igualar altura
-  const filterPanelRef = useRef<HTMLDivElement>(null);
-  const helpPanelRef = useRef<HTMLDivElement>(null);
-  const [helpHeight, setHelpHeight] = useState<number | undefined>(undefined);
+	// Referencias para igualar altura
+	const filterPanelRef = useRef<HTMLDivElement>(null);
+	const helpPanelRef = useRef<HTMLDivElement>(null);
+	const [helpHeight, setHelpHeight] = useState<number | undefined>(undefined);
 
-  // Cargar filtros guardados en sessionStorage al montar el componente
-  useEffect(() => {
-    const storedFilters = sessionStorage.getItem("apifyScrapeFilters");
-    if (storedFilters) {
-      try {
-        const parsedFilters = JSON.parse(storedFilters);
-        setFilters(prev => ({
-          ...prev,
-          ...parsedFilters
-        }));
-        
-        // Determinar qué tab activar basado en los filtros cargados
-        if (parsedFilters.hashtags) {
-          setActiveTab('hashtags');
-        } else if (parsedFilters.tiktokAccount) {
-          setActiveTab('usuarios');
-        } else if (parsedFilters.keyWords) {
-          setActiveTab('palabras');
-        } else if (parsedFilters.dateFrom || parsedFilters.dateTo || parsedFilters.nlastPostByHashtags) {
-          setActiveTab('basico');
-        }
-      } catch (error) {
-        console.error("Error al cargar filtros del sessionStorage:", error);
-      }
-    }
-  }, []);
+	// Cargar filtros guardados en sessionStorage al montar el componente
+	useEffect(() => {
+		const storedFilters = sessionStorage.getItem("apifyScrapeFilters");
+		if (storedFilters) {
+			try {
+				const parsedFilters = JSON.parse(storedFilters);
+				setFilters(prev => ({
+					...prev,
+					...parsedFilters
+				}));
 
-  useEffect(() => {
-    if (filterPanelRef.current && helpPanelRef.current) {
-      const filterHeight = filterPanelRef.current.offsetHeight;
-      setHelpHeight(filterHeight);
-    }
-  }, [activeTab, filters, helpIndex]);
+				// Determinar qué tab activar basado en los filtros cargados
+				if (parsedFilters.hashtags) {
+					setActiveTab('hashtags');
+				} else if (parsedFilters.tiktokAccount) {
+					setActiveTab('usuarios');
+				} else if (parsedFilters.keyWords) {
+					setActiveTab('palabras');
+				} else if (parsedFilters.dateFrom || parsedFilters.dateTo || parsedFilters.nlastPostByHashtags) {
+					setActiveTab('basico');
+				}
+			} catch (error) {
+				console.error("Error al cargar filtros del sessionStorage:", error);
+			}
+		}
+	}, []);
+
+	useEffect(() => {
+		if (filterPanelRef.current && helpPanelRef.current) {
+			const filterHeight = filterPanelRef.current.offsetHeight;
+			setHelpHeight(filterHeight);
+		}
+	}, [activeTab, filters, helpIndex]);
 
 	const handleChange = <K extends keyof UserApifyCallRequest>(
 		key: K,
 		value: UserApifyCallRequest[K],
 	) => {
 		const newFilters = { ...filters };
-		
+
 		if (key === "hashtags") {
 			newFilters.hashtags = value as string;
 			newFilters.tiktokAccount = "";
@@ -196,9 +196,9 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 		} else {
 			newFilters[key] = value;
 		}
-		
+
 		setFilters(newFilters);
-		
+
 		// Guardar en sessionStorage cada vez que cambien los filtros
 		sessionStorage.setItem("apifyScrapeFilters", JSON.stringify(newFilters));
 	};
@@ -263,10 +263,10 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 			nlastPostByHashtags: undefined,
 		};
 		setFilters(resetFilters);
-		
+
 		// Limpiar sessionStorage
 		sessionStorage.removeItem("apifyScrapeFilters");
-		
+
 		onReset?.();
 	};
 
@@ -344,16 +344,16 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 							key={helpIndex}
 						>
 							{HELP_CARDS[helpIndex].emoji && (
-								<span className="text-4xl mb-1 animate-fade-in" style={{transitionDelay:'100ms'}}>{HELP_CARDS[helpIndex].emoji}</span>
+								<span className="text-4xl mb-1 animate-fade-in" style={{ transitionDelay: '100ms' }}>{HELP_CARDS[helpIndex].emoji}</span>
 							)}
 							{HELP_CARDS[helpIndex].title && (
 								<h2 className={`font-extrabold text-center mb-1 text-purple-800 ${helpIndex === 0 ? 'text-2xl md:text-3xl animate-pop' : 'text-lg md:text-xl'}`}>{HELP_CARDS[helpIndex].title}</h2>
 							)}
 							{HELP_CARDS[helpIndex].subtitle && (
-								<h3 className={`font-medium text-gray-700 text-center mb-1 animate-fade-in ${helpIndex === 0 ? 'text-base md:text-lg' : 'text-sm md:text-base'}`} style={{transitionDelay:'150ms'}}>{HELP_CARDS[helpIndex].subtitle}</h3>
+								<h3 className={`font-medium text-gray-700 text-center mb-1 animate-fade-in ${helpIndex === 0 ? 'text-base md:text-lg' : 'text-sm md:text-base'}`} style={{ transitionDelay: '150ms' }}>{HELP_CARDS[helpIndex].subtitle}</h3>
 							)}
 							{HELP_CARDS[helpIndex].text && (
-								<p className={`text-gray-600 text-center animate-fade-in ${helpIndex === 0 ? 'text-base' : 'text-xs md:text-sm'}`} style={{transitionDelay:'200ms'}}>{HELP_CARDS[helpIndex].text}</p>
+								<p className={`text-gray-600 text-center animate-fade-in ${helpIndex === 0 ? 'text-base' : 'text-xs md:text-sm'}`} style={{ transitionDelay: '200ms' }}>{HELP_CARDS[helpIndex].text}</p>
 							)}
 						</div>
 						{/* Dots de navegación */}
@@ -621,209 +621,161 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 								)}
 							</form>
 						</div>
-					{/* Asistente virtual: Scrapi con globo de diálogo pequeño, cuadrado y pegado al logo */}
-{activeTab !== 'basico' ? (
-  <div className="absolute bottom-2 right-8 z-20 max-w-[320px] w-full flex items-end justify-end">
-    <div className="relative flex items-end w-full">
-      <svg
-        viewBox="0 0 320 70"
-        width="250"
-        height="80"
-        className="drop-shadow-lg w-full"
-        style={{ minWidth: 210, maxWidth: 210 }}
-      >
-        <defs>
-          <linearGradient id="bubble-gradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#a78bfa" />
-            <stop offset="100%" stopColor="#9333ea" />
-          </linearGradient>
-          <filter id="bubble-shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity="0.1" />
-          </filter>
-        </defs>
-        {/* Globo rectangular más pequeño */}
-        <rect x="10" y="-10" rx="16" ry="16" width="260" height="80" fill="url(#bubble-gradient)" filter="url(#bubble-shadow)" />
-        {/* Flecha del globo, apuntando al robot a la derecha */}
-        <polygon points="270,40 310,55 270,55" fill="url(#bubble-gradient)" />
-        {/* Texto principal */}
-        <text
-          x="140"
-          y="25"
-          textAnchor="middle"
-          fontFamily="'Nunito', sans-serif"
-          fontWeight="700"
-          fontSize="22"
-          fill="#fff"
-          dominantBaseline="middle"
-        >
-          Scrapetok AI
-        </text>
-        {/* Pregunta en dos líneas */}
-        <text
-          x="140"
-          y="50"
-          textAnchor="middle"
-          fontFamily="'Nunito', sans-serif"
-          fontSize="13"
-          fill="#ede9fe"
-          dominantBaseline="middle"
-        >
-          ¿Necesitas ayuda para generar filtros?
-        </text>
-      </svg>
-      {/* Imagen de Scrapi con tooltip personalizado */}
-      <div className="relative flex items-center">
-        <img
-          src={ScrapiLogo}
-          alt="Scrapi IA"
-          className="w-16 h-16 ml-1 drop-shadow-xl cursor-pointer"
-          style={{ marginBottom: '8px' }}
-          onClick={async () => {
-            const { value: userMessage } = await MySwal.fire({
-              title: 'Scrapetok AI',
-              input: 'text',
-              inputLabel: '¿Sobre qué tema quieres ideas de filtros?',
-              inputPlaceholder: 'Ej: cocina, viajes, tecnología...',
-              showCancelButton: true,
-              confirmButtonText: 'Pedir recomendación',
-              cancelButtonText: 'Cancelar',
-              background: '#fff',
-              customClass: {
-                popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
-                title: 'text-2xl text-purple-700 mb-2',
-                confirmButton: 'bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg',
-                cancelButton: 'bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-lg ml-2',
-                input: 'border-2 border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300',
-              },
-            });
-            if (userMessage) {
-              MySwal.fire({
-                title: 'Cargando…',
-                html: 'Consultando a la IA, por favor espera...',
-                allowOutsideClick: false,
-                didOpen: () => MySwal.showLoading(),
-                showConfirmButton: false,
-                background: '#fff',
-              });
-              const res = await recommendContent({ message: userMessage });
-              MySwal.close();
-              if (res.response) {
-                let parsed;
-                try {
-                  parsed = JSON.parse(res.response);
-                } catch {
-                  parsed = null;
-                }
-                if (parsed && (parsed.hashtags || parsed.keywords || parsed.usernames)) {
-                  // Generar HTML de tabs y chips + botón autocompletar
-                  const tabHtml = `
-                    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
-                      <button id='tab-hashtags' class='swal2-tab-btn swal2-tab-active' style='padding:6px 16px;border-radius:8px 8px 0 0;background:#a78bfa;color:#fff;font-weight:bold;border:none;cursor:pointer;'>Hashtags</button>
-                      <button id='tab-keywords' class='swal2-tab-btn' style='padding:6px 16px;border-radius:8px 8px 0 0;background:#e0e7ff;color:#3b82f6;font-weight:bold;border:none;cursor:pointer;'>Palabras clave</button>
-                      <button id='tab-users' class='swal2-tab-btn' style='padding:6px 16px;border-radius:8px 8px 0 0;background:#e0ffe0;color:#16a34a;font-weight:bold;border:none;cursor:pointer;'>Cuentas</button>
-                    </div>
-                    <div id='tab-content-hashtags'>
-                      ${(parsed.hashtags||[]).map((h: string) => `<span style='display:inline-block;margin:4px 4px 4px 0;padding:4px 10px;border-radius:999px;background:#a78bfa;color:#fff;font-weight:500;font-size:0.95rem;'>${h}</span>`).join('') || '<span style="color:#888">Sin hashtags</span>'}
-                    </div>
-                    <div id='tab-content-keywords' style='display:none;'>
-                      ${(parsed.keywords||[]).map((k: string) => `<span style='display:inline-block;margin:4px 4px 4px 0;padding:4px 10px;border-radius:999px;background:#dbeafe;color:#2563eb;font-weight:500;font-size:0.95rem;'>${k}</span>`).join('') || '<span style="color:#888">Sin palabras clave</span>'}
-                    </div>
-                    <div id='tab-content-users' style='display:none;'>
-                      ${(parsed.usernames||[]).map((u: string) => `<span style='display:inline-block;margin:4px 4px 4px 0;padding:4px 10px;border-radius:999px;background:#bbf7d0;color:#15803d;font-weight:500;font-size:0.95rem;'>${u}</span>`).join('') || '<span style="color:#888">Sin cuentas</span>'}
-                    </div>
-                    <div style='display:flex;justify-content:center;gap:16px;margin-top:24px;'>
-                      <button id='btn-autocompletar' style='padding:10px 28px;font-size:1rem;font-weight:bold;border-radius:12px;background:#a78bfa;color:#fff;border:none;box-shadow:0 2px 8px #a78bfa22;cursor:pointer;'>Autocompletar</button>
-                      <button id='btn-cerrar' style='padding:10px 28px;font-size:1rem;font-weight:bold;border-radius:12px;background:#a78bfa;color:#fff;border:none;box-shadow:0 2px 8px #a78bfa22;cursor:pointer;'>Cerrar</button>
-                    </div>
-                    <style>
-                      .swal2-tab-btn.swal2-tab-active { filter: brightness(1.1) drop-shadow(0 2px 6px #a78bfa33); }
-                    </style>
-                  `;
-                  await MySwal.fire({
-                    title: 'Respuesta de Scrapetok AI',
-                    html: tabHtml,
-                    background: '#fff',
-                    showConfirmButton: false,
-                    showCancelButton: false,
-                    customClass: {
-                      popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
-                      title: 'text-2xl text-purple-700 mb-2',
-                    },
-                    didOpen: () => {
-                      // Tabs interactividad
-                      const $ = (s: string) => document.querySelector(s) as HTMLElement | null;
-                      let currentTab: 'hashtags' | 'keywords' | 'users' = 'hashtags';
-                      const showTab = (tab: 'hashtags' | 'keywords' | 'users') => {
-                        ($('#tab-content-hashtags') as HTMLElement)!.style.display = tab === 'hashtags' ? '' : 'none';
-                        ($('#tab-content-keywords') as HTMLElement)!.style.display = tab === 'keywords' ? '' : 'none';
-                        ($('#tab-content-users') as HTMLElement)!.style.display = tab === 'users' ? '' : 'none';
-                        $('#tab-hashtags')!.classList.toggle('swal2-tab-active', tab === 'hashtags');
-                        $('#tab-keywords')!.classList.toggle('swal2-tab-active', tab === 'keywords');
-                        $('#tab-users')!.classList.toggle('swal2-tab-active', tab === 'users');
-                        currentTab = tab;
-                      };
-                      $('#tab-hashtags')?.addEventListener('click', () => showTab('hashtags'));
-                      $('#tab-keywords')?.addEventListener('click', () => showTab('keywords'));
-                      $('#tab-users')?.addEventListener('click', () => showTab('users'));
-                      // Autocompletar
-                      $('#btn-autocompletar')?.addEventListener('click', () => {
-                        if (currentTab === 'hashtags') {
-                          handleAutocomplete('hashtags', (parsed.hashtags || []).join(', '));
-                        } else if (currentTab === 'keywords') {
-                          handleAutocomplete('palabras', (parsed.keywords || []).join(', '));
-                        } else if (currentTab === 'users') {
-                          handleAutocomplete('usuarios', (parsed.usernames || []).join(', '));
-                        }
-                        MySwal.close();
-                      });
-                      // Cerrar
-                      $('#btn-cerrar')?.addEventListener('click', () => MySwal.close());
-                    },
-                  });
-                } else {
-                  MySwal.fire({
-                    title: 'Respuesta de Scrapetok AI',
-                    html: `<pre style="white-space:pre-wrap;text-align:left;font-size:1rem;">${res.response}</pre>`,
-                    background: '#fff',
-                    confirmButtonText: 'Cerrar',
-                    customClass: {
-                      popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
-                      title: 'text-2xl text-purple-700 mb-2',
-                      confirmButton: 'bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg',
-                    },
-                  });
-                }
-              } else {
-                MySwal.fire({
-                  icon: 'error',
-                  title: 'Error',
-                  text: res.error || 'Error desconocido',
-                  background: '#fff',
-                  confirmButtonText: 'Cerrar',
-                  customClass: {
-                    popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
-                    title: 'text-2xl text-red-700 mb-2',
-                    confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg',
-                  },
-                });
-              }
-            }
-          }}
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
-        />
-        {showTooltip && (
-          <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white text-purple-700 text-xs px-3 py-1 rounded-lg shadow-lg z-30 whitespace-nowrap flex flex-col items-center">
-            ¡Haz clic para pedir ayuda a la IA!
-            <span className="w-2 h-2 bg-white rotate-45 -mt-1 shadow-lg"></span>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-) : (
-  null
-)}
+						{/* Asistente virtual: Scrapi con globo de diálogo pequeño, cuadrado y pegado al logo */}
+						{activeTab !== 'basico' ? (
+							<div className="absolute bottom-2 right-8 z-20 max-w-[320px] w-full flex items-end justify-end">
+								<div className="relative flex items-end w-full">
+									<svg
+										viewBox="0 0 320 70"
+										width="250"
+										height="80"
+										className="drop-shadow-lg w-full"
+										style={{ minWidth: 210, maxWidth: 210 }}
+									>
+										<defs>
+											<linearGradient id="bubble-gradient" x1="0" y1="0" x2="1" y2="1">
+												<stop offset="0%" stopColor="#a78bfa" />
+												<stop offset="100%" stopColor="#9333ea" />
+											</linearGradient>
+											<filter id="bubble-shadow" x="-20%" y="-20%" width="140%" height="140%">
+												<feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity="0.1" />
+											</filter>
+										</defs>
+										<rect x="10" y="-10" rx="16" ry="16" width="260" height="80" fill="url(#bubble-gradient)" filter="url(#bubble-shadow)" />
+										<polygon points="270,40 310,55 270,55" fill="url(#bubble-gradient)" />
+										<text
+											x="140"
+											y="25"
+											textAnchor="middle"
+											fontFamily="'Nunito', sans-serif"
+											fontWeight="700"
+											fontSize="22"
+											fill="#fff"
+											dominantBaseline="middle"
+										>
+											Scrapetok AI
+										</text>
+										<text
+											x="140"
+											y="50"
+											textAnchor="middle"
+											fontFamily="'Nunito', sans-serif"
+											fontSize="13"
+											fill="#ede9fe"
+											dominantBaseline="middle"
+										>
+											¿Necesitas ayuda para generar filtros?
+										</text>
+									</svg>
+
+									<div className="relative flex items-center">
+										<img
+											src={ScrapiLogo}
+											alt="Scrapi IA"
+											className="w-16 h-16 ml-1 drop-shadow-xl cursor-pointer"
+											style={{ marginBottom: '8px' }}
+											onClick={async () => {
+												const { value: userMessage } = await MySwal.fire({
+													title: 'Scrapetok AI',
+													input: 'text',
+													inputLabel: '¿Sobre qué tema quieres ideas de filtros?',
+													inputPlaceholder: 'Ej: cocina, viajes, tecnología...',
+													showCancelButton: true,
+													confirmButtonText: 'Pedir recomendación',
+													cancelButtonText: 'Cancelar',
+													background: '#fff',
+													customClass: {
+														popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
+														title: 'text-2xl text-purple-700 mb-2',
+														confirmButton: 'bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg',
+														cancelButton: 'bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-lg ml-2',
+														input: 'border-2 border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300',
+													},
+												});
+
+												if (userMessage) {
+													MySwal.fire({
+														title: 'Cargando…',
+														html: 'Consultando a la IA, por favor espera...',
+														allowOutsideClick: false,
+														didOpen: () => MySwal.showLoading(),
+														showConfirmButton: false,
+														background: '#fff',
+													});
+
+													const res = await recommendContent({ message: userMessage });
+													MySwal.close();
+
+													if (res.response) {
+														let parsed;
+														try {
+															parsed = JSON.parse(res.response);
+														} catch {
+															parsed = null;
+														}
+
+														if (parsed && (parsed.hashtags || parsed.keywords || parsed.usernames)) {
+															// Aquí va tu lógica de tabs actual
+														} else {
+															MySwal.fire({
+																title: 'Respuesta de Scrapetok AI',
+																html: `<pre style="white-space:pre-wrap;text-align:left;font-size:1rem;">${res.response}</pre>`,
+																background: '#fff',
+																confirmButtonText: 'Cerrar',
+																customClass: {
+																	popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
+																	title: 'text-2xl text-purple-700 mb-2',
+																	confirmButton: 'bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg',
+																},
+															});
+														}
+													} else {
+														// 🛑 Manejo de errores mejorado
+														let userFriendlyMessage =
+															'Lo que buscas va en contra de la política de uso de la IA. Reformula tu mensaje sin contenido ofensivo, violento o que infrinja nuestras normas: https://go.microsoft.com/fwlink/?linkid=2198766';
+
+														try {
+															const errText = typeof res.error === 'string' ? res.error : JSON.stringify(res.error);
+															const errJson = JSON.parse(errText);
+
+															const isContentFilter =
+																errJson?.error?.code === 'content_filter' ||
+																errJson?.error?.innererror?.code === 'ResponsibleAIPolicyViolation';
+
+															if (!isContentFilter && errJson?.error?.message) {
+																userFriendlyMessage = errJson.error.message;
+															}
+														} catch {
+															// Si no se puede parsear, dejamos el mensaje predeterminado
+														}
+
+														MySwal.fire({
+															icon: 'error',
+															title: 'Mensaje bloqueado',
+															text: userFriendlyMessage,
+															background: '#fff',
+															confirmButtonText: 'Cerrar',
+															customClass: {
+																popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
+																title: 'text-2xl text-red-700 mb-2',
+																confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg',
+															},
+														});
+													}
+												}
+											}}
+										/>
+										{showTooltip && (
+											<div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white text-purple-700 text-xs px-3 py-1 rounded-lg shadow-lg z-30 whitespace-nowrap flex flex-col items-center">
+												¡Haz clic para pedir ayuda a la IA!
+												<span className="w-2 h-2 bg-white rotate-45 -mt-1 shadow-lg"></span>
+											</div>
+										)}
+									</div>
+								</div>
+							</div>
+						) : null}
+
 					</div>
 				</div>
 			</div>
