@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { Maximize2 } from "lucide-react";
+import { downloadExcel } from "@services/excelService/ExcelFetch";
 
 import type { UserDBQueryRequest } from "@interfaces/db-queries/UserDBQueryRequest";
 import type {
@@ -38,6 +39,7 @@ export default function DatabaseQueriesPage() {
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
 	const [selectedPost, setSelectedPost] = useState<UserDbPost | null>(null);
+	const [loadingExcel, setLoadingExcel] = useState(false);
 
 	useEffect(() => {
 		if (!filters) {
@@ -71,6 +73,85 @@ export default function DatabaseQueriesPage() {
 			}
 		})();
 	}, [filters]);
+
+	const handleDownloadExcel = async () => {
+		if (!posts || posts.length === 0) {
+			await Swal.fire({
+				icon: "warning",
+				title: "No hay datos",
+				text: "Primero debes ejecutar una consulta.",
+				confirmButtonColor: "#8B5CF6",
+			});
+			return;
+		}
+		setLoadingExcel(true);
+		try {
+			const requestBody = posts.map((item) => ({
+				// Orden coherente
+				postCode: item.postId,
+				tiktokAccountUsername: item.usernameTiktokAccount,
+				postLink: item.postURL,
+				datePosted: item.datePosted,
+				timePosted: item.hourPosted,
+				hashtags: item.hashtags,
+				numberOfHashtags: item.numberHashtags,
+				views: item.views,
+				likes: item.likes,
+				comments: item.comments,
+				interactions: item.totalInteractions,
+				engagementRate: item.engagement,
+				reposted: item.reposts,
+				saves: item.saves,
+				regionOfPosting: item.regionPost,
+				soundId: item.soundId,
+				soundUrl: item.soundURL,
+				trackingDate: item.dateTracking,
+				trackingTime: item.timeTracking,
+				user: item.userId,
+			}));
+			const blob = await downloadExcel(requestBody); // Usa tu servicio aquí
+			const url = window.URL.createObjectURL(blob);
+			const now = new Date();
+			const timestamp =
+				now.getFullYear() +
+				"-" +
+				String(now.getMonth() + 1).padStart(2, "0") +
+				"-" +
+				String(now.getDate()).padStart(2, "0") +
+				"_" +
+				String(now.getHours()).padStart(2, "0") +
+				"-" +
+				String(now.getMinutes()).padStart(2, "0") +
+				"-" +
+				String(now.getSeconds()).padStart(2, "0");
+			const fileName = `db_tiktok_videos_${timestamp}.xlsx`;
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = fileName;
+			document.body.appendChild(a);
+			a.click();
+			setTimeout(() => {
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+			}, 100);
+			await Swal.fire({
+				icon: "success",
+				title: "¡Archivo exportado!",
+				text: "El archivo Excel fue exportado correctamente.",
+				confirmButtonColor: "#10B981", // verde chillón
+			});
+		} catch (error) {
+			console.error(error);
+			await Swal.fire({
+				icon: "error",
+				title: "Error al exportar",
+				text: "Ocurrió un error al exportar el archivo Excel.",
+				confirmButtonColor: "#EF4444",
+			});
+		} finally {
+			setLoadingExcel(false);
+		}
+	};
 
 	// === split metrics & fallback para usernames inexistentes ===
 	const primaryMetrics = (() => {
@@ -199,13 +280,7 @@ export default function DatabaseQueriesPage() {
 		xKey: string;
 	};
 
-	const renderChart = ({
-		key,
-		title,
-		data,
-		bars,
-		xKey,
-	}: ChartData) => {
+	const renderChart = ({ key, title, data, bars, xKey }: ChartData) => {
 		const colors = shuffle(PALETTE);
 		return (
 			<div
@@ -276,7 +351,10 @@ export default function DatabaseQueriesPage() {
 			regionOfPosting: post.regionPost,
 			trackingDate: post.dateTracking,
 			trackingTime: post.timeTracking,
-			user: post.userId !== undefined && post.userId !== null ? String(post.userId) : undefined,
+			user:
+				post.userId !== undefined && post.userId !== null
+					? String(post.userId)
+					: undefined,
 			admin: undefined,
 		};
 	}
@@ -305,7 +383,10 @@ export default function DatabaseQueriesPage() {
 	];
 
 	// Justo antes del return, calcula los posts a mostrar en la página actual
-	const paginatedPosts = posts.slice((page - 1) * PAGE_WINDOW_SIZE, page * PAGE_WINDOW_SIZE);
+	const paginatedPosts = posts.slice(
+		(page - 1) * PAGE_WINDOW_SIZE,
+		page * PAGE_WINDOW_SIZE,
+	);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
@@ -362,13 +443,38 @@ export default function DatabaseQueriesPage() {
 									<td colSpan={headers.length} className="p-8 text-center">
 										<div className="flex flex-col items-center justify-center gap-4">
 											<div className="rounded-full bg-purple-200 flex items-center justify-center w-16 h-16 mb-2">
-												<svg className="w-8 h-8 text-white/80" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-													<circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2.5" />
-													<line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+												<svg
+													className="w-8 h-8 text-white/80"
+													fill="none"
+													stroke="currentColor"
+													strokeWidth="2.5"
+													viewBox="0 0 24 24"
+												>
+													<circle
+														cx="11"
+														cy="11"
+														r="8"
+														stroke="currentColor"
+														strokeWidth="2.5"
+													/>
+													<line
+														x1="21"
+														y1="21"
+														x2="16.65"
+														y2="16.65"
+														stroke="currentColor"
+														strokeWidth="2.5"
+														strokeLinecap="round"
+													/>
 												</svg>
 											</div>
-											<div className="text-2xl font-bold text-gray-700">No hay datos aún</div>
-											<div className="text-gray-500 text-base mb-2">Configura tus filtros y ejecuta el scraping para ver los resultados</div>
+											<div className="text-2xl font-bold text-gray-700">
+												No hay datos aún
+											</div>
+											<div className="text-gray-500 text-base mb-2">
+												Configura tus filtros y ejecuta el scraping para ver los
+												resultados
+											</div>
 										</div>
 									</td>
 								</tr>
@@ -376,15 +482,21 @@ export default function DatabaseQueriesPage() {
 								paginatedPosts.map((row, i) => (
 									<tr
 										key={`${row.postId}-${i}`}
-										className={i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"}
+										className={
+											i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"
+										}
 										onClick={() => setSelectedPost(row)}
-										style={{ cursor: 'pointer' }}
+										style={{ cursor: "pointer" }}
 									>
 										<td className="px-4 py-2 text-sm font-medium text-gray-900">
 											{row.postId}
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">{row.datePosted}</td>
-										<td className="px-4 py-2 text-sm text-gray-900">{row.hourPosted}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.datePosted}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.hourPosted}
+										</td>
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.usernameTiktokAccount}
 										</td>
@@ -423,11 +535,15 @@ export default function DatabaseQueriesPage() {
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.totalInteractions.toLocaleString()}
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">{row.hashtags || "–"}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.hashtags || "–"}
+										</td>
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.numberHashtags.toString()}
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">{row.soundId}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.soundId}
+										</td>
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.soundURL ? (
 												<a
@@ -442,10 +558,18 @@ export default function DatabaseQueriesPage() {
 												"–"
 											)}
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">{row.regionPost}</td>
-										<td className="px-4 py-2 text-sm text-gray-900">{row.dateTracking}</td>
-										<td className="px-4 py-2 text-sm text-gray-900">{row.timeTracking}</td>
-										<td className="px-4 py-2 text-sm text-gray-900">{row.userId}</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.regionPost}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.dateTracking}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.timeTracking}
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
+											{row.userId}
+										</td>
 									</tr>
 								))
 							)}
@@ -480,8 +604,43 @@ export default function DatabaseQueriesPage() {
 					Next
 				</button>
 			</div>
+			{posts.length > 0 && (
+				<div className="flex justify-center mt-6">
+					<button
+						onClick={handleDownloadExcel}
+						className={`flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-xl shadow transition-all duration-150 disabled:opacity-70`}
+						disabled={loadingExcel}
+					>
+						{loadingExcel && (
+							<svg
+								className="animate-spin w-5 h-5 mr-2 text-white"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<circle
+									className="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									strokeWidth="4"
+								></circle>
+								<path
+									className="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8v8z"
+								></path>
+							</svg>
+						)}
+						{loadingExcel ? "Exportando..." : "Exportar a Excel"}
+					</button>
+				</div>
+			)}
 			{selectedPost && (
-				<PostDetailModal post={mapUserDbPostToApifyCallResponse(selectedPost)} onClose={() => setSelectedPost(null)} />
+				<PostDetailModal
+					post={mapUserDbPostToApifyCallResponse(selectedPost)}
+					onClose={() => setSelectedPost(null)}
+				/>
 			)}
 		</div>
 	);

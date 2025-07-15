@@ -1,4 +1,3 @@
-// src/pages/ApifyCallPage.tsx
 import React, { useState, useEffect } from "react";
 import { FilterPanel } from "@components/FilterPanel";
 import type { ApifyCallResponse } from "@interfaces/apify-call/ApifyCallResponse";
@@ -7,13 +6,18 @@ import { userApify } from "@services/apifyCall/userApifyCall";
 import Swal from "sweetalert2";
 import { PostDetailModal } from "@components/PostDetailModal";
 import type { UserApifyCallRequest } from "@interfaces/apify-call/UserApifyCallRequest";
+import { downloadExcel } from "@services/excelService/ExcelFetch";
 
 export default function ApifyCallPage() {
+	const [loadingExcel, setIsLoadingExcel] = useState(false);
 	const [data, setData] = useState<ApifyCallResponse[]>([]);
-	const [savedFilters, setSavedFilters] = useState<Partial<UserApifyCallRequest> | null>(null);
+	const [savedFilters, setSavedFilters] =
+		useState<Partial<UserApifyCallRequest> | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [selectedPost, setSelectedPost] = useState<ApifyCallResponse | null>(null); // ESTADO NUEVO
+	const [selectedPost, setSelectedPost] = useState<ApifyCallResponse | null>(
+		null,
+	); // ESTADO NUEVO
 
 	// Al cargar la página, intenta restaurar los datos del sessionStorage
 	useEffect(() => {
@@ -22,14 +26,105 @@ export default function ApifyCallPage() {
 		if (stored) {
 			try {
 				setData(JSON.parse(stored));
-			} catch {/* ignore */}
+			} catch {
+				/* ignore */
+			}
 		}
 		if (storedFilters) {
 			try {
 				setSavedFilters(JSON.parse(storedFilters));
-			} catch {/* ignore */}
+			} catch {
+				/* ignore */
+			}
 		}
 	}, []);
+
+	const handleDownloadExcel = async () => {
+		if (!data) {
+			Swal.fire({
+				icon: "warning",
+				title: "No hay datos",
+				text: "⚠️ Debes realizar la consulta primero.",
+				confirmButtonColor: "#7c3aed",
+			});
+			return;
+		}
+		setIsLoadingExcel(true);
+		try {
+			const requestBody = data.map((item) => ({
+				postCode: item.postCode,
+				tiktokAccountUsername: item.tiktokAccountUsername,
+				postLink: item.postLink,
+
+				datePosted: item.datePosted,
+				timePosted: item.timePosted,
+
+				hashtags: item.hashtags,
+				numberOfHashtags: item.numberOfHashtags,
+
+				views: item.views,
+				likes: item.likes,
+				comments: item.comments,
+				interactions: item.interactions,
+				engagementRate: item.engagementRate,
+
+				reposted: item.reposted,
+				saves: item.saves,
+
+				regionOfPosting: item.regionOfPosting,
+
+				soundId: item.soundId,
+				soundUrl: item.soundUrl,
+
+				trackingDate: item.trackingDate,
+				trackingTime: item.trackingTime,
+
+				user: item.user,
+				admin: item.admin,
+			}));
+			const blob = await downloadExcel(requestBody);
+			const url = window.URL.createObjectURL(blob);
+			const now = new Date();
+			const timestamp =
+				now.getFullYear() +
+				"-" +
+				String(now.getMonth() + 1).padStart(2, "0") +
+				"-" +
+				String(now.getDate()).padStart(2, "0") +
+				"_" +
+				String(now.getHours()).padStart(2, "0") +
+				"-" +
+				String(now.getMinutes()).padStart(2, "0") +
+				"-" +
+				String(now.getSeconds()).padStart(2, "0");
+			const fileName = `tiktok_videos_${timestamp}.xlsx`; // Nombre generado en frontend
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = fileName;
+			document.body.appendChild(a);
+			a.click();
+			setTimeout(() => {
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+			}, 100);
+			// Colocar POP UP
+			await Swal.fire({
+				icon: "success",
+				title: "¡Archivo exportado!",
+				text: "✅ El archivo Excel fue exportado con éxito.",
+				confirmButtonColor: "#22c55e", // verde
+			});
+		} catch (error) {
+			await Swal.fire({
+				icon: "error",
+				title: "Error al descargar",
+				text: "❌ Hubo un error descargando el archivo Excel.",
+				confirmButtonColor: "#ef4444", // rojo
+			});
+		} finally {
+			setIsLoadingExcel(false);
+		}
+	};
 
 	const handleApplyFilters = async (filters: unknown) => {
 		// 1) Abrir modal de carga
@@ -43,7 +138,9 @@ export default function ApifyCallPage() {
 		setError(null);
 		try {
 			// Si tu endpoint devuelve objetos "raw", los mapeamos:
-			const raw = await userApify(filters as Omit<UserApifyCallRequest, "userId">);
+			const raw = await userApify(
+				filters as Omit<UserApifyCallRequest, "userId">,
+			);
 			const mapped = raw.map(mapRawToApifyResponse);
 			setData(mapped);
 			// Guarda en sessionStorage
@@ -52,8 +149,9 @@ export default function ApifyCallPage() {
 			setSavedFilters(filters as Partial<UserApifyCallRequest>);
 		} catch (err: unknown) {
 			let message = "Ocurrió un error al obtener los datos de TikTok.";
-			if (typeof err === 'object' && err !== null && 'response' in err) {
-				const response = (err as { response?: { data?: { message?: string } } }).response;
+			if (typeof err === "object" && err !== null && "response" in err) {
+				const response = (err as { response?: { data?: { message?: string } } })
+					.response;
 				if (response && response.data && response.data.message) {
 					message = response.data.message;
 				}
@@ -88,7 +186,11 @@ export default function ApifyCallPage() {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6 relative">
-			<FilterPanel onApply={handleApplyFilters} onReset={handleReset} initialFilters={savedFilters} />
+			<FilterPanel
+				onApply={handleApplyFilters}
+				onReset={handleReset}
+				initialFilters={savedFilters}
+			/>
 
 			{error && <div className="text-red-600 text-center">{error}</div>}
 
@@ -121,14 +223,38 @@ export default function ApifyCallPage() {
 								<td colSpan={headers.length} className="p-8 text-center">
 									<div className="flex flex-col items-center justify-center gap-4">
 										<div className="rounded-full bg-purple-400/30 flex items-center justify-center w-24 h-24 mb-2">
-											<svg className="w-16 h-16 text-white/70" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-												<circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2.5" />
-												<line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+											<svg
+												className="w-16 h-16 text-white/70"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2.5"
+												viewBox="0 0 24 24"
+											>
+												<circle
+													cx="11"
+													cy="11"
+													r="8"
+													stroke="currentColor"
+													strokeWidth="2.5"
+												/>
+												<line
+													x1="21"
+													y1="21"
+													x2="16.65"
+													y2="16.65"
+													stroke="currentColor"
+													strokeWidth="2.5"
+													strokeLinecap="round"
+												/>
 											</svg>
 										</div>
-										<div className="text-2xl font-bold text-gray-700">No hay datos aún</div>
-										<div className="text-gray-500 text-base mb-2">Configura tus filtros y ejecuta el scraping para ver los resultados</div>
-										
+										<div className="text-2xl font-bold text-gray-700">
+											No hay datos aún
+										</div>
+										<div className="text-gray-500 text-base mb-2">
+											Configura tus filtros y ejecuta el scraping para ver los
+											resultados
+										</div>
 									</div>
 								</td>
 							</tr>
@@ -136,12 +262,20 @@ export default function ApifyCallPage() {
 							data.map((row, i) => (
 								<tr
 									key={`${row.postCode}-${i}`}
-									className={i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"}
+									className={
+										i % 2 === 0 ? "bg-gray-50" : "bg-white dark:bg-white/80"
+									}
 									onClick={() => setSelectedPost(row)}
 								>
-									<td className="px-4 py-2 text-sm font-medium text-gray-900">{row.postCode}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.datePosted}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.tiktokAccountUsername}</td>
+									<td className="px-4 py-2 text-sm font-medium text-gray-900">
+										{row.postCode}
+									</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
+										{row.datePosted}
+									</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
+										{row.tiktokAccountUsername}
+									</td>
 									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.postLink ? (
 											<a
@@ -156,20 +290,64 @@ export default function ApifyCallPage() {
 											"–"
 										)}
 									</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.views?.toLocaleString() ?? "0"}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.engagementRate?.toFixed(2) ?? "0.00"}%</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.interactions?.toLocaleString() ?? "0"}</td>
-									<td className="px-4 py-2 text-sm text-gray-900">{row.hashtags ?? "–"}</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
+										{row.views?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
+										{row.engagementRate?.toFixed(2) ?? "0.00"}%
+									</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
+										{row.interactions?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
+										{row.hashtags ?? "–"}
+									</td>
 								</tr>
 							))
 						)}
 					</tbody>
-				</table>	
-			</div>	
-			{selectedPost && <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
+				</table>
+			</div>
 
-			{/* Logo Scrapi IA flotante en la parte inferior derecha, solo imagen */}
-			{/* Elimino la imagen flotante de Scrapi IA en la esquina inferior derecha */}
+			{data.length > 0 && (
+				<div className="flex justify-center items-center w-full my-4">
+					<button
+						className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-5 rounded-xl shadow-md transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+						onClick={handleDownloadExcel}
+						disabled={loadingExcel}
+					>
+						{loadingExcel && (
+							<svg
+								className="animate-spin h-5 w-5 text-white"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<circle
+									className="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									strokeWidth="4"
+								/>
+								<path
+									className="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+								/>
+							</svg>
+						)}
+						{loadingExcel ? "Exportando..." : "Exportar a Excel"}
+					</button>
+				</div>
+			)}
+			{selectedPost && (
+				<PostDetailModal
+					post={selectedPost}
+					onClose={() => setSelectedPost(null)}
+				/>
+			)}
 		</div>
 	);
 }
