@@ -3,8 +3,10 @@ import { AiResponse } from "@interfaces/AiResponse";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
+// SweetAlert2 con React
 const MySwal = withReactContent(Swal);
 
+// Validador de formato de hashtags
 export const isValidHashtagFormat = (input: string): boolean => {
 	const tags = input
 		.split(",")
@@ -16,6 +18,7 @@ export const isValidHashtagFormat = (input: string): boolean => {
 	return tags.every(tag => /^#[\wáéíóúüñÁÉÍÓÚÜÑ-]+$/i.test(tag));
 };
 
+// Parámetros esperados por handleGenerate
 interface HandleGenerateParams {
 	hashtags: string;
 	setLoading: (val: boolean) => void;
@@ -23,6 +26,7 @@ interface HandleGenerateParams {
 	setErrorMessage: (val: string) => void; // solo usado para validaciones iniciales
 }
 
+// Función principal que consulta a la IA
 export const handleGenerate = async ({
 	hashtags,
 	setLoading,
@@ -49,12 +53,10 @@ export const handleGenerate = async ({
 
 		const response = await api.post<{ message: string }, any>(
 			{ message: hashtags },
-			{
-				url: "/user/ia/chat/idea3",
-			}
+			{ url: "/user/ia/chat/idea3" }
 		);
 
-		console.log("🔽 Respuesta cruda:", response.data.response);
+		console.log("🔽 Respuesta cruda:", response.data);
 
 		if (!response.data.response) {
 			throw new Error("NO_RESPONSE");
@@ -73,12 +75,15 @@ export const handleGenerate = async ({
 		if (error.message !== "NO_RESPONSE") {
 			try {
 				const backendError = error?.response?.data?.error;
-				console.log("📛 error?.response?.data?.error:", backendError);
+				console.log("🔍 backendError (raw):", backendError);
 
-				if (typeof backendError === "string" && backendError.includes("{")) {
-					const match = backendError.match(/"({.+})"/);
-					if (match && match[1]) {
-						const parsedError = JSON.parse(match[1]);
+				if (typeof backendError === "string") {
+					if (backendError.includes("{")) {
+						const match = backendError.match(/"({.+})"/);
+						const errorJSON = match?.[1] ?? backendError;
+						console.log("🔍 Intentando parsear backendError:", errorJSON);
+
+						const parsedError = JSON.parse(errorJSON);
 						console.log("📦 parsedError:", parsedError);
 
 						const inner = parsedError?.error;
@@ -88,10 +93,12 @@ export const handleGenerate = async ({
 							inner?.innererror?.code === "ResponsibleAIPolicyViolation"
 						) {
 							userFriendlyMessage =
-								"Lo que buscas va en contra de la política de uso de la IA. Reformula tu mensaje sin contenido ofensivo, violento o que infrinja nuestras normas: https://go.microsoft.com/fwlink/?linkid=2198766";
+								"⚠️ Tu mensaje fue bloqueado por moderación automática. Reformúlalo sin contenido sensible o genérico.";
 						} else if (inner?.message) {
 							userFriendlyMessage = inner.message;
 						}
+					} else {
+						userFriendlyMessage = backendError;
 					}
 				}
 			} catch (e) {
