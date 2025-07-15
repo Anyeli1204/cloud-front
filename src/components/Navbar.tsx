@@ -16,7 +16,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useAuthContext } from "@contexts/AuthContext";
 import logoBlanco from "../assets/LogoBlanco.png";
 import { useRef } from "react";
-import clickSound from "../Sounds/clicksound.mp3";
+import clickSound from "../sounds/clicksound.mp3";
 
 const baseOptions = [
 	{ key: "global", label: "Daily Top Global", icon: <Home size={18} /> },
