@@ -6,6 +6,5 @@ export async function getDashboardInfo(): Promise<DashboardInfo[]> {
 	const response = await api.get<void, DashboardInfo[]>({
 		url: "/user/getDashboardInfo",
 	});
-	console.log(response.data);
 	return response.data;
 }

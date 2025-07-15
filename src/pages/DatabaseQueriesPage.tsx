@@ -131,7 +131,6 @@ export default function DatabaseQueriesPage() {
 		setLoadingExcel(true);
 		try {
 			const requestBody = posts.map((item) => ({
-				// Orden coherente
 				postCode: item.postId,
 				tiktokAccountUsername: item.usernameTiktokAccount,
 				postLink: item.postURL,
@@ -153,7 +152,7 @@ export default function DatabaseQueriesPage() {
 				trackingTime: item.timeTracking,
 				user: item.userId,
 			}));
-			const blob = await downloadExcel(requestBody); // Usa tu servicio aquí
+			const blob = await downloadExcel(requestBody);
 			const url = window.URL.createObjectURL(blob);
 			const now = new Date();
 			const timestamp =
@@ -373,7 +372,6 @@ export default function DatabaseQueriesPage() {
 		);
 	};
 
-	// Función para mapear UserDbPost a ApifyCallResponse (props del modal)
 	function mapUserDbPostToApifyCallResponse(post: UserDbPost) {
 		return {
 			postCode: post.postId,

@@ -4,30 +4,26 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { isAiResponseEmpty, MODERATION_MESSAGE } from "../utils/aiModeration";
 
-// SweetAlert2 con React
 const MySwal = withReactContent(Swal);
 
-// Validador de formato de hashtags
 export const isValidHashtagFormat = (input: string): boolean => {
 	const tags = input
 		.split(",")
-		.map(tag => tag.trim())
-		.filter(tag => tag.length > 0);
+		.map((tag) => tag.trim())
+		.filter((tag) => tag.length > 0);
 
 	if (tags.length === 0) return false;
 
-	return tags.every(tag => /^#[\wáéíóúüñÁÉÍÓÚÜÑ-]+$/i.test(tag));
+	return tags.every((tag) => /^#[\wáéíóúüñÁÉÍÓÚÜÑ-]+$/i.test(tag));
 };
 
-// Parámetros esperados por handleGenerate
 interface HandleGenerateParams {
 	hashtags: string;
 	setLoading: (val: boolean) => void;
 	setAiResponse: (val: AiResponse | null) => void;
-	setErrorMessage: (val: string) => void; // solo usado para validaciones iniciales
+	setErrorMessage: (val: string) => void;
 }
 
-// Función principal que consulta a la IA
 export const handleGenerate = async ({
 	hashtags,
 	setLoading,
@@ -40,7 +36,9 @@ export const handleGenerate = async ({
 	}
 
 	if (!isValidHashtagFormat(hashtags)) {
-		setErrorMessage("❗ Formato inválido. Usa hashtags como: #marketing, #ia, #viral");
+		setErrorMessage(
+			"❗ Formato inválido. Usa hashtags como: #marketing, #ia, #viral",
+		);
 		return;
 	}
 
@@ -48,23 +46,15 @@ export const handleGenerate = async ({
 	setAiResponse(null);
 
 	try {
-		console.log("📤 Enviando al backend:", { message: hashtags });
-
 		const api = await Api.getInstance();
-
 		const response = await api.post<{ message: string }, any>(
 			{ message: hashtags },
-			{ url: "/user/ia/chat/idea3" }
+			{ url: "/user/ia/chat/idea3" },
 		);
-
-		console.log("🔽 Respuesta cruda:", response.data);
-
 		if (!response.data.response) {
 			throw new Error("NO_RESPONSE");
 		}
-
 		const parsed: AiResponse = JSON.parse(response.data.response);
-		console.log("✅ Objeto parseado:", parsed);
 
 		// Verificar si la respuesta está vacía (indicando moderación)
 		if (isAiResponseEmpty(parsed)) {
@@ -99,10 +89,8 @@ export const handleGenerate = async ({
 					if (backendError.includes("{")) {
 						const match = backendError.match(/"({.+})"/);
 						const errorJSON = match?.[1] ?? backendError;
-						console.log("🔍 Intentando parsear backendError:", errorJSON);
 
 						const parsedError = JSON.parse(errorJSON);
-						console.log("📦 parsedError:", parsedError);
 
 						const inner = parsedError?.error;
 
@@ -133,7 +121,8 @@ export const handleGenerate = async ({
 			customClass: {
 				popup: "rounded-2xl shadow-2xl p-8 max-w-lg",
 				title: "text-2xl text-red-700 mb-2",
-				confirmButton: "bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg",
+				confirmButton:
+					"bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg",
 			},
 		});
 	} finally {

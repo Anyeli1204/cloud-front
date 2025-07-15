@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 interface TikTokEmbedProps {
 	url: string;
-	onLoad?: () => void; // <-- Agregado
+	onLoad?: () => void;
 }
 
 export default function TikTokEmbed({ url, onLoad }: TikTokEmbedProps) {
@@ -21,11 +21,7 @@ export default function TikTokEmbed({ url, onLoad }: TikTokEmbedProps) {
 
 		if (blockRef.current && onLoad) {
 			observer = new MutationObserver(() => {
-				// Cuando TikTok reemplaza el contenido (ya no es solo el <section>), disparamos onLoad una sola vez
-				if (
-					blockRef.current &&
-					blockRef.current.querySelector("iframe") // TikTok reemplaza el contenido por un iframe
-				) {
+				if (blockRef.current && blockRef.current.querySelector("iframe")) {
 					onLoad();
 					if (observer) observer.disconnect();
 				}

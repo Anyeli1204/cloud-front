@@ -15,6 +15,8 @@ import {
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuthContext } from "@contexts/AuthContext";
 import logoBlanco from "../assets/LogoBlanco.png";
+import { useRef } from "react";
+import clickSound from "../Sounds/clicksound.mp3";
 
 const baseOptions = [
 	{ key: "global", label: "Daily Top Global", icon: <Home size={18} /> },
@@ -42,6 +44,19 @@ export default function NavBar({
 	tabs?: { key: string; label: string; icon?: React.ReactNode }[];
 	isAdmin?: boolean;
 }) {
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	if (!audioRef.current) {
+		audioRef.current = new Audio(clickSound);
+	}
+
+	const playSound = () => {
+		if (!audioRef.current) return;
+		audioRef.current.volume = 0.5;
+		audioRef.current.loop = false;
+		audioRef.current.currentTime = 0;
+		audioRef.current.play();
+	};
+
 	const { theme, toggleTheme } = useTheme();
 	const { role } = useAuthContext();
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -51,7 +66,11 @@ export default function NavBar({
 		// Solo mostrar las tabs permitidas para admin
 		renderTabs = [
 			{ key: "global", label: "Daily Top Global", icon: <Home size={18} /> },
-			{ key: "qa", label: "Preguntas y Respuestas", icon: <MessageCircle size={18} /> },
+			{
+				key: "qa",
+				label: "Preguntas y Respuestas",
+				icon: <MessageCircle size={18} />,
+			},
 			{
 				key: "admin-users",
 				label: "Gestión de Usuarios",
@@ -62,10 +81,12 @@ export default function NavBar({
 	}
 
 	// Detectar si estamos en /admin/users para resaltar el tab
-	const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+	const currentPath =
+		typeof window !== "undefined" ? window.location.pathname : "";
 	const isAdminUsersActive = currentPath === "/admin/users";
 
 	const handleTabClick = (key: string) => {
+    playSound();
 		if (key === "admin-users") {
 			window.location.href = "/admin/users";
 		} else {
@@ -76,6 +97,7 @@ export default function NavBar({
 	};
 
 	const handleLogout = () => {
+    playSound();
 		onLogout();
 		setIsMobileMenuOpen(false);
 	};
@@ -126,7 +148,7 @@ export default function NavBar({
 					<div className="flex items-center space-x-2">
 						{/* Botón de cambio de tema */}
 						<button
-							onClick={toggleTheme}
+							onClick={()=> {toggleTheme(); playSound();}}
 							className="flex items-center justify-center w-10 h-10 border-2 border-gray-300 dark:border-gray-600 rounded-full bg-transparent transition-all duration-200 hover:border-purple-500 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500"
 							aria-label="Cambiar tema"
 						>

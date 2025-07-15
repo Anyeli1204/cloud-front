@@ -11,11 +11,11 @@ import {
 	AlarmClock,
 } from "lucide-react";
 import { useAuthContext } from "@contexts/AuthContext";
-import { 
-	getQuestionsPaged, 
-	getAnsweredQuestionsPaged, 
-	getPendingQuestionsPaged, 
-	getAllQuestion
+import {
+	getQuestionsPaged,
+	getAnsweredQuestionsPaged,
+	getPendingQuestionsPaged,
+	getAllQuestion,
 } from "@services/QA/getAllQuestions";
 import { makeQuestion } from "@services/QA/userMakeQuestion";
 import { answerQuestion } from "@services/QA/adminAnswerQuestion";
@@ -44,7 +44,6 @@ export default function QuestionsAnswersPage() {
 	const [hasMore, setHasMore] = useState(true);
 	const [searchText, setSearchText] = useState("");
 	const [stats, setStats] = useState(() => {
-		// Leer del localStorage al iniciar
 		const saved = localStorage.getItem("qa_stats");
 		return saved ? JSON.parse(saved) : { total: 0, answered: 0, pending: 0 };
 	});
@@ -56,17 +55,23 @@ export default function QuestionsAnswersPage() {
 		"PENDING",
 	];
 
-	// Determinar si debemos usar infinity scroll (solo cuando no hay filtros activos)
-	const shouldUseInfiniteScroll = filter === "ALL" && !searchText.trim() && hashtagFilter.length === 0;
+	const shouldUseInfiniteScroll =
+		filter === "ALL" && !searchText.trim() && hashtagFilter.length === 0;
 
 	const loadMoreQuestions = async () => {
 		if (!shouldUseInfiniteScroll || loading || !hasMore) return;
 		setLoading(true);
 		try {
 			const res = await getQuestionsPaged(page, PAGE_SIZE);
-			const data = res.data as unknown as { content: QuestionAnswerResponse[]; last: boolean };
+			const data = res.data as unknown as {
+				content: QuestionAnswerResponse[];
+				last: boolean;
+			};
 			const newQuestions = data.content;
-			setQuestions((prev: QuestionAnswerResponse[]) => [...prev, ...newQuestions]);
+			setQuestions((prev: QuestionAnswerResponse[]) => [
+				...prev,
+				...newQuestions,
+			]);
 			setPage((prev: number) => prev + 1);
 			setHasMore(!data.last);
 		} catch {
@@ -90,7 +95,10 @@ export default function QuestionsAnswersPage() {
 			} else {
 				res = await getQuestionsPaged(0, PAGE_SIZE);
 			}
-			const data = res.data as unknown as { content: QuestionAnswerResponse[]; last: boolean };
+			const data = res.data as unknown as {
+				content: QuestionAnswerResponse[];
+				last: boolean;
+			};
 			const newQuestions = data.content;
 			setQuestions(newQuestions);
 			setPage(1);
@@ -107,7 +115,9 @@ export default function QuestionsAnswersPage() {
 		setError(null);
 		try {
 			const res = await getQuestionsPaged(0, 1000);
-			const all: QuestionAnswerResponse[] = (res.data as unknown as { content: QuestionAnswerResponse[] }).content || [];
+			const all: QuestionAnswerResponse[] =
+				(res.data as unknown as { content: QuestionAnswerResponse[] })
+					.content || [];
 			let filtered: QuestionAnswerResponse[] = all;
 			const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
 			if (typedFilter === "ANSWERED") {
@@ -138,8 +148,12 @@ export default function QuestionsAnswersPage() {
 			}
 			const newStats = {
 				total: all.length,
-				answered: all.filter((q: QuestionAnswerResponse) => q.status === "ANSWERED").length,
-				pending: all.filter((q: QuestionAnswerResponse) => q.status === "PENDING").length,
+				answered: all.filter(
+					(q: QuestionAnswerResponse) => q.status === "ANSWERED",
+				).length,
+				pending: all.filter(
+					(q: QuestionAnswerResponse) => q.status === "PENDING",
+				).length,
 			};
 			setStats(newStats);
 			localStorage.setItem("qa_stats", JSON.stringify(newStats));
@@ -148,15 +162,17 @@ export default function QuestionsAnswersPage() {
 		}
 	};
 
-	// Llamar a loadQuestionsCount al montar el componente y cuando se envía una pregunta o respuesta
 	useEffect(() => {
 		loadQuestionsCount();
 	}, [activeTab, successMsg]);
 
-	// useEffect para cargar preguntas según el filtro activo y el orden
 	useEffect(() => {
 		if (activeTab === "QNA") {
-			const hasActiveFilters = filter !== "ALL" || searchText.trim() || hashtagFilter.length > 0 || sortOrder !== "NEWEST";
+			const hasActiveFilters =
+				filter !== "ALL" ||
+				searchText.trim() ||
+				hashtagFilter.length > 0 ||
+				sortOrder !== "NEWEST";
 			if (hasActiveFilters) {
 				loadAllQuestionsForFiltering();
 			} else {
@@ -165,7 +181,6 @@ export default function QuestionsAnswersPage() {
 		}
 	}, [activeTab, filter, searchText, hashtagFilter, sortOrder]);
 
-	// Cambia el useEffect de cambio de tab para que solo resetee filtros, sin cargar preguntas manualmente
 	useEffect(() => {
 		if (activeTab === "QNA") {
 			setFilter("ALL");
@@ -175,14 +190,15 @@ export default function QuestionsAnswersPage() {
 		}
 	}, [activeTab]);
 
-	// Refresca la lista de preguntas cada vez que se cambia de tab y el filtro es PENDING o ANSWERED
 	useEffect(() => {
-		if (activeTab === "QNA" && (filter === "PENDING" || filter === "ANSWERED")) {
+		if (
+			activeTab === "QNA" &&
+			(filter === "PENDING" || filter === "ANSWERED")
+		) {
 			loadAllQuestionsForFiltering();
 		}
 	}, [activeTab, filter]);
 
-	// Cuando el usuario cambie el orden, desactiva el infinity scroll y carga todas las preguntas ordenadas
 	useEffect(() => {
 		if (activeTab === "QNA" && shouldUseInfiniteScroll) {
 			// Si cambia el orden, forzamos un filtro activo para desactivar el infinity scroll
@@ -194,7 +210,6 @@ export default function QuestionsAnswersPage() {
 		}
 	}, [sortOrder]);
 
-	// Recargar preguntas cuando se envía una respuesta
 	const handleSendAnswer = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		if (!answer.trim() || answeringId == null) return;
@@ -239,55 +254,72 @@ export default function QuestionsAnswersPage() {
 
 	// Ordena el array questions según sortOrder ANTES de aplicar filtros si hay infinity scroll
 	const orderedQuestions = shouldUseInfiniteScroll
-		? [...questions].sort((a: QuestionAnswerResponse, b: QuestionAnswerResponse) => {
-			try {
-				const dateA = new Date(`${a.questionDate}T${a.questionHour || '00:00:00'}`);
-				const dateB = new Date(`${b.questionDate}T${b.questionHour || '00:00:00'}`);
-				if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
-				if (sortOrder === "NEWEST") {
-					return dateB.getTime() - dateA.getTime();
-				} else {
-					return dateA.getTime() - dateB.getTime();
-				}
-			} catch {
-				return 0;
-			}
-		})
+		? [...questions].sort(
+				(a: QuestionAnswerResponse, b: QuestionAnswerResponse) => {
+					try {
+						const dateA = new Date(
+							`${a.questionDate}T${a.questionHour || "00:00:00"}`,
+						);
+						const dateB = new Date(
+							`${b.questionDate}T${b.questionHour || "00:00:00"}`,
+						);
+						if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+						if (sortOrder === "NEWEST") {
+							return dateB.getTime() - dateA.getTime();
+						} else {
+							return dateA.getTime() - dateB.getTime();
+						}
+					} catch {
+						return 0;
+					}
+				},
+			)
 		: questions;
 
-	const filteredQuestions = shouldUseInfiniteScroll ? orderedQuestions : questions
-		.filter((q: QuestionAnswerResponse) => {
-			const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
-			if (typedFilter === "ANSWERED") return q.status === "ANSWERED";
-			if (typedFilter === "PENDING") return q.status === "PENDING";
-			if (searchText.trim()) {
-				const textoSinHashtags = q.questionDescription.replace(/#[\wáéíóúÁÉÍÓÚñÑ]+/g, "").trim();
-				if (!textoSinHashtags.toLowerCase().includes(searchText.toLowerCase())) {
-					return false;
-				}
-			}
-			if (hashtagFilter.length > 0) {
-				const hashtags = q.questionDescription.match(/#[\wáéíóúÁÉÍÓÚñÑ]+/g) || [];
-				if (!hashtags.some((tag) => hashtagFilter.includes(tag))) {
-					return false;
-				}
-			}
-			return true;
-		})
-		.sort((a: QuestionAnswerResponse, b: QuestionAnswerResponse) => {
-			try {
-				const dateA = new Date(`${a.questionDate}T${a.questionHour || '00:00:00'}`);
-				const dateB = new Date(`${b.questionDate}T${b.questionHour || '00:00:00'}`);
-				if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
-				if (sortOrder === "NEWEST") {
-					return dateB.getTime() - dateA.getTime();
-				} else {
-					return dateA.getTime() - dateB.getTime();
-				}
-			} catch {
-				return 0;
-			}
-		});
+	const filteredQuestions = shouldUseInfiniteScroll
+		? orderedQuestions
+		: questions
+				.filter((q: QuestionAnswerResponse) => {
+					const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
+					if (typedFilter === "ANSWERED") return q.status === "ANSWERED";
+					if (typedFilter === "PENDING") return q.status === "PENDING";
+					if (searchText.trim()) {
+						const textoSinHashtags = q.questionDescription
+							.replace(/#[\wáéíóúÁÉÍÓÚñÑ]+/g, "")
+							.trim();
+						if (
+							!textoSinHashtags.toLowerCase().includes(searchText.toLowerCase())
+						) {
+							return false;
+						}
+					}
+					if (hashtagFilter.length > 0) {
+						const hashtags =
+							q.questionDescription.match(/#[\wáéíóúÁÉÍÓÚñÑ]+/g) || [];
+						if (!hashtags.some((tag) => hashtagFilter.includes(tag))) {
+							return false;
+						}
+					}
+					return true;
+				})
+				.sort((a: QuestionAnswerResponse, b: QuestionAnswerResponse) => {
+					try {
+						const dateA = new Date(
+							`${a.questionDate}T${a.questionHour || "00:00:00"}`,
+						);
+						const dateB = new Date(
+							`${b.questionDate}T${b.questionHour || "00:00:00"}`,
+						);
+						if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+						if (sortOrder === "NEWEST") {
+							return dateB.getTime() - dateA.getTime();
+						} else {
+							return dateA.getTime() - dateB.getTime();
+						}
+					} catch {
+						return 0;
+					}
+				});
 
 	const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
 		if (!shouldUseInfiniteScroll) return;
@@ -304,9 +336,9 @@ export default function QuestionsAnswersPage() {
 			setHashtagDropdownOpen(false);
 		};
 
-		document.addEventListener('click', handleClickOutside);
+		document.addEventListener("click", handleClickOutside);
 		return () => {
-			document.removeEventListener('click', handleClickOutside);
+			document.removeEventListener("click", handleClickOutside);
 		};
 	}, []);
 
@@ -323,14 +355,21 @@ export default function QuestionsAnswersPage() {
 				}
 				const newStats = {
 					total: all.length,
-					answered: all.filter((q: QuestionAnswerResponse) => q.status === "ANSWERED").length,
-					pending: all.filter((q: QuestionAnswerResponse) => q.status === "PENDING").length,
+					answered: all.filter(
+						(q: QuestionAnswerResponse) => q.status === "ANSWERED",
+					).length,
+					pending: all.filter(
+						(q: QuestionAnswerResponse) => q.status === "PENDING",
+					).length,
 				};
 				setStats(newStats);
 				localStorage.setItem("qa_stats", JSON.stringify(newStats));
 			} catch {
 				setStats({ total: 0, answered: 0, pending: 0 });
-				localStorage.setItem("qa_stats", JSON.stringify({ total: 0, answered: 0, pending: 0 }));
+				localStorage.setItem(
+					"qa_stats",
+					JSON.stringify({ total: 0, answered: 0, pending: 0 }),
+				);
 			}
 		};
 		fetchStats();
@@ -339,27 +378,31 @@ export default function QuestionsAnswersPage() {
 	return (
 		<div className="min-h-screen flex flex-col justify-center bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white">
 			<div className="flex justify-center items-center w-full">
-				<div className={`mx-auto bg-white dark:bg-white/70 rounded-t-3xl px-4 md:px-8 py-2 md:py-4 w-[1100px] flex flex-col shadow-none ${activeTab === 'QNA' ? 'mt-6' : 'mt-2'}`}>	
+				<div
+					className={`mx-auto bg-white dark:bg-white/70 rounded-t-3xl px-4 md:px-8 py-2 md:py-4 w-[1100px] flex flex-col shadow-none ${activeTab === "QNA" ? "mt-6" : "mt-2"}`}
+				>
 					<h1 className="w-full text-4xl font-extrabold mb-4 mt-8 text-purple-800 flex items-center justify-center gap-2">
 						Centro de Ayuda
 					</h1>
 
 					<div className="flex justify-center mb-4 gap-4">
-						{["FAQ", "QNA"].concat(role === "USER" ? ["ASK"] : []).map((tab) => (
-							<button
-								key={tab}
-								onClick={() => setActiveTab(tab as "FAQ" | "QNA" | "ASK")}
-								className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 text-base ${
-									activeTab === tab
-										? "bg-purple-600 text-white shadow"
-										: "bg-gray-100 text-purple-600 hover:bg-gray-200"
-								}`}
-							>
-								{tab === "FAQ" && "Preguntas frecuentes"}
-								{tab === "QNA" && "Preguntas y respuestas"}
-								{tab === "ASK" && "Haz una pregunta"}
-							</button>
-						))}
+						{["FAQ", "QNA"]
+							.concat(role === "USER" ? ["ASK"] : [])
+							.map((tab) => (
+								<button
+									key={tab}
+									onClick={() => setActiveTab(tab as "FAQ" | "QNA" | "ASK")}
+									className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 text-base ${
+										activeTab === tab
+											? "bg-purple-600 text-white shadow"
+											: "bg-gray-100 text-purple-600 hover:bg-gray-200"
+									}`}
+								>
+									{tab === "FAQ" && "Preguntas frecuentes"}
+									{tab === "QNA" && "Preguntas y respuestas"}
+									{tab === "ASK" && "Haz una pregunta"}
+								</button>
+							))}
 					</div>
 
 					{activeTab === "FAQ" && <CommonQuestions />}
@@ -383,13 +426,13 @@ export default function QuestionsAnswersPage() {
 									<span className="font-semibold">{successMsg}</span>
 								</div>
 							)}
-							
+
 							{/* Mensaje de error */}
 							{error && (
 								<div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
 									<X size={20} />
 									<span className="font-semibold">{error}</span>
-									<button 
+									<button
 										onClick={() => setError(null)}
 										className="ml-auto text-red-500 hover:text-red-700"
 									>
@@ -397,43 +440,53 @@ export default function QuestionsAnswersPage() {
 									</button>
 								</div>
 							)}
-							
+
 							{/* Contador de preguntas para administradores */}
 							{role === "ADMIN" && (
 								<div className="mb-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
 									<div className="flex justify-between items-center">
 										<div className="flex gap-6">
 											<div className="text-center">
-												<div className="text-2xl font-bold text-purple-600">{stats.pending}</div>
+												<div className="text-2xl font-bold text-purple-600">
+													{stats.pending}
+												</div>
 												<div className="text-sm text-gray-600">Pendientes</div>
 											</div>
 											<div className="text-center">
-												<div className="text-2xl font-bold text-green-600">{stats.answered}</div>
+												<div className="text-2xl font-bold text-green-600">
+													{stats.answered}
+												</div>
 												<div className="text-sm text-gray-600">Respondidas</div>
 											</div>
 											<div className="text-center">
-												<div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+												<div className="text-2xl font-bold text-blue-600">
+													{stats.total}
+												</div>
 												<div className="text-sm text-gray-600">Total</div>
 											</div>
 										</div>
 										<div className="text-right">
-											<div className="text-sm text-gray-500">Panel de Administrador</div>
-											<div className="text-xs text-gray-400">Gestiona las preguntas de los usuarios</div>
+											<div className="text-sm text-gray-500">
+												Panel de Administrador
+											</div>
+											<div className="text-xs text-gray-400">
+												Gestiona las preguntas de los usuarios
+											</div>
 										</div>
 									</div>
 								</div>
 							)}
-							
+
 							<div className="flex flex-wrap justify-between items-center mb-6 gap-4">
 								<div className="flex gap-2">
 									{estadoFiltros.map((f) => {
-										const count = questions.filter(q => {
+										const count = questions.filter((q) => {
 											if (f === "ALL") return true;
 											if (f === "ANSWERED") return q.status === "ANSWERED";
 											if (f === "PENDING") return q.status === "PENDING";
 											return true;
 										}).length;
-										
+
 										return (
 											<button
 												key={f}
@@ -456,9 +509,9 @@ export default function QuestionsAnswersPage() {
 										<button
 											type="button"
 											className="flex items-center gap-2 px-4 py-2 rounded-full font-semibold border border-purple-300 text-purple-700 bg-white hover:bg-purple-50 transition-all dark:bg-white/80 w-full"
-											onClick={e => {
+											onClick={(e) => {
 												e.stopPropagation();
-												setHashtagDropdownOpen(open => !open);
+												setHashtagDropdownOpen((open) => !open);
 											}}
 										>
 											Filtrar por palabras clave
@@ -479,7 +532,7 @@ export default function QuestionsAnswersPage() {
 										{hashtagDropdownOpen && (
 											<div
 												className="absolute left-0 top-full w-full bg-white border border-purple-200 rounded-lg shadow-lg z-50 p-2 dark:bg-white/80"
-												onClick={e => e.stopPropagation()}
+												onClick={(e) => e.stopPropagation()}
 											>
 												<div className="flex flex-col gap-2 w-full">
 													<input
@@ -493,7 +546,10 @@ export default function QuestionsAnswersPage() {
 														className="w-full bg-purple-600 text-white px-3 py-2 rounded text-sm font-semibold hover:bg-purple-700"
 														onClick={() => {
 															const tag = `#${manualHashtag.trim()}`;
-															if (tag.length > 1 && !hashtagFilter.includes(tag)) {
+															if (
+																tag.length > 1 &&
+																!hashtagFilter.includes(tag)
+															) {
 																setHashtagFilter([...hashtagFilter, tag]);
 															}
 															setManualHashtag("");
@@ -519,7 +575,9 @@ export default function QuestionsAnswersPage() {
 														type="button"
 														className="ml-2 rounded-full hover:bg-purple-200 p-1 transition"
 														onClick={() => {
-															setHashtagFilter(hashtagFilter.filter((t: string) => t !== tag));
+															setHashtagFilter(
+																hashtagFilter.filter((t: string) => t !== tag),
+															);
 														}}
 														aria-label="Quitar filtro"
 													>
@@ -539,8 +597,15 @@ export default function QuestionsAnswersPage() {
 										className="flex items-center justify-between gap-2 bg-white border border-purple-300 text-purple-700 px-4 py-2 rounded-md shadow-sm hover:bg-purple-50 transition-all dark:bg-white/80"
 									>
 										<span className="font-semibold">Ordenar:</span>
-										<span>{sortOrder === "NEWEST" ? "Más recientes" : "Más antiguas"}</span>
-										<ChevronDown size={16} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+										<span>
+											{sortOrder === "NEWEST"
+												? "Más recientes"
+												: "Más antiguas"}
+										</span>
+										<ChevronDown
+											size={16}
+											className={`transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+										/>
 									</button>
 
 									{dropdownOpen && (
@@ -559,7 +624,12 @@ export default function QuestionsAnswersPage() {
 											>
 												<div className="flex items-center gap-2">
 													<span>Más recientes</span>
-													{sortOrder === "NEWEST" && <CheckCircle size={16} className="text-purple-600" />}
+													{sortOrder === "NEWEST" && (
+														<CheckCircle
+															size={16}
+															className="text-purple-600"
+														/>
+													)}
 												</div>
 											</button>
 											<button
@@ -576,7 +646,12 @@ export default function QuestionsAnswersPage() {
 											>
 												<div className="flex items-center gap-2">
 													<span>Más antiguas</span>
-													{sortOrder === "OLDEST" && <CheckCircle size={16} className="text-purple-600" />}
+													{sortOrder === "OLDEST" && (
+														<CheckCircle
+															size={16}
+															className="text-purple-600"
+														/>
+													)}
 												</div>
 											</button>
 										</div>
@@ -588,20 +663,25 @@ export default function QuestionsAnswersPage() {
 
 							{/* Indicador de resultados */}
 							<div className="mb-4 text-sm text-gray-600">
-								Mostrando {filteredQuestions.length} de {
-									filter === "ALL"
-										? stats.total
-										: filter === "ANSWERED"
-											? stats.answered
-											: stats.pending
-								} preguntas
+								Mostrando {filteredQuestions.length} de{" "}
+								{filter === "ALL"
+									? stats.total
+									: filter === "ANSWERED"
+										? stats.answered
+										: stats.pending}{" "}
+								preguntas
 								{searchText.trim() && ` que coinciden con "${searchText}"`}
-								{hashtagFilter.length > 0 && ` con las palabras clave seleccionadas`}
+								{hashtagFilter.length > 0 &&
+									` con las palabras clave seleccionadas`}
 								{shouldUseInfiniteScroll && hasMore}
 							</div>
 
 							{/* Renderizado de la lista de preguntas */}
-							<div className="w-full flex flex-col gap-6 overflow-y-auto max-h-[500px] pr-2" onScroll={handleScroll} style={{ scrollbarGutter: 'stable' }}>
+							<div
+								className="w-full flex flex-col gap-6 overflow-y-auto max-h-[500px] pr-2"
+								onScroll={handleScroll}
+								style={{ scrollbarGutter: "stable" }}
+							>
 								{filteredQuestions.length === 0 && !loading && (
 									<div className="text-center py-8">
 										<div className="text-gray-400 dark:text-gray-100 text-lg mb-2">
@@ -618,46 +698,67 @@ export default function QuestionsAnswersPage() {
 								)}
 								{filteredQuestions.map((q: QuestionAnswerResponse) => {
 									const hashtagRegex = /#[\wáéíóúÁÉÍÓÚñÑ]+/g;
-									const hashtags = q.questionDescription.match(hashtagRegex) || [];
-									const textWithoutHashtags = q.questionDescription.replace(hashtagRegex, "").trim();
+									const hashtags =
+										q.questionDescription.match(hashtagRegex) || [];
+									const textWithoutHashtags = q.questionDescription
+										.replace(hashtagRegex, "")
+										.trim();
 									return (
 										<div
 											key={q.id}
 											className={`w-full rounded-2xl border-2 p-6 flex flex-col gap-2 relative transition-all
-												${q.status === "ANSWERED"
-													? "border-green-300 bg-white shadow-xl dark:bg-white/70 dark:border-green-300"
-													: "border-yellow-300 bg-white shadow-xl dark:bg-white/70 dark:border-yellow-300"}
-												${q.status === "ANSWERED" && !document.documentElement.classList.contains('dark') ? 'bg-green-50/40' : ''}
-												${q.status === "PENDING" && !document.documentElement.classList.contains('dark') ? 'bg-yellow-50/40' : ''}
+												${
+													q.status === "ANSWERED"
+														? "border-green-300 bg-white shadow-xl dark:bg-white/70 dark:border-green-300"
+														: "border-yellow-300 bg-white shadow-xl dark:bg-white/70 dark:border-yellow-300"
+												}
+												${q.status === "ANSWERED" && !document.documentElement.classList.contains("dark") ? "bg-green-50/40" : ""}
+												${q.status === "PENDING" && !document.documentElement.classList.contains("dark") ? "bg-yellow-50/40" : ""}
 											`}
 										>
 											{/* Fecha y estado */}
 											<div className="flex items-center justify-between mb-2">
 												<div className="flex items-center gap-2 text-sm text-gray-500">
 													<User size={18} className="text-purple-400" />
-													<span>{q.questionDate} {q.questionHour}</span>
+													<span>
+														{q.questionDate} {q.questionHour}
+													</span>
 												</div>
 												<div className="flex flex-col items-end gap-1">
 													<span
 														className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm
-															${q.status === "ANSWERED"
-																? "bg-green-500 text-white"
-																: "bg-yellow-500 text-white"}
+															${
+																q.status === "ANSWERED"
+																	? "bg-green-500 text-white"
+																	: "bg-yellow-500 text-white"
+															}
 														`}
 													>
 														{q.status === "ANSWERED" ? (
-															<CheckCircle size={16} className="inline align-middle" />
+															<CheckCircle
+																size={16}
+																className="inline align-middle"
+															/>
 														) : (
-															<AlarmClock size={16} className="inline align-middle" />
+															<AlarmClock
+																size={16}
+																className="inline align-middle"
+															/>
 														)}
-														{q.status === "ANSWERED" ? "RESPONDIDA" : "PENDIENTE"}
+														{q.status === "ANSWERED"
+															? "RESPONDIDA"
+															: "PENDIENTE"}
 													</span>
 													{/* Chip de responder para admins */}
 													{q.status === "PENDING" && role === "ADMIN" && (
 														<>
 															<button
 																className="flex items-center gap-2 bg-white border border-yellow-300 text-yellow-500 font-semibold px-5 py-2 rounded-full shadow-lg cursor-pointer text-sm hover:bg-yellow-50 transition mt-1"
-																onClick={() => setAnsweringId(answeringId === q.id ? null : q.id)}
+																onClick={() =>
+																	setAnsweringId(
+																		answeringId === q.id ? null : q.id,
+																	)
+																}
 															>
 																<MessageCircle size={20} /> Responder
 															</button>
@@ -667,8 +768,12 @@ export default function QuestionsAnswersPage() {
 											</div>
 											{/* Pregunta */}
 											<div className="ml-7 mb-1 flex items-center">
-												<span className="font-bold text-purple-700 mr-2">Pregunta:</span>
-												<span className="text-gray-800">{textWithoutHashtags}</span>
+												<span className="font-bold text-purple-700 mr-2">
+													Pregunta:
+												</span>
+												<span className="text-gray-800">
+													{textWithoutHashtags}
+												</span>
 											</div>
 											{/* Hashtags */}
 											{hashtags.length > 0 && (
@@ -684,37 +789,43 @@ export default function QuestionsAnswersPage() {
 												</div>
 											)}
 											{/* Formulario de respuesta debajo de hashtags, solo si no hay respuesta */}
-											{q.status === "PENDING" && role === "ADMIN" && answeringId === q.id && !q.answerDescription && (
-												<div className="w-full flex flex-col items-start mt-4">
-													<form
-														onSubmit={handleSendAnswer}
-														className="w-full max-w-2xl bg-white dark:bg-black/30 p-6 rounded-2xl shadow-lg border border-purple-100 dark:border-white/10 flex flex-col gap-4"
-													>
-														<div className="flex flex-row gap-3 items-center w-full">
-															<input
-																type="text"
-																value={answer}
-																onChange={e => setAnswer(e.target.value)}
-																placeholder="Escribe tu respuesta..."
-																className="flex-1 px-4 py-3 border-2 border-purple-200 dark:border-neutral-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-base bg-white dark:bg-neutral-900/70 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-															/>
-															<button
-																type="submit"
-																className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold px-5 py-3 rounded-lg text-base transition"
-															>
-																<Send size={18} /> Responder
-															</button>
-															<button
-																type="button"
-																onClick={() => { setAnsweringId(null); setAnswer(""); }}
-																className="flex items-center justify-center bg-gray-200 text-gray-700 px-5 py-3 rounded-lg hover:bg-gray-300 transition text-base font-semibold"
-															>
-																Cancelar
-															</button>
-														</div>
-													</form>
-												</div>
-											)}
+											{q.status === "PENDING" &&
+												role === "ADMIN" &&
+												answeringId === q.id &&
+												!q.answerDescription && (
+													<div className="w-full flex flex-col items-start mt-4">
+														<form
+															onSubmit={handleSendAnswer}
+															className="w-full max-w-2xl bg-white dark:bg-black/30 p-6 rounded-2xl shadow-lg border border-purple-100 dark:border-white/10 flex flex-col gap-4"
+														>
+															<div className="flex flex-row gap-3 items-center w-full">
+																<input
+																	type="text"
+																	value={answer}
+																	onChange={(e) => setAnswer(e.target.value)}
+																	placeholder="Escribe tu respuesta..."
+																	className="flex-1 px-4 py-3 border-2 border-purple-200 dark:border-neutral-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-base bg-white dark:bg-neutral-900/70 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
+																/>
+																<button
+																	type="submit"
+																	className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold px-5 py-3 rounded-lg text-base transition"
+																>
+																	<Send size={18} /> Responder
+																</button>
+																<button
+																	type="button"
+																	onClick={() => {
+																		setAnsweringId(null);
+																		setAnswer("");
+																	}}
+																	className="flex items-center justify-center bg-gray-200 text-gray-700 px-5 py-3 rounded-lg hover:bg-gray-300 transition text-base font-semibold"
+																>
+																	Cancelar
+																</button>
+															</div>
+														</form>
+													</div>
+												)}
 											{/* Respuesta */}
 											{q.status === "ANSWERED" && (
 												<div className="ml-7 mt-2 bg-green-50 border-l-4 border-green-400 p-3 rounded">
@@ -730,11 +841,17 @@ export default function QuestionsAnswersPage() {
 									);
 								})}
 								{loading && hasMore && shouldUseInfiniteScroll && (
-									<div className="text-center py-4 text-purple-500 font-semibold">Cargando más preguntas...</div>
+									<div className="text-center py-4 text-purple-500 font-semibold">
+										Cargando más preguntas...
+									</div>
 								)}
-								{!hasMore && shouldUseInfiniteScroll && filteredQuestions.length > 0 && (
-									<div className="text-center py-4 text-gray-500 text-sm">No hay más preguntas para cargar</div>
-								)}
+								{!hasMore &&
+									shouldUseInfiniteScroll &&
+									filteredQuestions.length > 0 && (
+										<div className="text-center py-4 text-gray-500 text-sm">
+											No hay más preguntas para cargar
+										</div>
+									)}
 							</div>
 						</>
 					)}

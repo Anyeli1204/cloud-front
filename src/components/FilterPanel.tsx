@@ -1,10 +1,8 @@
-// src/components/FilterPanel.tsx
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import type { UserApifyCallRequest } from "@interfaces/apify-call/UserApifyCallRequest";
 import { Tag, User, Pencil, RefreshCw, Search, ChevronLeft, ChevronRight } from "lucide-react";
-// Importo el logo real del robot
 import ScrapiLogo from "@assets/ScrapiLogo.png";
 import { recommendContent } from "@services/ia/recommendContent";
 import { isScrapiResponseEmpty, MODERATION_MESSAGE } from "../utils/aiModeration";
@@ -23,35 +21,30 @@ const POPULAR_USERS = ["charlidamelio", "khaby.lame", "bellapoarch", "addisonre"
 const POPULAR_KEYWORDS = ["pizza", "recetas", "cocina", "viajes", "deporte", "universidad"];
 
 const HELP_CARDS = [
-	// 1: Solo la pregunta
 	{
 		title: "¿Cómo uso los filtros para scrapear en ScrapeTok?",
 		subtitle: "",
 		text: "",
 		emoji: "",
 	},
-	// 2: Explicación
 	{
 		title: "",
 		subtitle: "Te guiamos paso a paso para que encuentres contenido viral de TikTok con precisión.",
 		text: "",
 		emoji: "🚀",
 	},
-	// 3
 	{
 		title: "Filtra por Hashtags",
 		subtitle: "",
 		text: "Escribe hashtags separados por comas (#cocina, #futbol) o haz clic en los sugeridos para agregarlos.",
 		emoji: "📌",
 	},
-	// 4
 	{
 		title: "Usuarios de TikTok",
 		subtitle: "",
 		text: "Agrega nombres de usuario (usuario1, usuario2) para analizar su contenido viral.",
 		emoji: "👤🔍",
 	},
-	// 5
 	{
 		title: "Palabras Clave",
 		subtitle: "",
@@ -59,7 +52,6 @@ const HELP_CARDS = [
 		emoji: "🧠🗝️",
 	},
 
-	// 6
 	{
 		title: "Solo una categoría",
 		subtitle: "Recuerda que solo puedes scrapear una categoría por vez: hashtags, palabras clave o usuarios.",
@@ -78,7 +70,7 @@ const HELP_CARDS = [
 		text: "¡Te ayudará al instante!",
 		emoji: "🤖",
 	},
-	// 8
+	
 	{
 		title: "Filtros obligatorios",
 		subtitle: "",
@@ -91,7 +83,6 @@ const HELP_CARDS = [
 		text: "Selecciona una fecha de inicio y una fecha final de las publicaciones para enfocarte en un rango específico. ",
 		emoji: "📅",
 	},
-	// 9
 	{
 		title: "Número de Posts",
 		subtitle: "",
@@ -132,17 +123,14 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			// setScrapiCircle((prev) => (prev === 'emoji' ? 'text' : 'emoji')); // This line was removed
 		}, 2000);
 		return () => clearInterval(interval);
 	}, []);
 
-	// Referencias para igualar altura
 	const filterPanelRef = useRef<HTMLDivElement>(null);
 	const helpPanelRef = useRef<HTMLDivElement>(null);
 	const [helpHeight, setHelpHeight] = useState<number | undefined>(undefined);
 
-	// Cargar filtros guardados en sessionStorage al montar el componente
 	useEffect(() => {
 		const storedFilters = sessionStorage.getItem("apifyScrapeFilters");
 		if (storedFilters) {
@@ -153,7 +141,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 					...parsedFilters
 				}));
 
-				// Determinar qué tab activar basado en los filtros cargados
 				if (parsedFilters.hashtags) {
 					setActiveTab('hashtags');
 				} else if (parsedFilters.tiktokAccount) {
@@ -265,18 +252,13 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 		};
 		setFilters(resetFilters);
 
-		// Limpiar sessionStorage
 		sessionStorage.removeItem("apifyScrapeFilters");
 
 		onReset?.();
 	};
 
-
-
-	// Cambiar de tab y guardar el anterior si vamos a 'basico'
 	const handleTabChange = (tab: 'hashtags' | 'usuarios' | 'palabras' | 'basico') => {
 		if (tab === 'basico' && activeTab !== 'basico') {
-			// Guardar el tab anterior
 			if (activeTab === 'hashtags' || activeTab === 'usuarios' || activeTab === 'palabras') {
 				setPreviousTab(activeTab);
 			}
@@ -286,16 +268,13 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 
 	return (
 		<div className="w-full max-w-7xl mx-auto p-6">
-			{/* Layout principal: dos columnas en desktop, apilado en mobile */}
 			<div className="flex flex-col lg:flex-row gap-6">
-				{/* Columna izquierda: Carrusel de ayuda (más angosto) */}
 				<div className="lg:w-80 lg:flex-shrink-0 h-full flex items-center justify-center">
 					<div
 						ref={helpPanelRef}
 						className="relative w-full max-w-sm mx-auto bg-white/80 backdrop-blur rounded-2xl shadow-xl px-10 py-8 flex flex-col justify-center items-center transition-all duration-500"
 						style={{ height: helpHeight ? helpHeight : undefined, minHeight: '320px' }}
 					>
-						{/* Flecha izquierda */}
 						<button
 							disabled={helpIndex === 0}
 							onClick={() => {
@@ -310,7 +289,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 						>
 							<ChevronLeft className="w-5 h-5 text-purple-400" />
 						</button>
-						{/* Flecha derecha */}
 						<button
 							disabled={helpIndex === HELP_CARDS.length - 1}
 							onClick={() => {
@@ -325,7 +303,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 						>
 							<ChevronRight className="w-5 h-5 text-purple-400" />
 						</button>
-						{/* Contenido de la tarjeta */}
 						<div
 							className={`flex flex-col items-center justify-center w-full h-full space-y-2 transition-all duration-300
 								${helpIndex === 0 ? 'animate-pop' : ''}
@@ -345,7 +322,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 								<p className={`text-gray-600 text-center animate-fade-in ${helpIndex === 0 ? 'text-base' : 'text-xs md:text-sm'}`} style={{ transitionDelay: '200ms' }}>{HELP_CARDS[helpIndex].text}</p>
 							)}
 						</div>
-						{/* Dots de navegación */}
 						<div className="flex justify-center mt-4">
 							{HELP_CARDS.map((_, idx) => (
 								<span
@@ -358,11 +334,9 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 					</div>
 				</div>
 
-				{/* Columna derecha: Panel de filtros (más ancho) */}
 				<div className="flex-1 lg:flex-[3] h-full relative">
 					<div ref={filterPanelRef} className="bg-white/80 backdrop-blur rounded-2xl shadow-lg p-6 min-h-[340px] h-full flex flex-col justify-center dark:bg-white/80 transition-all duration-500">
 						<div className="mx-auto max-w-2xl w-full px-2">
-							{/* Header alineado: título a la izquierda, botones a la derecha */}
 							<div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
 								<h2 className="text-3xl font-extrabold text-left text-purple-800 tracking-tight" style={{ fontFamily: 'Nunito, Montserrat, sans-serif' }}>
 									Filtros Apify Call
@@ -385,7 +359,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 								</div>
 							</div>
 
-							{/* Tabs superiores unificados con iconos de línea */}
 							<div className="flex mb-8 bg-gray-100 rounded-xl p-1 gap-1">
 								<button
 									type="button"
@@ -416,7 +389,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 								</button>
 							</div>
 
-							{/* Contenido de las pestañas */}
 							<form onSubmit={handleSubmit} id="apify-filters-form" className="space-y-4">
 								{activeTab === 'hashtags' && (
 									<div className="space-y-3">
@@ -462,7 +434,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 													))}
 												</div>
 											</div>
-											{/* Elimino el div y contenido del panel desplegable Scrapi que quedó huérfano */}
 										</div>
 									</div>
 								)}

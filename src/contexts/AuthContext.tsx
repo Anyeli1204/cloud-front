@@ -41,7 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setRole(data.role ?? null);
 	}
 
-	// Limpia la sesión
 	function clearSession() {
 		setSession(null);
 		setId(null);
@@ -51,19 +50,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setRole(null);
 	}
 
-	// Llama a tu servicio de login y guarda sesión
 	async function login(input: LoginRequest) {
 		const resp = await loginService(input);
 		saveSession(resp.data);
 	}
 
-	// Llama a tu servicio de register y guarda sesión
 	async function register(input: RegisterRequest) {
 		const resp = await registerService(input);
 		saveSession(resp.data);
 	}
 
-	// Desloguea simplemente limpiando storage
 	function logout() {
 		clearSession();
 	}
