@@ -13,6 +13,7 @@ import {
 	Mail,
 } from "lucide-react";
 import { QuestionDetailModal } from "@components/QuestionDetailModal";
+import EditProfileModal from "@components/EditProfileModal";
 
 function useRandomAvatar(username: string | undefined | null, role: string) {
 	const [avatar, setAvatar] = useState<string>("");
@@ -57,6 +58,8 @@ export default function UserInformationPage() {
 	const [cuentasPorPagina, setCuentasPorPagina] = useState(9);
 	const [paginaCuentas, setPaginaCuentas] = useState(1);
 	const cuentasContainerRef = useRef<HTMLDivElement>(null);
+	const [editOpen, setEditOpen] = useState(false);
+	const [editOpenAdmin, setEditOpenAdmin] = useState(false);
 
 	// Ajuste responsivo de cuentas por página
 	useLayoutEffect(() => {
@@ -213,9 +216,12 @@ export default function UserInformationPage() {
 									<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m8 0a4 4 0 11-8 0 4 4 0 018 0zm0 0v1a4 4 0 01-8 0v-1" /></svg>
 									<span className="truncate">{userData.email}</span>
 								</span>
-								<button className="mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-all flex items-center gap-2">
+								<button
+									onClick={() => setEditOpen(true)}
+									className="mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-all flex items-center gap-2"
+									>
 									<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2z" /></svg>
-									Qué guap@ eres!
+									Editar perfil
 								</button>
 							</div>
 						</div>
@@ -371,6 +377,20 @@ export default function UserInformationPage() {
 							</div>
 						</div>
 					</div>
+				{editOpen && (
+					<EditProfileModal
+						userId={id!}
+						initialData={{
+						firstname: userData.firstname,
+						lastname: userData.lastname,
+						username: userData.username,
+						}}
+						onClose={() => setEditOpen(false)}
+						onSuccess={() => {
+						window.location.reload(); // O puedes volver a llamar a fetchData si no quieres recargar
+						}}
+					/>
+				)}
 				</div>
 			</div>
 		);
@@ -420,6 +440,15 @@ export default function UserInformationPage() {
 									<Mail className="h-5 w-5 text-purple-400" />
 									<span className="truncate">{adminData.email}</span>
 								</span>
+								<button
+									onClick={() => setEditOpenAdmin(true)}
+									className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-all flex items-center gap-2"
+									>
+									<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2z" />
+									</svg>
+									Editar perfil
+								</button>
 							</div>
 						</div>
 						<div className="md:col-span-3 flex flex-col gap-4 h-full justify-between w-full mt-8 md:mt-0 md:ml-8">
@@ -580,6 +609,20 @@ export default function UserInformationPage() {
 							</div>
 						</div>
 					</div>
+					{editOpenAdmin && (
+						<EditProfileModal
+							userId={id!}
+							initialData={{
+							firstname: adminData.firstname,
+							lastname: adminData.lastname,
+							username: adminData.username,
+							}}
+							onClose={() => setEditOpenAdmin(false)}
+							onSuccess={() => {
+							window.location.reload(); // O llama a fetchData() si lo tienes extraído
+							}}
+						/>
+					)}
 				</div>
 				{preguntaSeleccionada && (
 					<QuestionDetailModal
