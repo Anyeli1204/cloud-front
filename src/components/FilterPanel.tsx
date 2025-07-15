@@ -613,7 +613,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 											fill="#fff"
 											dominantBaseline="middle"
 										>
-											Scrapetok AI
+											Scrapi AI
 										</text>
 										<text
 											x="140"
@@ -636,7 +636,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 											style={{ marginBottom: '8px' }}
 											onClick={async () => {
 												const { value: userMessage } = await MySwal.fire({
-													title: 'Scrapetok AI',
+													title: 'Scrapi AI',
 													input: 'text',
 													inputLabel: '¿Sobre qué tema quieres ideas de filtros?',
 													inputPlaceholder: 'Ej: cocina, viajes, tecnología...',
@@ -741,7 +741,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 															`;
 															
 															await MySwal.fire({
-																title: 'Sugerencias de Scrapetok AI',
+																title: 'Sugerencias de Scrapi AI',
 																html: suggestionsHtml,
 																background: '#fff',
 																showConfirmButton: true,
@@ -815,7 +815,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 															});
 														} else {
 															MySwal.fire({
-																title: 'Respuesta de Scrapetok AI',
+																title: 'Respuesta de Scrapi AI',
 																html: `<pre style="white-space:pre-wrap;text-align:left;font-size:1rem;">${res.response}</pre>`,
 																background: '#fff',
 																confirmButtonText: 'Cerrar',

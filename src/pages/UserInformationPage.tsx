@@ -231,7 +231,8 @@ export default function UserInformationPage() {
 									<Shield size={28} className="text-blue-500" /> Historial de Scrapeo
 								</h2>
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 text-sm items-start">
-									{scrapeosPagina.map((f, i) => (
+									{scrapeosPagina.length > 0 ? (
+										scrapeosPagina.map((f, i) => (
 										<div key={i} className="bg-blue-50 rounded-xl p-2 shadow-md flex flex-col gap-1 border border-blue-100 max-w-xs w-full mx-auto min-h-40">
 											{f["Date From"] && (
 												<div className="flex items-center gap-2 text-blue-900 text-sm">
@@ -284,7 +285,20 @@ export default function UserInformationPage() {
 												return null;
 											})()}
 										</div>
-									))}
+									))
+									) : (
+										<div className="col-span-3 flex flex-col items-center justify-center py-6">
+											<div className="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center mb-3">
+												<svg className="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+													<path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2"/>
+												</svg>
+											</div>
+											<p className="text-gray-500 text-center text-base">
+												Todavía no se realiza ningún scrapeo.
+											</p>
+										</div>
+									)}
 								</div>
 								<div className="flex justify-center gap-2 mt-2 mb-6">
 									<button
@@ -325,11 +339,24 @@ export default function UserInformationPage() {
 									<Mail size={28} className="text-pink-400" /> Cuentas Scrapeadas
 								</h2>
 								<div ref={cuentasContainerRef} className="flex flex-wrap gap-2 mb-6 text-sm justify-start overflow-hidden" style={{maxHeight: '4.5rem'}}>
-									{userData.tiktokUsernameScraped?.slice((paginaCuentas-1)*cuentasPorPagina, paginaCuentas*cuentasPorPagina).map((acc, i) => (
+									{userData.tiktokUsernameScraped && userData.tiktokUsernameScraped.length > 0 ? (
+										userData.tiktokUsernameScraped?.slice((paginaCuentas-1)*cuentasPorPagina, paginaCuentas*cuentasPorPagina).map((acc, i) => (
 										<span key={i} title={acc} className="inline-flex items-center bg-pink-100 text-pink-700 px-2 py-0 rounded-full text-sm font-semibold shadow hover:bg-pink-200 transition-all cursor-pointer h-auto">
 											{acc}
 										</span>
-									))}
+									))
+									) : (
+										<div className="w-full flex items-center justify-center py-6">
+											<div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mr-4">
+												<svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+												</svg>
+											</div>
+											<p className="text-gray-500 text-base">
+												Todavía no existen cuentas scrapeadas.
+											</p>
+										</div>
+									)}
 								</div>
 								<div className="flex justify-center gap-2 mt-2">
 									<button
@@ -501,7 +528,16 @@ export default function UserInformationPage() {
 											);
 										})
 									) : (
-										<div className="text-gray-400 dark:text-gray-200 col-span-3">No hay preguntas respondidas.</div>
+										<div className="col-span-3 flex flex-col items-center justify-center py-6">
+											<div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+												<svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+												</svg>
+											</div>
+											<p className="text-gray-500 text-center text-base">
+												Todavía no hay preguntas respondidas.
+											</p>
+										</div>
 									)}
 								</div>
 								<div className="flex justify-center gap-2 mt-2 mb-6">
@@ -604,7 +640,16 @@ export default function UserInformationPage() {
 										</div>
 									</>
 								) : (
-									<div className="text-gray-400 text-sm">No hay alertas emitidas.</div>
+									<div className="flex flex-col items-center justify-center py-6">
+										<div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-3">
+											<svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+											</svg>
+										</div>
+										<p className="text-gray-500 text-center text-base">
+											Todavía no hay alertas emitidas.
+										</p>
+									</div>
 								)}
 							</div>
 						</div>
