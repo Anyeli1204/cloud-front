@@ -102,7 +102,7 @@ export default function AuthPage() {
           <Logo mode={mode} animate={false} className="h-64 w-64 md:h-92 md:w-92 mb-0 mx-auto" />
           <h2 className="text-5xl font-extrabold text-white">
             <Typewriter
-              words={["Analizamos"]}
+              words={["Analizamos", "Capturamos", "Transformamos"]}
               loop={0}
               cursor
               typeSpeed={80}
