@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Logo } from "@components/Logo";
 import { LoginForm } from "@components/LoginForm";
 import { RegisterForm } from "@components/RegisterForm";
@@ -70,9 +70,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    document.documentElement.classList.add("dark");
-  }, []);
+  // Removido el useEffect que forzaba el tema
 
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true);

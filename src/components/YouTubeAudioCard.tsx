@@ -1,24 +1,37 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useYouTubeThumbnail } from "../hooks/useYouTubeThumbnail";
+import { extractVideoId, isValidYouTubeUrl } from "../utils/youtubeUtils";
+import { VideoPlayerModal } from "./VideoPlayerModal";
 
 interface YouTubeAudioCardProps {
   name: string;
   url: string;
+  imagen: string;
 }
 
-export const YouTubeAudioCard: React.FC<YouTubeAudioCardProps> = ({ name, url }) => {
-  const extractVideoId = (youtubeUrl: string) => {
-    const match = youtubeUrl.match(/v=([^&]+)/);
-    return match ? match[1] : "";
-  };
-
+export const YouTubeAudioCard: React.FC<YouTubeAudioCardProps> = ({ name, url, imagen }) => {
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const videoId = extractVideoId(url);
+  const isYouTubeVideo = isValidYouTubeUrl(url);
+  
+  const { thumbnailUrl, isLoading, error, shouldLoadImage, videoAvailable } = useYouTubeThumbnail({ 
+    videoId, 
+    customImage: imagen,
+    url
+  });
+
+  // Mostrar imagen si no es un video de YouTube válido, si el video no está disponible, o si no se puede reproducir
+  const shouldShowImage = !isYouTubeVideo || !videoAvailable || shouldLoadImage;
+
+  const handleCloseModal = () => {
+    setShowVideoModal(false);
+  };
 
   // SafeYouTubePlayer inline implementation
   const SafeYouTubePlayer = ({ videoId }: { videoId: string }) => {
     const [isValid, setIsValid] = useState(true);
 
-    useEffect(() => {
+    React.useEffect(() => {
       const testVideo = async () => {
         try {
           const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
@@ -48,9 +61,39 @@ export const YouTubeAudioCard: React.FC<YouTubeAudioCardProps> = ({ name, url })
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-2 w-full max-w-xs">
-      <h3 className="text-xs font-semibold mb-1">{name}</h3>
-      <SafeYouTubePlayer videoId={videoId} />
-    </div>
+    <>
+      <div className="bg-white rounded-lg shadow-sm p-2 w-full max-w-xs">
+        <h3 className="text-xs font-semibold mb-1">{name}</h3>
+        
+        {/* Contenido principal */}
+        {shouldShowImage && thumbnailUrl && !error ? (
+          // Mostrar imagen de portada
+          <div className="mb-2 relative">
+            {isLoading && (
+              <div className="absolute inset-0 bg-gray-200 rounded-lg flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+            <img 
+              src={thumbnailUrl} 
+              alt={`Portada de ${name}`}
+              className={`w-full h-24 object-cover rounded-lg ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+            />
+          </div>
+        ) : null}
+        
+        {/* Reproductor tradicional */}
+        <SafeYouTubePlayer videoId={videoId} />
+      </div>
+
+      {/* Modal de video */}
+      <VideoPlayerModal
+        isOpen={showVideoModal}
+        onClose={handleCloseModal}
+        videoUrl={url}
+        title={name}
+        imagen={imagen}
+      />
+    </>
   );
 }; 

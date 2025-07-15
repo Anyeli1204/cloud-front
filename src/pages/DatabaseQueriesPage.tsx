@@ -26,6 +26,8 @@ import {
 
 import { FilterPanelDb } from "@components/FilterPanelDb";
 import { PostDetailModal } from "@components/PostDetailModal";
+import { TikTokProfileModal } from "@components/TikTokProfileModal";
+import { getTikTokProfile } from "@services/tiktokProfile/tiktokProfileService";
 
 const PAGE_WINDOW_SIZE = 10;
 
@@ -40,6 +42,43 @@ export default function DatabaseQueriesPage() {
 	const [totalPages, setTotalPages] = useState(1);
 	const [selectedPost, setSelectedPost] = useState<UserDbPost | null>(null);
 	const [loadingExcel, setLoadingExcel] = useState(false);
+	const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+	const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+	const [profileAvatars, setProfileAvatars] = useState<Record<string, string>>({});
+
+	// Función para obtener fotos de perfil (optimizada con Promise.all)
+	const fetchProfileAvatars = async (usernames: string[]) => {
+		console.log("Iniciando carga de avatars para:", usernames);
+		
+		// Crear promesas para todos los usernames en paralelo
+		const avatarPromises = usernames.map(async (username) => {
+			try {
+				const profile = await getTikTokProfile(username);
+				if (profile.avatarLarger) {
+					console.log(`Avatar obtenido para ${username}:`, profile.avatarLarger);
+					return { username, avatar: profile.avatarLarger };
+				}
+			} catch {
+				console.log(`No se pudo obtener avatar para ${username}`);
+			}
+			return null;
+		});
+		
+		// Esperar todas las promesas en paralelo
+		const results = await Promise.all(avatarPromises);
+		const newAvatars: Record<string, string> = {};
+		
+		results.forEach(result => {
+			if (result) {
+				newAvatars[result.username] = result.avatar;
+			}
+		});
+		
+		if (Object.keys(newAvatars).length > 0) {
+			console.log("Avatars obtenidos:", newAvatars);
+			setProfileAvatars(prev => ({ ...prev, ...newAvatars }));
+		}
+	};
 
 	useEffect(() => {
 		if (!filters) {
@@ -62,6 +101,11 @@ export default function DatabaseQueriesPage() {
 				setMetrics(metricList);
 				setError(null);
 				setTotalPages(Math.ceil(postList.length / PAGE_WINDOW_SIZE));
+				
+				// Obtener fotos de perfil para todos los usuarios únicos
+				const uniqueUsernames = [...new Set(postList.map(item => item.usernameTiktokAccount))];
+				console.log("Usernames únicos encontrados:", uniqueUsernames);
+				fetchProfileAvatars(uniqueUsernames);
 			} catch (e: unknown) {
 				console.error(e);
 				setError((e as Error).message || "Error al solicitar datos");
@@ -360,6 +404,7 @@ export default function DatabaseQueriesPage() {
 	}
 
 	const headers = [
+		"Avatar",
 		"Date Posted",
 		"Username",
 		"Post URL",
@@ -378,9 +423,15 @@ export default function DatabaseQueriesPage() {
 		page * PAGE_WINDOW_SIZE,
 	);
 
+	// Debug: mostrar el estado de profileAvatars
+	console.log("Estado actual de profileAvatars:", profileAvatars);
+
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
-			<FilterPanelDb onApply={setFilters} onReset={() => setFilters(null)} />
+			<FilterPanelDb onApply={setFilters} onReset={() => {
+				setFilters(null);
+				setProfileAvatars({});
+			}} />
 
 			{error && (
 				<div className="text-red-600 text-center font-medium">{error}</div>
@@ -479,11 +530,39 @@ export default function DatabaseQueriesPage() {
 										style={{ cursor: "pointer" }}
 									>
 										<td className="px-4 py-2 text-sm text-gray-900">
+											{profileAvatars[row.usernameTiktokAccount] ? (
+												<img
+													src={profileAvatars[row.usernameTiktokAccount]}
+													alt={`Avatar de ${row.usernameTiktokAccount}`}
+													className="w-8 h-8 rounded-full object-cover"
+													onError={(e) => {
+														console.log(`Error cargando imagen para ${row.usernameTiktokAccount}`);
+														e.currentTarget.style.display = 'none';
+														e.currentTarget.nextElementSibling?.classList.remove('hidden');
+													}}
+												/>
+											) : null}
+											<div className={`w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center ${profileAvatars[row.usernameTiktokAccount] ? 'hidden' : ''}`}>
+												<span className="text-xs text-gray-600">
+													{row.usernameTiktokAccount.charAt(0).toUpperCase()}
+												</span>
+											</div>
+										</td>
+										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.datePosted}
 										</td>
 
 										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.usernameTiktokAccount}
+											<button
+												onClick={(e) => {
+													e.stopPropagation();
+													setSelectedUsername(row.usernameTiktokAccount);
+													setIsProfileModalOpen(true);
+												}}
+												className="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer transition-colors"
+											>
+												{row.usernameTiktokAccount}
+											</button>
 										</td>
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.postURL ? (
@@ -604,6 +683,17 @@ export default function DatabaseQueriesPage() {
 				<PostDetailModal
 					post={mapUserDbPostToApifyCallResponse(selectedPost)}
 					onClose={() => setSelectedPost(null)}
+				/>
+			)}
+			
+			{selectedUsername && (
+				<TikTokProfileModal
+					username={selectedUsername}
+					isOpen={isProfileModalOpen}
+					onClose={() => {
+						setIsProfileModalOpen(false);
+						setSelectedUsername(null);
+					}}
 				/>
 			)}
 		</div>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="light">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +9,14 @@
 			href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
 		/>
 		<title>ScrapeTok</title>
+		<script>
+			// Establecer tema inicial sin forzar
+			(function() {
+				const saved = localStorage.getItem('theme');
+				const theme = saved === 'dark' || saved === 'light' ? saved : 'light';
+				document.documentElement.classList.add(theme);
+			})();
+		</script>
 	</head>
 	<body>
 		<div id="root"></div>

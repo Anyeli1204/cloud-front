@@ -2,6 +2,7 @@ import Api from "@services/api";
 import { AiResponse } from "@interfaces/AiResponse";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { isAiResponseEmpty, MODERATION_MESSAGE } from "../utils/aiModeration";
 
 // SweetAlert2 con React
 const MySwal = withReactContent(Swal);
@@ -65,12 +66,29 @@ export const handleGenerate = async ({
 		const parsed: AiResponse = JSON.parse(response.data.response);
 		console.log("✅ Objeto parseado:", parsed);
 
+		// Verificar si la respuesta está vacía (indicando moderación)
+		if (isAiResponseEmpty(parsed)) {
+			
+			await MySwal.fire({
+				icon: "error",
+				title: "Contenido bloqueado",
+				text: MODERATION_MESSAGE,
+				background: "#fff",
+				confirmButtonText: "Entendido",
+				customClass: {
+					popup: "rounded-2xl shadow-2xl p-8 max-w-lg",
+					title: "text-2xl text-red-700 mb-2",
+					confirmButton: "bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg",
+				},
+			});
+			return;
+		}
+
 		setAiResponse(parsed);
 	} catch (error: any) {
 		console.error("❌ Error al consumir la API:", error);
 
-		let userFriendlyMessage =
-			"Lo que buscas va en contra de la política de uso de la IA. Reformula tu mensaje sin contenido ofensivo, violento o que infrinja nuestras normas: https://go.microsoft.com/fwlink/?linkid=2198766";
+		let userFriendlyMessage = MODERATION_MESSAGE;
 
 		if (error.message !== "NO_RESPONSE") {
 			try {

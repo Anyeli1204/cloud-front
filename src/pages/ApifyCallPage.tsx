@@ -5,8 +5,10 @@ import { mapRawToApifyResponse } from "@interfaces/apify-call/ApifyCallResponse"
 import { userApify } from "@services/apifyCall/userApifyCall";
 import Swal from "sweetalert2";
 import { PostDetailModal } from "@components/PostDetailModal";
+import { TikTokProfileModal } from "@components/TikTokProfileModal";
 import type { UserApifyCallRequest } from "@interfaces/apify-call/UserApifyCallRequest";
 import { downloadExcel } from "@services/excelService/ExcelFetch";
+import { getTikTokProfile } from "@services/tiktokProfile/tiktokProfileService";
 
 export default function ApifyCallPage() {
 	const [loadingExcel, setIsLoadingExcel] = useState(false);
@@ -18,6 +20,9 @@ export default function ApifyCallPage() {
 	const [selectedPost, setSelectedPost] = useState<ApifyCallResponse | null>(
 		null,
 	); // ESTADO NUEVO
+	const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+	const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+	const [profileAvatars, setProfileAvatars] = useState<Record<string, string>>({});
 
 	// Al cargar la página, intenta restaurar los datos del sessionStorage
 	useEffect(() => {
@@ -114,7 +119,7 @@ export default function ApifyCallPage() {
 				text: "✅ El archivo Excel fue exportado con éxito.",
 				confirmButtonColor: "#22c55e", // verde
 			});
-		} catch (error) {
+		} catch {
 			await Swal.fire({
 				icon: "error",
 				title: "Error al descargar",
@@ -143,6 +148,11 @@ export default function ApifyCallPage() {
 			);
 			const mapped = raw.map(mapRawToApifyResponse);
 			setData(mapped);
+			
+			// Obtener fotos de perfil para todos los usuarios únicos
+			const uniqueUsernames = [...new Set(mapped.map(item => item.tiktokAccountUsername))];
+			fetchProfileAvatars(uniqueUsernames);
+			
 			// Guarda en sessionStorage
 			sessionStorage.setItem("apifyScrapeData", JSON.stringify(mapped));
 			sessionStorage.setItem("apifyScrapeFilters", JSON.stringify(filters));
@@ -167,18 +177,57 @@ export default function ApifyCallPage() {
 	const handleReset = () => {
 		setData([]);
 		setError(null);
+		setProfileAvatars({});
 		sessionStorage.removeItem("apifyScrapeData");
 		sessionStorage.removeItem("apifyScrapeFilters");
 		setSavedFilters(null);
 	};
 
+	// Función para obtener fotos de perfil (optimizada con Promise.all)
+	const fetchProfileAvatars = async (usernames: string[]) => {
+		console.log("ApifyCallPage - Iniciando carga de avatars para:", usernames);
+		
+		// Crear promesas para todos los usernames en paralelo
+		const avatarPromises = usernames.map(async (username) => {
+			try {
+				const profile = await getTikTokProfile(username);
+				if (profile.avatarLarger) {
+					console.log(`ApifyCallPage - Avatar obtenido para ${username}:`, profile.avatarLarger);
+					return { username, avatar: profile.avatarLarger };
+				}
+			} catch {
+				console.log(`ApifyCallPage - No se pudo obtener avatar para ${username}`);
+			}
+			return null;
+		});
+		
+		// Esperar todas las promesas en paralelo
+		const results = await Promise.all(avatarPromises);
+		const newAvatars: Record<string, string> = {};
+		
+		results.forEach(result => {
+			if (result) {
+				newAvatars[result.username] = result.avatar;
+			}
+		});
+		
+		if (Object.keys(newAvatars).length > 0) {
+			console.log("ApifyCallPage - Avatars obtenidos:", newAvatars);
+			setProfileAvatars(prev => ({ ...prev, ...newAvatars }));
+		}
+	};
+
+	// Debug: mostrar el estado de profileAvatars
+	console.log("ApifyCallPage - Estado actual de profileAvatars:", profileAvatars);
+
 	// Definimos aquí todas las cabeceras, incluyendo User y Admin opcionales
 	const headers = [
-		"Post Code",
+		"Avatar",
 		"Date Posted",
 		"Username",
 		"Post URL",
 		"Views",
+		"Likes",
 		"Engagement %",
 		"Interactions",
 		"Hashtags",
@@ -268,13 +317,38 @@ export default function ApifyCallPage() {
 									onClick={() => setSelectedPost(row)}
 								>
 									<td className="px-4 py-2 text-sm font-medium text-gray-900">
-										{row.postCode}
+										{profileAvatars[row.tiktokAccountUsername] ? (
+											<img
+												src={profileAvatars[row.tiktokAccountUsername]}
+												alt={`Avatar de ${row.tiktokAccountUsername}`}
+												className="w-8 h-8 rounded-full object-cover"
+												onError={(e) => {
+													console.log(`ApifyCallPage - Error cargando imagen para ${row.tiktokAccountUsername}`);
+													e.currentTarget.style.display = 'none';
+													e.currentTarget.nextElementSibling?.classList.remove('hidden');
+												}}
+											/>
+										) : null}
+										<div className={`w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center ${profileAvatars[row.tiktokAccountUsername] ? 'hidden' : ''}`}>
+											<span className="text-xs text-gray-600">
+												{row.tiktokAccountUsername.charAt(0).toUpperCase()}
+											</span>
+										</div>
 									</td>
 									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.datePosted}
 									</td>
 									<td className="px-4 py-2 text-sm text-gray-900">
-										{row.tiktokAccountUsername}
+										<button
+											onClick={(e) => {
+												e.stopPropagation();
+												setSelectedUsername(row.tiktokAccountUsername);
+												setIsProfileModalOpen(true);
+											}}
+											className="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer transition-colors"
+										>
+											{row.tiktokAccountUsername}
+										</button>
 									</td>
 									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.postLink ? (
@@ -292,6 +366,9 @@ export default function ApifyCallPage() {
 									</td>
 									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.views?.toLocaleString() ?? "0"}
+									</td>
+									<td className="px-4 py-2 text-sm text-gray-900">
+										{row.likes?.toLocaleString() ?? "0"}
 									</td>
 									<td className="px-4 py-2 text-sm text-gray-900">
 										{row.engagementRate?.toFixed(2) ?? "0.00"}%
@@ -346,6 +423,17 @@ export default function ApifyCallPage() {
 				<PostDetailModal
 					post={selectedPost}
 					onClose={() => setSelectedPost(null)}
+				/>
+			)}
+			
+			{selectedUsername && (
+				<TikTokProfileModal
+					username={selectedUsername}
+					isOpen={isProfileModalOpen}
+					onClose={() => {
+						setIsProfileModalOpen(false);
+						setSelectedUsername(null);
+					}}
 				/>
 			)}
 		</div>

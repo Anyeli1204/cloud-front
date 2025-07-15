@@ -7,6 +7,7 @@ import { Tag, User, Pencil, RefreshCw, Search, ChevronLeft, ChevronRight } from 
 // Importo el logo real del robot
 import ScrapiLogo from "@assets/ScrapiLogo.png";
 import { recommendContent } from "@services/ia/recommendContent";
+import { isScrapiResponseEmpty, MODERATION_MESSAGE } from "../utils/aiModeration";
 
 const MySwal = withReactContent(Swal);
 
@@ -112,7 +113,7 @@ interface FilterPanelProps {
 }
 
 export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelProps) {
-	const [showTooltip, setShowTooltip] = useState(false);
+
 	const [filters, setFilters] = useState<UserApifyCallRequest>({
 		userId: 0,
 		hashtags: "",
@@ -270,19 +271,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 		onReset?.();
 	};
 
-	// Función para manejar el autocompletado y cambiar al tab correspondiente
-	const handleAutocomplete = (tab: 'hashtags' | 'palabras' | 'usuarios', value: string) => {
-		if (tab === 'hashtags') {
-			setFilters(f => ({ ...f, hashtags: value, tiktokAccount: '', keyWords: '' }));
-			setActiveTab('hashtags');
-		} else if (tab === 'palabras') {
-			setFilters(f => ({ ...f, hashtags: '', tiktokAccount: '', keyWords: value }));
-			setActiveTab('palabras');
-		} else if (tab === 'usuarios') {
-			setFilters(f => ({ ...f, hashtags: '', tiktokAccount: value, keyWords: '' }));
-			setActiveTab('usuarios');
-		}
-	};
+
 
 	// Cambiar de tab y guardar el anterior si vamos a 'basico'
 	const handleTabChange = (tab: 'hashtags' | 'usuarios' | 'palabras' | 'basico') => {
@@ -714,8 +703,145 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 															parsed = null;
 														}
 
+														// Verificar si la respuesta está vacía (indicando moderación)
+														if (isScrapiResponseEmpty(parsed)) {
+															
+															MySwal.fire({
+																icon: "error",
+																title: "Contenido bloqueado",
+																text: MODERATION_MESSAGE,
+																background: "#fff",
+																confirmButtonText: "Entendido",
+																customClass: {
+																	popup: "rounded-2xl shadow-2xl p-8 max-w-lg",
+																	title: "text-2xl text-red-700 mb-2",
+																	confirmButton: "bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg",
+																},
+															});
+															return;
+														}
+
 														if (parsed && (parsed.hashtags || parsed.keywords || parsed.usernames)) {
-															// Aquí va tu lógica de tabs actual
+															// Crear modal con tabs para las sugerencias
+															const suggestionsHtml = `
+																<div class="space-y-4">
+																	<div class="flex bg-gray-100 rounded-lg p-1 gap-1 mb-4">
+																		<button id="tab-hashtags" class="flex-1 py-2 px-3 text-sm font-medium rounded-md bg-white text-purple-700 shadow-sm border-b-2 border-purple-600">
+																			Hashtags
+																		</button>
+																		<button id="tab-keywords" class="flex-1 py-2 px-3 text-sm font-medium rounded-md bg-transparent text-gray-500 hover:text-blue-700">
+																			Palabras clave
+																		</button>
+																		<button id="tab-usernames" class="flex-1 py-2 px-3 text-sm font-medium rounded-md bg-transparent text-gray-500 hover:text-green-700">
+																			Usuarios
+																		</button>
+																	</div>
+																	
+																	<div id="content-hashtags" class="tab-content">
+																		<div class="flex flex-wrap gap-2">
+																			${parsed.hashtags?.map((tag: string) => `
+																				<span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+																					${tag}
+																				</span>
+																			`).join('') || '<p class="text-gray-500">No hay hashtags sugeridos</p>'}
+																		</div>
+																	</div>
+																	
+																	<div id="content-keywords" class="tab-content hidden">
+																		<div class="flex flex-wrap gap-2">
+																			${parsed.keywords?.map((keyword: string) => `
+																				<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+																					${keyword}
+																				</span>
+																			`).join('') || '<p class="text-gray-500">No hay palabras clave sugeridas</p>'}
+																		</div>
+																	</div>
+																	
+																	<div id="content-usernames" class="tab-content hidden">
+																		<div class="flex flex-wrap gap-2">
+																			${parsed.usernames?.map((username: string) => `
+																				<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+																					${username}
+																				</span>
+																			`).join('') || '<p class="text-gray-500">No hay usuarios sugeridos</p>'}
+																		</div>
+																	</div>
+																</div>
+															`;
+															
+															await MySwal.fire({
+																title: 'Sugerencias de Scrapetok AI',
+																html: suggestionsHtml,
+																background: '#fff',
+																showConfirmButton: true,
+																showCancelButton: true,
+																confirmButtonText: 'Autocompletar',
+																cancelButtonText: 'Cerrar',
+																customClass: {
+																	popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
+																	title: 'text-2xl text-purple-700 mb-2',
+																	confirmButton: 'bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg',
+																	cancelButton: 'bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-lg',
+																},
+																didOpen: () => {
+																	// Funcionalidad de tabs
+																	const tabs = ['hashtags', 'keywords', 'usernames'];
+																	let activeTab = 'hashtags'; // Tab activo por defecto
+																	
+																	tabs.forEach(tab => {
+																		const tabBtn = document.getElementById(`tab-${tab}`);
+																		const content = document.getElementById(`content-${tab}`);
+																		
+																		if (tabBtn && content) {
+																			tabBtn.addEventListener('click', () => {
+																				activeTab = tab; // Actualizar tab activo
+																				
+																				// Ocultar todos los contenidos
+																				document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+																				// Remover estilos activos de todos los tabs
+																				document.querySelectorAll('[id^="tab-"]').forEach(el => {
+																					el.classList.remove('bg-white', 'text-purple-700', 'text-blue-700', 'text-green-700', 'shadow-sm', 'border-b-2', 'border-purple-600', 'border-blue-600', 'border-green-600');
+																					el.classList.add('bg-transparent', 'text-gray-500');
+																				});
+																				
+																				// Mostrar contenido activo
+																				content.classList.remove('hidden');
+																				// Aplicar estilos activos
+																				tabBtn.classList.remove('bg-transparent', 'text-gray-500');
+																				tabBtn.classList.add('bg-white', 'shadow-sm');
+																				
+																				if (tab === 'hashtags') {
+																					tabBtn.classList.add('text-purple-700', 'border-b-2', 'border-purple-600');
+																				} else if (tab === 'keywords') {
+																					tabBtn.classList.add('text-blue-700', 'border-b-2', 'border-blue-600');
+																				} else if (tab === 'usernames') {
+																					tabBtn.classList.add('text-green-700', 'border-b-2', 'border-green-600');
+																				}
+																			});
+																		}
+																	});
+																	
+																	// Funcionalidad del botón Autocompletar
+																	const confirmButton = document.querySelector('.swal2-confirm');
+																	if (confirmButton) {
+																		confirmButton.addEventListener('click', () => {
+																			if (activeTab === 'hashtags' && parsed.hashtags) {
+																				const hashtagsString = parsed.hashtags.join(', ');
+																				handleChange('hashtags', hashtagsString);
+																				setActiveTab('hashtags');
+																			} else if (activeTab === 'keywords' && parsed.keywords) {
+																				const keywordsString = parsed.keywords.join(', ');
+																				handleChange('keyWords', keywordsString);
+																				setActiveTab('palabras');
+																			} else if (activeTab === 'usernames' && parsed.usernames) {
+																				const usernamesString = parsed.usernames.join(', ');
+																				handleChange('tiktokAccount', usernamesString);
+																				setActiveTab('usuarios');
+																			}
+																		});
+																	}
+																}
+															});
 														} else {
 															MySwal.fire({
 																title: 'Respuesta de Scrapetok AI',
@@ -731,8 +857,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 														}
 													} else {
 														// 🛑 Manejo de errores mejorado
-														let userFriendlyMessage =
-															'Lo que buscas va en contra de la política de uso de la IA. Reformula tu mensaje sin contenido ofensivo, violento o que infrinja nuestras normas: https://go.microsoft.com/fwlink/?linkid=2198766';
+														let userFriendlyMessage = MODERATION_MESSAGE;
 
 														try {
 															const errText = typeof res.error === 'string' ? res.error : JSON.stringify(res.error);
@@ -765,12 +890,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 												}
 											}}
 										/>
-										{showTooltip && (
-											<div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white text-purple-700 text-xs px-3 py-1 rounded-lg shadow-lg z-30 whitespace-nowrap flex flex-col items-center">
-												¡Haz clic para pedir ayuda a la IA!
-												<span className="w-2 h-2 bg-white rotate-45 -mt-1 shadow-lg"></span>
-											</div>
-										)}
+
 									</div>
 								</div>
 							</div>
