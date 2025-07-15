@@ -16,10 +16,47 @@ import { getDashboardInfo } from "@services/dashboard/getDashboardInfo";
 type PostData = ApifyCallResponse | DashboardInfo;
 interface RenderUniversalCardsProps {
 	data: PostData[];
+	terms?: string[]; // Nuevo: lista de términos a mostrar
 	pageIndices?: Record<string, number>;
 	setModalUrl?: (url: string) => void;
 	setShowModal?: (show: boolean) => void;
 	showEmbeds?: boolean;
+}
+
+function getTermsFromPublished(posts: DashboardInfo[]): string[] {
+	// Devuelve solo hashtags normalizados, únicos, sin # y en minúsculas
+	return Array.from(
+		new Set(
+			posts
+				.map((p) =>
+					(p.usedHashTag || "")
+						.split(",")
+						.map((h) => h.trim().replace(/^#/, "").toLowerCase()),
+				)
+				.flat()
+				.filter(Boolean),
+		),
+	);
+}
+
+function getTermsFromFilters(filters: AdminApifyRequest | null): string[] {
+	if (!filters) return [];
+	const hashtags = filters.hashtags
+		? filters.hashtags
+				.split(",")
+				.map((t) => t.trim())
+				.filter(Boolean)
+		: [];
+	const keyWords = filters.keyWords
+		? filters.keyWords
+				.split(",")
+				.map((t) => t.trim())
+				.filter(Boolean)
+		: [];
+	// Devolvemos solo términos sin el #
+	return [...hashtags, ...keyWords].map((t) =>
+		t.replace(/^#/, "").toLowerCase(),
+	);
 }
 
 // Funciones helper para acceder a propiedades de manera segura
@@ -53,6 +90,8 @@ const BLUE = "#007BFF";
 const PURPLE = "#FF4081";
 export default function DashboardPage() {
 	// Al inicio del componente
+	const [videoLoaded, setVideoLoaded] = useState<boolean[]>([]);
+	const [videoCount, setVideoCount] = useState(0); // Para saber cuántos videos hay
 	const [showModal, setShowModal] = useState(false);
 	const [modalUrl, setModalUrl] = useState<string | null>(null);
 
@@ -161,6 +200,8 @@ export default function DashboardPage() {
 	const handleApify = async (filters: AdminApifyRequest) => {
 		setLoading(true);
 		setLastFilters(filters);
+		const cacheKey = `scrape_${JSON.stringify(filters)}`;
+		const cached = sessionStorage.getItem(cacheKey);
 		Swal.fire({
 			title: "Cargando…",
 			html: "Obteniendo datos de TikTok, por favor espera.",
@@ -178,6 +219,7 @@ export default function DashboardPage() {
 			).map(mapRawToApifyResponse);
 
 			setPosts(mapped);
+			sessionStorage.setItem(cacheKey, JSON.stringify(mapped)); // <<--- Cache
 			setShowPublishedList(false);
 			console.log(posts);
 			const hMap = new Map<string, number>();
@@ -202,6 +244,35 @@ export default function DashboardPage() {
 		}
 	};
 
+	useEffect(() => {
+		// Obtenemos todos los videos a renderizar en el preview
+		const allTopVideos = showPublishedList ? publishedPosts : posts;
+		let total = 0;
+		if (Array.isArray(allTopVideos)) {
+			// Cuenta la cantidad de videos (máx 3 por término)
+			const terms = showPublishedList
+				? getTermsFromPublished(publishedPosts)
+				: getTermsFromFilters(lastFilters);
+			total = terms.flatMap((term) => {
+				const group = allTopVideos.filter((p) => {
+					const hashtags =
+						getHashtags(p)
+							?.split(",")
+							.map((h) => h.trim().replace(/^#/, "").toLowerCase()) || [];
+					return hashtags.includes(term.replace(/^#/, "").toLowerCase());
+				});
+				return group.sort((a, b) => b.views - a.views).slice(0, 3);
+			}).length;
+		}
+		setVideoCount(total);
+		// Solo el primero cargando
+		setVideoLoaded(
+			Array(total)
+				.fill(false)
+				.map((_, i) => i === 0),
+		);
+	}, [posts, publishedPosts, showPublishedList, lastFilters]);
+
 	const fetchPublishedPosts = async () => {
 		try {
 			const data = await getDashboardInfo();
@@ -221,26 +292,30 @@ export default function DashboardPage() {
 
 	const renderUniversalCards = ({
 		data,
+		terms = [],
 		pageIndices = {},
 		setModalUrl,
 		setShowModal,
 		showEmbeds = true, // puedes poner false si solo quieres lista
 	}: RenderUniversalCardsProps) => {
+		const allTopVideos = terms.flatMap((term) => {
+			const group = data.filter((p) => {
+				const hashtags =
+					getHashtags(p)
+						?.split(",")
+						.map((h) => h.trim().replace(/^#/, "").toLowerCase()) || [];
+				return hashtags.includes(term.replace(/^#/, "").toLowerCase());
+			});
+			const top3 = group.sort((a, b) => b.views - a.views).slice(0, 3);
+			return top3.map((p) => ({ p, term }));
+		});
+
 		if (!Array.isArray(data) || data.length === 0)
 			return <div className="text-center mt-12">No hay datos.</div>;
 
-		// Agrupa TODOS los términos (hashtags o keywords) presentes
-		const terms = Array.from(
-			new Set(
-				data.flatMap(
-					(p) =>
-						getHashtags(p)
-							?.split(",")
-							.map((h) => h.trim())
-							.filter(Boolean) || [],
-				),
-			),
-		).filter(Boolean);
+		if (!terms.length) return null;
+
+		let globalVideoIdx = 0; // ¡No uses un useState aquí! Solo una variable simple
 
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -265,7 +340,7 @@ export default function DashboardPage() {
 							<h4 className="text-lg font-semibold mb-3 uppercase tracking-wide flex items-center gap-2 text-gray-900">
 								<span className="text-2xl text-gray-900">🎯</span>
 								<span className="bg-purple-200 text-purple-800 font-bold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide">
-									{term.toUpperCase()}
+									#{term.toUpperCase()}
 								</span>
 							</h4>
 							{top3.map((p, idx) => (
@@ -313,62 +388,85 @@ export default function DashboardPage() {
 							))}
 							{showEmbeds && setModalUrl && setShowModal && (
 								<div className="flex w-full mt-4">
-									{top3.map((p, i) => (
-										<div
-											key={i}
-											className="relative rounded-2xl overflow-hidden shadow-lg bg-gray-100 flex justify-center items-end cursor-pointer"
-											style={{
-												width: "33.333%",
-												height: 195,
-												minWidth: 0,
-												position: "relative",
-											}}
-											onClick={() => {
-												setModalUrl(getPostLink(p));
-												setShowModal(true);
-											}}
-											title="Haz clic para ver y escuchar el video"
-										>
-											{/* BADGE */}
+									{top3.map((p, i) => {
+										// Usamos un índice global para que la secuencia de carga sea correcta en TODA la grilla de videos
+										const idx = globalVideoIdx++;
+										return (
 											<div
-												className={`
-                        absolute top-2 left-4 z-10
-                        flex items-center justify-center
-                        rounded-full font-bold text-xs
-                        backdrop-blur-md shadow
-                        ${
-													i === 0
-														? "bg-yellow-300 text-yellow-900"
-														: i === 1
-															? "bg-gray-400 text-gray-700"
-															: "bg-yellow-800 text-white"
-												}
-                        px-2 py-1 border border-white/60
-                      `}
+												key={i}
+												className="relative rounded-2xl overflow-hidden shadow-lg bg-gray-100 flex justify-center items-end cursor-pointer"
 												style={{
-													minWidth: 22,
-													minHeight: 22,
-													boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+													width: "33.333%",
+													height: 195,
+													minWidth: 0,
+													position: "relative",
 												}}
-											>
-												{i + 1}
-											</div>
-											<div
-												style={{
-													position: "absolute",
-													bottom: 0,
-													left: "50%",
-													width: 325,
-													height: 576,
-													transform: "translateX(-50%) scale(0.34)",
-													transformOrigin: "bottom center",
-													pointerEvents: "none",
+												onClick={() => {
+													setModalUrl(getPostLink(p));
+													setShowModal(true);
 												}}
+												title="Haz clic para ver y escuchar el video"
 											>
-												<TikTokEmbed url={getPostLink(p)} />
+												{/* BADGE */}
+												<div
+													className={`
+              absolute top-2 left-4 z-10
+              flex items-center justify-center
+              rounded-full font-bold text-xs
+              backdrop-blur-md shadow
+              ${
+								i === 0
+									? "bg-yellow-300 text-yellow-900"
+									: i === 1
+										? "bg-gray-400 text-gray-700"
+										: "bg-yellow-800 text-white"
+							}
+              px-2 py-1 border border-white/60
+            `}
+													style={{
+														minWidth: 22,
+														minHeight: 22,
+														boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+													}}
+												>
+													{i + 1}
+												</div>
+												<div
+													style={{
+														position: "absolute",
+														bottom: 0,
+														left: "50%",
+														width: 325,
+														height: 576,
+														transform: "translateX(-50%) scale(0.34)",
+														transformOrigin: "bottom center",
+														pointerEvents: "none",
+													}}
+												>
+													{videoLoaded[idx] ? (
+														<TikTokEmbed
+															url={getPostLink(p)}
+															onLoad={() => {
+																// Habilita el siguiente video
+																setVideoLoaded((prev) => {
+																	if (prev[idx + 1] === undefined) return prev;
+																	const copy = [...prev];
+																	copy[idx + 1] = true;
+																	return copy;
+																});
+															}}
+														/>
+													) : (
+														<div className="flex flex-col items-center justify-center h-[195px] w-full bg-white/70 rounded-xl">
+															<span className="animate-pulse font-bold text-purple-700">
+																Cargando...
+															</span>
+														</div>
+													)}
+												</div>
 											</div>
-										</div>
-									))}
+										);
+									})}
 								</div>
 							)}
 						</div>
@@ -508,11 +606,19 @@ export default function DashboardPage() {
 			{showPublishedList
 				? renderUniversalCards({
 						data: publishedPosts,
+						// Aquí puedes decidir qué términos mostrar en published (puedes dejarlo vacío o hacer lógica adicional)
+						// Por simplicidad, solo pasaremos todos los hashtags únicos si quieres mostrar algo:
+						terms: getTermsFromPublished(publishedPosts),
 						pageIndices,
 						setModalUrl,
 						setShowModal,
 					})
-				: renderUniversalCards({ data: posts, setModalUrl, setShowModal })}
+				: renderUniversalCards({
+						data: posts,
+						terms: getTermsFromFilters(lastFilters), // ¡Solo los del filtro!
+						setModalUrl,
+						setShowModal,
+					})}
 
 			{showSuccessAlert && (
 				<div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50 bg-black/40">
