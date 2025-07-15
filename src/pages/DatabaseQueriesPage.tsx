@@ -360,26 +360,16 @@ export default function DatabaseQueriesPage() {
 	}
 
 	const headers = [
-		"Post Code",
 		"Date Posted",
-		"Time Posted",
 		"Username",
 		"Post URL",
 		"Views",
 		"Likes",
-		"Comments",
-		"Reposts",
-		"Saves",
 		"Engagement %",
 		"Interactions",
 		"Hashtags",
-		"Amount Hashtags",
-		"Sound ID",
 		"Sound URL",
-		"Region",
 		"Track Date",
-		"Track Time",
-		"User",
 	];
 
 	// Justo antes del return, calcula los posts a mostrar en la página actual
@@ -488,15 +478,10 @@ export default function DatabaseQueriesPage() {
 										onClick={() => setSelectedPost(row)}
 										style={{ cursor: "pointer" }}
 									>
-										<td className="px-4 py-2 text-sm font-medium text-gray-900">
-											{row.postId}
-										</td>
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.datePosted}
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.hourPosted}
-										</td>
+
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.usernameTiktokAccount}
 										</td>
@@ -520,15 +505,7 @@ export default function DatabaseQueriesPage() {
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.likes.toLocaleString()}
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.comments.toLocaleString()}
-										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.reposts.toLocaleString()}
-										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.saves.toLocaleString()}
-										</td>
+
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.engagement.toFixed(2)}%
 										</td>
@@ -538,12 +515,7 @@ export default function DatabaseQueriesPage() {
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.hashtags || "–"}
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.numberHashtags.toString()}
-										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.soundId}
-										</td>
+
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.soundURL ? (
 												<a
@@ -558,17 +530,9 @@ export default function DatabaseQueriesPage() {
 												"–"
 											)}
 										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.regionPost}
-										</td>
+
 										<td className="px-4 py-2 text-sm text-gray-900">
 											{row.dateTracking}
-										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.timeTracking}
-										</td>
-										<td className="px-4 py-2 text-sm text-gray-900">
-											{row.userId}
 										</td>
 									</tr>
 								))
@@ -577,38 +541,37 @@ export default function DatabaseQueriesPage() {
 					</table>
 				</div>
 			)}
-			<div className="mt-4 flex justify-center">
-				<button
-					onClick={() => {
-						if (page > 1) {
-							setPage(page - 1);
-						}
-					}}
-					className="px-4 py-2 bg-purple-600 text-white rounded-l disabled:opacity-50"
-					disabled={page === 1}
-				>
-					Previous
-				</button>
-				<span className="px-4 py-2 bg-white border-t border-b border-purple-600 text-purple-600 font-semibold">
-					Página {page} de {totalPages}
-				</span>
-				<button
-					onClick={() => {
-						if (page < totalPages) {
-							setPage(page + 1);
-						}
-					}}
-					className="px-4 py-2 bg-purple-600 text-white rounded-r disabled:opacity-50"
-					disabled={page === totalPages}
-				>
-					Next
-				</button>
-			</div>
 			{posts.length > 0 && (
-				<div className="flex justify-center mt-6">
+				<div className="mt-4 flex flex-col md:flex-row items-center justify-center gap-4">
+					{/* Paginador */}
+					<div className="flex items-center gap-0.5 bg-purple-100 p-2 rounded-xl">
+						<button
+							onClick={() => {
+								if (page > 1) setPage(page - 1);
+							}}
+							className="px-4 py-2 bg-purple-600 text-white rounded-l disabled:opacity-50"
+							disabled={page === 1}
+						>
+							Previous
+						</button>
+						<span className="px-4 py-2 bg-white border-t border-b border-purple-600 text-purple-600 font-semibold">
+							Página {page} de {totalPages}
+						</span>
+						<button
+							onClick={() => {
+								if (page < totalPages) setPage(page + 1);
+							}}
+							className="px-4 py-2 bg-purple-600 text-white rounded-r disabled:opacity-50"
+							disabled={page === totalPages}
+						>
+							Next
+						</button>
+					</div>
+
+					{/* Botón Exportar */}
 					<button
 						onClick={handleDownloadExcel}
-						className={`flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-xl shadow transition-all duration-150 disabled:opacity-70`}
+						className={`flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-xl shadow transition-all duration-150 disabled:opacity-70`}
 						disabled={loadingExcel}
 					>
 						{loadingExcel && (
@@ -636,6 +599,7 @@ export default function DatabaseQueriesPage() {
 					</button>
 				</div>
 			)}
+
 			{selectedPost && (
 				<PostDetailModal
 					post={mapUserDbPostToApifyCallResponse(selectedPost)}
