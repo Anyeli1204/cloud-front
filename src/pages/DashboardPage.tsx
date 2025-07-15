@@ -663,53 +663,50 @@ export default function DashboardPage() {
 				</div>
 			)}
 			{showModal && modalUrl && (
-  <div
-    className="fixed top-0 left-0 w-screen h-screen z-[9999] flex items-center justify-center"
-    style={{ margin: 0, padding: 0 }}
-  >
-    {/* Fondo oscuro absoluto sin rayas */}
-    <div
-      className="absolute top-0 left-0 w-full h-full bg-black"
-      style={{ opacity: 0.8, zIndex: 0 }}
-    />
+				<div
+					className="fixed top-0 left-0 w-screen h-screen z-[9999] flex items-center justify-center"
+					style={{ margin: 0, padding: 0 }}
+				>
+					{/* Fondo oscuro absoluto sin rayas */}
+					<div
+					className="absolute top-0 left-0 w-full h-full bg-black"
+					style={{ opacity: 0.8, zIndex: 0 }}
+					/>
 
-    {/* Modal pequeño, centrado */}
-    <div
-      className="relative z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
-      style={{
-        width: "360px",
-        padding: "1rem",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      {/* Botón de cerrar */}
-      <button
-  onClick={() => setShowModal(false)}
-  className="absolute top-3 right-5 text-3xl font-bold text-gray-500 hover:text-red-600 z-20"
-  aria-label="Cerrar"
->
-  ×
-</button>
-
-
-      {/* Contenido del video */}
-      <div
-        style={{
-          width: "325px",
-          height: "576px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <TikTokEmbed url={modalUrl} />
-      </div>
-    </div>
-  </div>
-)}
-
+					{/* Modal pequeño, centrado */}
+					<div
+					className="relative z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
+					style={{
+						width: "360px",
+						padding: "1rem",
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+					}}
+					>
+					{/* Botón de cerrar */}
+					<button
+						onClick={() => setShowModal(false)}
+						className="absolute top-3 right-5 text-3xl font-bold text-gray-500 hover:text-red-600 z-20"
+						aria-label="Cerrar"
+						>
+						×
+					</button>
+					{/* Contenido del video */}
+					<div
+						style={{
+						width: "325px",
+						height: "576px",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						}}
+					>
+						<TikTokEmbed url={modalUrl} />
+					</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
