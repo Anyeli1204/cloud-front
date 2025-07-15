@@ -38,7 +38,6 @@ export default class Api {
 		};
 
 		return axios<RequestType, AxiosResponse<ResponseType>>(
-			config.url!,
 			configOptions,
 		);
 	}
