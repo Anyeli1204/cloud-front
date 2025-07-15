@@ -118,11 +118,13 @@ export default function ApifyCallPage() {
 				text: "✅ El archivo Excel fue exportado con éxito.",
 				confirmButtonColor: "#22c55e", // verde
 			});
-		} catch {
+		} catch (error) {
+			console.error("Error detallado al descargar Excel:", error);
+			const errorMessage = error instanceof Error ? error.message : "❌ Hubo un error descargando el archivo Excel.";
 			await Swal.fire({
 				icon: "error",
 				title: "Error al descargar",
-				text: "❌ Hubo un error descargando el archivo Excel.",
+				text: errorMessage,
 				confirmButtonColor: "#ef4444", // rojo
 			});
 		} finally {
