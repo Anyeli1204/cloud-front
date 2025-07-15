@@ -434,27 +434,27 @@ export default function UserInformationPage() {
 
 		return (
 			<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
-				<div className="max-w-6xl mx-auto px-4 py-8">
-					<h1 className="w-full text-4xl font-extrabold mb-8 text-purple-800 dark:text-white flex items-center justify-center gap-2">
+				<div className="max-w-6xl mx-auto px-4 py-4 lg:py-8">
+					<h1 className="w-full text-2xl lg:text-4xl font-extrabold mb-4 lg:mb-8 text-purple-800 dark:text-white flex items-center justify-center gap-2">
 						<Shield size={28} className="text-purple-800 dark:text-white" />
 						Información de Administrador
 					</h1>
-					<div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-stretch">
-						<div className="backdrop-blur-md bg-white/80 dark:bg-white/30 rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-4 w-[300px] h-full min-h-[480px] self-stretch border-2 border-purple-100 mx-auto md:col-span-1">
-							<div className="relative mb-6">
-								<div className="w-40 h-40 rounded-full bg-gradient-to-tr from-purple-400 via-pink-400 to-blue-400 p-1 animate-spin-slow">
+					<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8 items-stretch">
+						<div className="backdrop-blur-md bg-white/80 dark:bg-white/30 rounded-3xl shadow-2xl p-4 lg:p-8 flex flex-col items-center gap-4 w-full max-w-[300px] h-full min-h-[400px] lg:min-h-[480px] self-stretch border-2 border-purple-100 mx-auto lg:col-span-1">
+							<div className="relative mb-4 lg:mb-6">
+								<div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-tr from-purple-400 via-pink-400 to-blue-400 p-1 animate-spin-slow">
 									<div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
 										<img
 											src={avatarUrl}
 											alt="Avatar"
-											className="rounded-full w-38 h-38 object-cover border-4 border-white shadow-lg"
+											className="rounded-full w-30 h-30 lg:w-38 lg:h-38 object-cover border-4 border-white shadow-lg"
 										/>
 									</div>
 								</div>
 							</div>
 							<div className="flex flex-col items-center gap-1 w-full">
 								<span className="text-gray-400 text-sm">Nombre</span>
-								<span className="text-2xl font-extrabold text-gray-800 dark:text-white text-center">
+								<span className="text-xl lg:text-2xl font-extrabold text-gray-800 dark:text-white text-center">
 									{adminData.firstname} {adminData.lastname}
 								</span>
 								<hr className="w-2/3 my-2 border-purple-100" />
@@ -479,12 +479,12 @@ export default function UserInformationPage() {
 							</div>
 						</div>
 						<div className="md:col-span-3 flex flex-col gap-4 h-full justify-between w-full mt-8 md:mt-0 md:ml-8">
-							<div className="bg-white/80 rounded-2xl shadow-xl p-6 border border-pink-100">
-								<h2 className="font-bold text-xl mb-4 flex items-center gap-2 text-blue-800">
+							<div className="bg-white/80 rounded-2xl shadow-xl p-4 lg:p-6 border border-pink-100">
+								<h2 className="font-bold text-lg lg:text-xl mb-3 lg:mb-4 flex items-center gap-2 text-blue-800">
 									<MessageCircle size={20} />
 									Preguntas Respondidas
 								</h2>
-								<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 text-sm items-start">
+								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3 mb-4 lg:mb-8 text-sm items-start">
 									{preguntasPagina.length > 0 ? (
 										preguntasPagina.map((qa, idx) => {
 											const pregunta = Object.keys(qa)[0];
@@ -494,7 +494,7 @@ export default function UserInformationPage() {
 											return (
 												<div
 													key={idx}
-													className="bg-blue-50 dark:bg-blue-100 rounded-xl p-4 shadow-md flex flex-col gap-2 border border-blue-100 dark:border-blue-200 w-full max-w-xs mx-auto cursor-pointer hover:scale-105 transition break-words"
+													className="bg-blue-50 dark:bg-blue-100 rounded-xl p-3 lg:p-4 shadow-md flex flex-col gap-2 border border-blue-100 dark:border-blue-200 w-full max-w-xs mx-auto cursor-pointer hover:scale-105 transition break-words"
 													onClick={() =>
 														setPreguntaSeleccionada({
 															id: Number(qa.id),
@@ -574,14 +574,14 @@ export default function UserInformationPage() {
 									</button>
 								</div>
 							</div>
-							<div className="bg-white/80 rounded-2xl shadow-xl p-6 border border-pink-100">
-								<h2 className="font-bold text-xl mb-4 flex items-center gap-2 text-[#FF00CC] dark:text-[#FF00CC]">
+							<div className="bg-white/80 rounded-2xl shadow-xl p-4 lg:p-6 border border-pink-100">
+								<h2 className="font-bold text-lg lg:text-xl mb-3 lg:mb-4 flex items-center gap-2 text-[#FF00CC] dark:text-[#FF00CC]">
 									<Bell size={20} />
 									Alertas Emitidas
 								</h2>
 								{alertasPagina.length > 0 ? (
 									<>
-										<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+										<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3 mb-4">
 											{alertasPagina.map((alerta, idx) => {
 												const [id, fecha] = Object.entries(alerta)[0];
 												let fechaFormateada = "Sin fecha";
@@ -596,7 +596,7 @@ export default function UserInformationPage() {
 												return (
 													<div
 														key={idx}
-														className="flex items-center gap-2 bg-pink-100/60 border border-pink-200 rounded-lg px-3 py-2 shadow-sm hover:scale-105 hover:shadow-md transition-all duration-200 text-sm"
+														className="flex items-center gap-2 bg-pink-100/60 border border-pink-200 rounded-lg px-2 lg:px-3 py-2 shadow-sm hover:scale-105 hover:shadow-md transition-all duration-200 text-xs lg:text-sm"
 													>
 														<span className="flex items-center gap-1 text-pink-600 font-semibold">
 															<Bell size={14} className="text-pink-400" />

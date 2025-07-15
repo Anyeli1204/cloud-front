@@ -159,16 +159,16 @@ export default function AiPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-6 min-h-screen">
-      <div className="w-full rounded-2xl bg-white shadow-md flex items-center px-6 py-6 gap-6 mb-6 relative overflow-hidden">
+    <div className="max-w-6xl mx-auto p-4 lg:p-6 space-y-4 lg:space-y-6 min-h-screen">
+      <div className="w-full rounded-2xl bg-white shadow-md flex flex-col sm:flex-row items-center px-4 lg:px-6 py-4 lg:py-6 gap-4 lg:gap-6 mb-4 lg:mb-6 relative overflow-hidden">
         <img
           src={ScrapiLogo}
           alt="Scrapi IA"
-          className="w-16 h-16 z-10 animate-bounce-slow"
+          className="w-12 h-12 lg:w-16 lg:h-16 z-10 animate-bounce-slow"
           style={{ filter: "drop-shadow(0 0 4px #e0e0e0)" }}
         />
-        <div className="z-10">
-          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent mb-1">
+        <div className="z-10 text-center sm:text-left">
+          <h1 className="text-2xl lg:text-3xl font-extrabold bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent mb-1">
             AI Content Creator
           </h1>
           <p className="text-sm text-gray-600 font-medium">
@@ -191,11 +191,11 @@ export default function AiPage() {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row gap-6 items-stretch">
-        <div className="bg-white rounded-2xl shadow-lg p-6 flex-1 border border-purple-100 min-h-[400px] flex flex-col">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-stretch">
+        <div className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 flex-1 border border-purple-100 min-h-[400px] flex flex-col">
           <div className="flex items-center gap-2 mb-3">
-            <Hash className="text-purple-400" size={24} />
-            <h2 className="text-2xl font-extrabold text-gray-900">Hashtags y Contenido</h2>
+            <Hash className="text-purple-400 w-5 h-5 lg:w-6 lg:h-6" />
+            <h2 className="text-xl lg:text-2xl font-extrabold text-gray-900">Hashtags y Contenido</h2>
           </div>
           <label className="block text-sm font-semibold text-gray-700 mb-1">Hashtags iniciales</label>
           <div className="relative mb-3">

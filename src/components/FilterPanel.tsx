@@ -16,6 +16,7 @@ const POPULAR_HASHTAGS = [
 	"#tech",
 	"#beauty",
 	"#parati",
+	"#baile", 
 ];
 const POPULAR_USERS = ["charlidamelio", "khaby.lame", "bellapoarch", "addisonre"];
 const POPULAR_KEYWORDS = ["pizza", "recetas", "cocina", "viajes", "deporte", "universidad"];
@@ -583,14 +584,15 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 						</div>
 						{/* Asistente virtual: Scrapi con globo de diálogo pequeño, cuadrado y pegado al logo */}
 						{activeTab !== 'basico' ? (
-							<div className="absolute bottom-2 right-8 z-20 max-w-[320px] w-full flex items-end justify-end">
-								<div className="relative flex items-end w-full">
+							<div className="absolute bottom-2 right-6 sm:right-8 z-20 flex items-end justify-end">
+								<div className="relative flex items-center group">
+									{/* Globo solo para desktop */}
 									<svg
 										viewBox="0 0 320 70"
-										width="250"
+										width="200"
 										height="80"
-										className="drop-shadow-lg w-full"
-										style={{ minWidth: 210, maxWidth: 210 }}
+										className="drop-shadow-lg w-full hidden sm:block"
+										style={{ minWidth: 180, maxWidth: 210 }}
 									>
 										<defs>
 											<linearGradient id="bubble-gradient" x1="0" y1="0" x2="1" y2="1">
@@ -632,7 +634,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 										<img
 											src={ScrapiLogo}
 											alt="Scrapi IA"
-											className="w-16 h-16 ml-1 drop-shadow-xl cursor-pointer"
+											className="w-12 h-12 sm:w-16 sm:h-16 ml-1 drop-shadow-xl cursor-pointer"
 											style={{ marginBottom: '8px' }}
 											onClick={async () => {
 												const { value: userMessage } = await MySwal.fire({
@@ -861,7 +863,13 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 												}
 											}}
 										/>
-
+										
+										{/* Tooltip */}
+										<div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-white border border-purple-200 rounded-full px-3 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-30">
+											<span className="text-purple-700 text-xs font-medium whitespace-nowrap">
+												Scrapi te ayuda con esto
+											</span>
+										</div>
 									</div>
 								</div>
 							</div>

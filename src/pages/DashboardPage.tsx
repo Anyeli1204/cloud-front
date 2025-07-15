@@ -328,10 +328,10 @@ export default function DashboardPage() {
 					return (
 						<div
 							key={term}
-							className="bg-gradient-to-br from-white via-gray-50 to-gray-200 dark:bg-none dark:bg-white/80 border border-transparent dark:border-white/30 rounded-3xl shadow-2xl p-6 flex flex-col items-start transition-all duration-300"
+							className="bg-gradient-to-br from-white via-gray-50 to-gray-200 dark:bg-none dark:bg-white/80 border border-transparent dark:border-gray-300 rounded-3xl shadow-2xl p-6 flex flex-col items-start transition-all duration-300"
 						>
-							<h4 className="text-lg font-semibold mb-3 uppercase tracking-wide flex items-center gap-2 text-gray-900">
-								<span className="text-2xl text-gray-900">🎯</span>
+							<h4 className="text-lg font-semibold mb-3 uppercase tracking-wide flex items-center gap-2 text-gray-900 dark:text-gray-900">
+								<span className="text-2xl text-gray-900 dark:text-gray-900">🎯</span>
 								<span className="bg-purple-200 text-purple-800 font-bold rounded-full px-4 py-1 text-base shadow-sm uppercase tracking-wide">
 									#{term.toUpperCase()}
 								</span>
@@ -341,7 +341,7 @@ export default function DashboardPage() {
 									key={getPostId(p) || idx}
 									className="mb-4 last:mb-0 w-full"
 								>
-									<div className="flex items-center gap-2 font-extrabold text-lg mb-1 text-gray-900 dark:text-white">
+									<div className="flex items-center gap-2 font-extrabold text-lg mb-1 text-gray-900 dark:text-gray-900">
 										<span
 											className={`
                       flex items-center justify-center
@@ -367,17 +367,17 @@ export default function DashboardPage() {
 										</span>
 										{getPostId(p)}
 									</div>
-									<div className="flex items-center gap-1 font-medium text-xs mb-0.5 text-gray-700 dark:text-gray-200">
+									<div className="flex items-center gap-1 font-medium text-xs mb-0.5 text-gray-700 dark:text-gray-700">
 										<span>📅 {p.datePosted}</span>
 										<span>| 👤 {getUsername(p)}</span>
 									</div>
-									<div className="flex items-center gap-4 text-sm font-semibold text-gray-900 dark:text-white">
+									<div className="flex items-center gap-4 text-sm font-semibold text-gray-900 dark:text-gray-900">
 										<span>👁️ {p.views?.toLocaleString?.() || p.views}</span>
 										<span>❤️ {p.likes?.toLocaleString?.() || p.likes}</span>
 
 										<span>📊 {getEngagement(p).toFixed(2)}%</span>
 									</div>
-									<hr className="my-4 border-purple-200 dark:border-violet-600" />
+									<hr className="my-4 border-purple-200 dark:border-gray-300" />
 								</div>
 							))}
 							{showEmbeds && setModalUrl && setShowModal && (
@@ -471,10 +471,10 @@ export default function DashboardPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6 mt-8">
+		<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-4 lg:p-6 space-y-4 lg:space-y-6 mt-4 lg:mt-8">
 			{/* Título principal con degradado morado más oscuro en modo claro y pastel en modo oscuro */}
 			<h1
-				className="text-5xl md:text-5xl font-extrabold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 dark:from-pink-200 dark:via-purple-200 dark:to-blue-200"
+				className="text-3xl lg:text-5xl font-extrabold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 dark:from-pink-200 dark:via-purple-200 dark:to-blue-200"
 				style={{ fontFamily: "Nunito, sans-serif" }}
 			>
 				Dashboard ScrapeTok
@@ -501,7 +501,7 @@ export default function DashboardPage() {
 
 			{/* Caja de filtros mejorada */}
 			{isAdmin && (
-				<div className="w-full max-w-5xl mx-auto mt-8 p-8 rounded-3xl shadow-2xl bg-white/80 dark:bg-white/20 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 animate-fade-in">
+				<div className="w-full max-w-5xl mx-auto mt-4 lg:mt-8 p-4 lg:p-8 rounded-3xl shadow-2xl bg-white/80 dark:bg-white/20 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 animate-fade-in">
 					<div className="flex items-center w-full md:w-1/2 bg-gray-100 dark:bg-gray-800 rounded-xl px-3 py-2 shadow-inner gap-2">
 						<span className="text-lg text-gray-400">#</span>
 						<input
@@ -551,21 +551,21 @@ export default function DashboardPage() {
 							}
 						/>
 					</div>
-					<div className="flex gap-2 mt-4 md:mt-0">
+					<div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0 w-full sm:w-auto">
 						<button
-							className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+							className="px-4 lg:px-6 py-2 lg:py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm lg:text-base"
 							onClick={() => lastFilters && handleApify(lastFilters)}
 						>
 							Buscar
 						</button>
 						<button
-							className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-pink-400"
+							className="px-4 lg:px-6 py-2 lg:py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 text-sm lg:text-base"
 							onClick={handlePublish}
 						>
 							Publicar
 						</button>
 						<button
-							className="px-6 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white font-bold shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition-all focus:outline-none"
+							className="px-4 lg:px-6 py-2 lg:py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white font-bold shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition-all focus:outline-none text-sm lg:text-base"
 							onClick={async () => {
 								const result = await Swal.fire({
 									title: "¿Estás seguro?",

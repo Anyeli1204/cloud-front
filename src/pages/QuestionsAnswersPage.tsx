@@ -376,23 +376,23 @@ export default function QuestionsAnswersPage() {
 	}, []);
 
 	return (
-		<div className="min-h-screen flex flex-col justify-center bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white">
+		<div className="min-h-screen flex flex-col justify-center bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-4 lg:p-6">
 			<div className="flex justify-center items-center w-full">
 				<div
-					className={`mx-auto bg-white dark:bg-white/70 rounded-t-3xl px-4 md:px-8 py-2 md:py-4 w-[1100px] flex flex-col shadow-none ${activeTab === "QNA" ? "mt-6" : "mt-2"}`}
+					className={`mx-auto bg-white dark:bg-white/70 rounded-t-3xl px-4 lg:px-8 py-2 lg:py-4 w-full max-w-[1100px] flex flex-col shadow-none ${activeTab === "QNA" ? "mt-4 lg:mt-6" : "mt-2"}`}
 				>
-					<h1 className="w-full text-4xl font-extrabold mb-4 mt-8 text-purple-800 flex items-center justify-center gap-2">
+					<h1 className="w-full text-2xl lg:text-4xl font-extrabold mb-4 mt-4 lg:mt-8 text-purple-800 flex items-center justify-center gap-2">
 						Centro de Ayuda
 					</h1>
 
-					<div className="flex justify-center mb-4 gap-4">
+					<div className="flex flex-col sm:flex-row justify-center mb-4 gap-2 sm:gap-4">
 						{["FAQ", "QNA"]
 							.concat(role === "USER" ? ["ASK"] : [])
 							.map((tab) => (
 								<button
 									key={tab}
 									onClick={() => setActiveTab(tab as "FAQ" | "QNA" | "ASK")}
-									className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 text-base ${
+									className={`px-4 lg:px-6 py-2 rounded-full font-semibold transition-all duration-150 text-sm lg:text-base ${
 										activeTab === tab
 											? "bg-purple-600 text-white shadow"
 											: "bg-gray-100 text-purple-600 hover:bg-gray-200"
@@ -444,29 +444,29 @@ export default function QuestionsAnswersPage() {
 							{/* Contador de preguntas para administradores */}
 							{role === "ADMIN" && (
 								<div className="mb-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
-									<div className="flex justify-between items-center">
-										<div className="flex gap-6">
+									<div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+										<div className="flex gap-4 lg:gap-6">
 											<div className="text-center">
-												<div className="text-2xl font-bold text-purple-600">
+												<div className="text-xl lg:text-2xl font-bold text-purple-600">
 													{stats.pending}
 												</div>
-												<div className="text-sm text-gray-600">Pendientes</div>
+												<div className="text-xs lg:text-sm text-gray-600">Pendientes</div>
 											</div>
 											<div className="text-center">
-												<div className="text-2xl font-bold text-green-600">
+												<div className="text-xl lg:text-2xl font-bold text-green-600">
 													{stats.answered}
 												</div>
-												<div className="text-sm text-gray-600">Respondidas</div>
+												<div className="text-xs lg:text-sm text-gray-600">Respondidas</div>
 											</div>
 											<div className="text-center">
-												<div className="text-2xl font-bold text-blue-600">
+												<div className="text-xl lg:text-2xl font-bold text-blue-600">
 													{stats.total}
 												</div>
-												<div className="text-sm text-gray-600">Total</div>
+												<div className="text-xs lg:text-sm text-gray-600">Total</div>
 											</div>
 										</div>
-										<div className="text-right">
-											<div className="text-sm text-gray-500">
+										<div className="text-center lg:text-right">
+											<div className="text-xs lg:text-sm text-gray-500">
 												Panel de Administrador
 											</div>
 											<div className="text-xs text-gray-400">
@@ -477,8 +477,8 @@ export default function QuestionsAnswersPage() {
 								</div>
 							)}
 
-							<div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-								<div className="flex gap-2">
+							<div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+								<div className="flex flex-wrap gap-2">
 									{estadoFiltros.map((f) => {
 										const count = questions.filter((q) => {
 											if (f === "ALL") return true;
@@ -490,7 +490,7 @@ export default function QuestionsAnswersPage() {
 										return (
 											<button
 												key={f}
-												className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+												className={`px-3 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-semibold transition-all ${
 													filter === f
 														? "bg-purple-600 text-white shadow-lg"
 														: "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -504,11 +504,11 @@ export default function QuestionsAnswersPage() {
 										);
 									})}
 								</div>
-								<div className="relative flex flex-col items-start">
+								<div className="relative flex flex-col items-start w-full lg:w-auto">
 									<div className="relative w-full">
 										<button
 											type="button"
-											className="flex items-center gap-2 px-4 py-2 rounded-full font-semibold border border-purple-300 text-purple-700 bg-white hover:bg-purple-50 transition-all dark:bg-white/80 w-full"
+											className="flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full font-semibold border border-purple-300 text-purple-700 bg-white hover:bg-purple-50 transition-all dark:bg-white/80 w-full text-xs lg:text-sm"
 											onClick={(e) => {
 												e.stopPropagation();
 												setHashtagDropdownOpen((open) => !open);
@@ -588,13 +588,13 @@ export default function QuestionsAnswersPage() {
 										</div>
 									)}
 								</div>
-								<div className="relative">
+								<div className="relative w-full lg:w-auto">
 									<button
 										onClick={(e) => {
 											e.stopPropagation();
 											setDropdownOpen(!dropdownOpen);
 										}}
-										className="flex items-center justify-between gap-2 bg-white border border-purple-300 text-purple-700 px-4 py-2 rounded-md shadow-sm hover:bg-purple-50 transition-all dark:bg-white/80"
+										className="flex items-center justify-between gap-2 bg-white border border-purple-300 text-purple-700 px-3 lg:px-4 py-2 rounded-md shadow-sm hover:bg-purple-50 transition-all dark:bg-white/80 w-full text-xs lg:text-sm"
 									>
 										<span className="font-semibold">Ordenar:</span>
 										<span>
@@ -706,7 +706,7 @@ export default function QuestionsAnswersPage() {
 									return (
 										<div
 											key={q.id}
-											className={`w-full rounded-2xl border-2 p-6 flex flex-col gap-2 relative transition-all
+											className={`w-full rounded-2xl border-2 p-4 lg:p-6 flex flex-col gap-2 relative transition-all
 												${
 													q.status === "ANSWERED"
 														? "border-green-300 bg-white shadow-xl dark:bg-white/70 dark:border-green-300"
@@ -717,9 +717,9 @@ export default function QuestionsAnswersPage() {
 											`}
 										>
 											{/* Fecha y estado */}
-											<div className="flex items-center justify-between mb-2">
-												<div className="flex items-center gap-2 text-sm text-gray-500">
-													<User size={18} className="text-purple-400" />
+											<div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+												<div className="flex items-center gap-2 text-xs lg:text-sm text-gray-500">
+													<User size={16} className="text-purple-400 lg:w-[18px] lg:h-[18px]" />
 													<span>
 														{q.questionDate} {q.questionHour}
 													</span>
@@ -753,14 +753,14 @@ export default function QuestionsAnswersPage() {
 													{q.status === "PENDING" && role === "ADMIN" && (
 														<>
 															<button
-																className="flex items-center gap-2 bg-white border border-yellow-300 text-yellow-500 font-semibold px-5 py-2 rounded-full shadow-lg cursor-pointer text-sm hover:bg-yellow-50 transition mt-1"
+																className="flex items-center gap-2 bg-white border border-yellow-300 text-yellow-500 font-semibold px-3 lg:px-5 py-2 rounded-full shadow-lg cursor-pointer text-xs lg:text-sm hover:bg-yellow-50 transition mt-1"
 																onClick={() =>
 																	setAnsweringId(
 																		answeringId === q.id ? null : q.id,
 																	)
 																}
 															>
-																<MessageCircle size={20} /> Responder
+																<MessageCircle size={16} className="lg:w-5 lg:h-5" /> Responder
 															</button>
 														</>
 													)}
@@ -796,21 +796,21 @@ export default function QuestionsAnswersPage() {
 													<div className="w-full flex flex-col items-start mt-4">
 														<form
 															onSubmit={handleSendAnswer}
-															className="w-full max-w-2xl bg-white dark:bg-black/30 p-6 rounded-2xl shadow-lg border border-purple-100 dark:border-white/10 flex flex-col gap-4"
+															className="w-full max-w-2xl bg-white dark:bg-black/30 p-4 lg:p-6 rounded-2xl shadow-lg border border-purple-100 dark:border-white/10 flex flex-col gap-4"
 														>
-															<div className="flex flex-row gap-3 items-center w-full">
+															<div className="flex flex-col sm:flex-row gap-3 items-center w-full">
 																<input
 																	type="text"
 																	value={answer}
 																	onChange={(e) => setAnswer(e.target.value)}
 																	placeholder="Escribe tu respuesta..."
-																	className="flex-1 px-4 py-3 border-2 border-purple-200 dark:border-neutral-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-base bg-white dark:bg-neutral-900/70 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
+																	className="flex-1 px-3 lg:px-4 py-2 lg:py-3 border-2 border-purple-200 dark:border-neutral-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm lg:text-base bg-white dark:bg-neutral-900/70 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
 																/>
 																<button
 																	type="submit"
-																	className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold px-5 py-3 rounded-lg text-base transition"
+																	className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold px-3 lg:px-5 py-2 lg:py-3 rounded-lg text-sm lg:text-base transition w-full sm:w-auto"
 																>
-																	<Send size={18} /> Responder
+																	<Send size={16} className="lg:w-[18px] lg:h-[18px]" /> Responder
 																</button>
 																<button
 																	type="button"
@@ -818,7 +818,7 @@ export default function QuestionsAnswersPage() {
 																		setAnsweringId(null);
 																		setAnswer("");
 																	}}
-																	className="flex items-center justify-center bg-gray-200 text-gray-700 px-5 py-3 rounded-lg hover:bg-gray-300 transition text-base font-semibold"
+																	className="flex items-center justify-center bg-gray-200 text-gray-700 px-3 lg:px-5 py-2 lg:py-3 rounded-lg hover:bg-gray-300 transition text-sm lg:text-base font-semibold w-full sm:w-auto"
 																>
 																	Cancelar
 																</button>
@@ -859,23 +859,23 @@ export default function QuestionsAnswersPage() {
 			</div>
 			{activeTab !== "QNA" && (
 				<div className="mx-auto w-full max-w-[1100px] bg-gradient-to-r from-purple-700 to-fuchsia-600 dark:bg-gradient-to-r dark:from-purple-800 dark:via-purple-900 dark:to-gray-800 py-3 rounded-b-3xl">
-					<div className="w-full flex flex-row flex-wrap items-center justify-between gap-6 text-white dark:text-white px-6">
+					<div className="w-full flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 sm:gap-6 text-white dark:text-white px-4 lg:px-6">
 						<div className="flex items-center gap-2">
-							<Phone className="w-6 h-6 text-orange-300 dark:text-white" />
-							<span className="font-semibold">Información de contacto</span>
-							<span className="opacity-90 ml-2">+51 999 888 777</span>
+							<Phone className="w-5 h-5 lg:w-6 lg:h-6 text-orange-300 dark:text-white" />
+							<span className="font-semibold text-sm lg:text-base">Información de contacto</span>
+							<span className="opacity-90 ml-2 text-sm lg:text-base">+51 999 888 777</span>
 						</div>
-						<div className="h-8 border-l border-white/30 dark:border-gray-300/30 mx-4" />
+						<div className="hidden sm:block h-8 border-l border-white/30 dark:border-gray-300/30 mx-4" />
 						<div className="flex items-center gap-2">
-							<AlarmClock className="w-6 h-6 text-yellow-200 dark:text-white" />
-							<span className="font-semibold">Horarios</span>
-							<span className="opacity-90 ml-2">L-V 9:00-18:00</span>
+							<AlarmClock className="w-5 h-5 lg:w-6 lg:h-6 text-yellow-200 dark:text-white" />
+							<span className="font-semibold text-sm lg:text-base">Horarios</span>
+							<span className="opacity-90 ml-2 text-sm lg:text-base">L-V 9:00-18:00</span>
 						</div>
-						<div className="h-8 border-l border-white/30 dark:border-gray-300/30 mx-4" />
+						<div className="hidden sm:block h-8 border-l border-white/30 dark:border-gray-300/30 mx-4" />
 						<div className="flex items-center gap-2">
-							<AlarmClock className="w-6 h-6 text-yellow-200 dark:text-white" />
-							<span className="font-semibold">Preguntas técnicas</span>
-							<span className="opacity-90 ml-2">24h máx.</span>
+							<AlarmClock className="w-5 h-5 lg:w-6 lg:h-6 text-yellow-200 dark:text-white" />
+							<span className="font-semibold text-sm lg:text-base">Preguntas técnicas</span>
+							<span className="opacity-90 ml-2 text-sm lg:text-base">24h máx.</span>
 						</div>
 					</div>
 				</div>
