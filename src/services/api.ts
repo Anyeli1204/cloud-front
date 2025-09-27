@@ -4,42 +4,121 @@ import axios, {
 	RawAxiosRequestHeaders,
 } from "axios";
 
+export type ApiServiceKey = "legacy" | "accounts" | "content";
+
+type ApiConfig = {
+	basePath: string;
+	includeAuthHeader?: boolean;
+	includeUserHeaders?: boolean;
+};
+
 export default class Api {
-	private static _instance: Api | null = null;
+	private static _instances: Map<ApiServiceKey, Api> = new Map();
 
-	private _basePath: string;
+	private readonly _config: ApiConfig;
 
-	private constructor(basePath: string) {
-		this._basePath = basePath;
+	private constructor(config: ApiConfig) {
+		this._config = config;
 	}
 
-	public static async getInstance() {
-		if (!this._instance) {
-			const basePath = import.meta.env.VITE_API_BASE_URL || "/api";
-			this._instance = new Api(basePath);
+	public static async getInstance(service: ApiServiceKey = "legacy") {
+		if (!this._instances.has(service)) {
+			const config = this.resolveConfig(service);
+			this._instances.set(service, new Api(config));
 		}
-		return this._instance;
+		return this._instances.get(service)!;
+	}
+
+	private static resolveConfig(service: ApiServiceKey): ApiConfig {
+		const env = import.meta.env;
+		const defaultBase = env.VITE_API_BASE_URL || "/api";
+		const accountsBase = env.VITE_ACCOUNTS_SERVICE_URL || defaultBase;
+		const contentBase = env.VITE_CONTENT_SERVICE_URL || defaultBase;
+
+		switch (service) {
+			case "accounts":
+				return {
+					basePath: accountsBase,
+					includeAuthHeader: true,
+				};
+			case "content":
+				return {
+					basePath: contentBase,
+					includeAuthHeader: true,
+					includeUserHeaders: true,
+				};
+			case "legacy":
+			default:
+				return {
+					basePath: defaultBase,
+					includeAuthHeader: true,
+				};
+		}
+	}
+
+	private static getStoredValue(key: string): string | null {
+		if (typeof window === "undefined") {
+			return null;
+		}
+
+		try {
+			const sessionValue = window.sessionStorage?.getItem(key);
+			if (sessionValue) {
+				return sessionValue;
+			}
+		} catch (error) {
+			console.warn("SessionStorage unavailable", error);
+		}
+
+		try {
+			return window.localStorage?.getItem(key) ?? null;
+		} catch (error) {
+			console.warn("LocalStorage unavailable", error);
+			return null;
+		}
+	}
+
+	private buildHeaders(
+		providedHeaders?: RawAxiosRequestHeaders,
+	): RawAxiosRequestHeaders {
+		const headers: RawAxiosRequestHeaders = {
+			"Content-Type": "application/json",
+			...(providedHeaders ?? {}),
+		};
+
+		if (this._config.includeAuthHeader) {
+			const token = Api.getStoredValue("token");
+			if (token && !headers["Authorization"]) {
+				headers["Authorization"] = `Bearer ${token}`;
+			}
+		}
+
+		if (this._config.includeUserHeaders) {
+			const userId = Api.getStoredValue("id");
+			const role = Api.getStoredValue("role");
+			if (userId && !headers["x-user-id"]) {
+				headers["x-user-id"] = userId;
+			}
+			if (role && !headers["x-user-role"]) {
+				headers["x-user-role"] = role;
+			}
+		}
+
+		return headers;
 	}
 
 	private async request<RequestType, ResponseType>(config: AxiosRequestConfig) {
-		const headers: RawAxiosRequestHeaders = {
-			"Content-Type": "application/json",
-		};
-
-		const token = sessionStorage.getItem("token");
-		if (token) {
-			headers["Authorization"] = `Bearer ${token}`;
-		}
+		const providedHeaders =
+			(config.headers as RawAxiosRequestHeaders | undefined) ?? undefined;
+		const headers = this.buildHeaders(providedHeaders);
 
 		const configOptions: AxiosRequestConfig = {
 			...config,
-			baseURL: this._basePath,
-			headers: headers,
+			baseURL: this._config.basePath,
+			headers,
 		};
 
-		return axios<RequestType, AxiosResponse<ResponseType>>(
-			configOptions,
-		);
+		return axios<RequestType, AxiosResponse<ResponseType>>(configOptions);
 	}
 
 	public get<RequestType, ResponseType>(config: AxiosRequestConfig) {

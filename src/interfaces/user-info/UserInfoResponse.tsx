@@ -1,3 +1,11 @@
+export interface AdminProfileSummary {
+	id: number;
+	admisionToAdminDate: string;
+	admisionToAdminTime: string;
+	totalQuestionsAnswered: number;
+	isActive: boolean;
+}
+
 export interface UserInfoResponse {
 	id: number;
 	email: string;
@@ -6,11 +14,13 @@ export interface UserInfoResponse {
 	username: string;
 	role: "USER" | "ADMIN";
 	creationDate: string;
+	isActive?: boolean;
 	amountScrappedAccount: number;
 	filters: Filtro[];
-	tiktokUsernameScraped: string[] | null;
+	tiktokUsernameScraped: string[];
+	adminProfile?: AdminProfileSummary | null;
 }
 
 export interface Filtro {
-	[key: string]: any;
+	[key: string]: string | number | boolean | null | undefined;
 }
