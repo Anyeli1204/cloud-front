@@ -69,7 +69,7 @@ export default function AdminUsersPage() {
 		setUpgrading(user.id);
 		setError(null);
 		try {
-			await upgrade({ userid: user.id, adminId: id! });
+			await upgrade({ userId: user.id, adminId: id! });
 			setUsers((prev) =>
 				prev.map((u) => (u.id === user.id ? { ...u, role: "ADMIN" } : u)),
 			);

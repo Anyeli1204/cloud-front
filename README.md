@@ -1,50 +1,62 @@
-# React + TypeScript + Vite
+# ScrapeTok – Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React (TypeScript + Vite) single-page application that consumes the ScrapeTok microservices platform. It centralises authentication, admin tooling, scraped account insights, and the questions/answers hub.
 
-Currently, two official plugins are available:
+## ⚙️ Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 18+
+- npm 9+
+- Running backend services:
+  - **Accounts service** (`microservicio1` – Spring Boot)
+  - **Content service** (`microservicio2` – Node/Express)
 
-## Expanding the ESLint configuration
+## 🚀 Getting started
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```powershell
+cd cloud-front
+npm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Create a `.env` (or `.env.local`) file in `cloud-front/` with the service URLs that match your deployment:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+```env
+# Fallback used when a specific service URL is not provided
+VITE_API_BASE_URL=http://localhost:8080
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+# Spring Boot accounts microservice (auth, profiles, upgrades)
+VITE_ACCOUNTS_SERVICE_URL=http://localhost:8080
+
+# Node/Express content microservice (questions, histories, scraped accounts)
+VITE_CONTENT_SERVICE_URL=http://localhost:3000
 ```
+
+If a variable is omitted, the app falls back to `VITE_API_BASE_URL`.
+
+### Development server
+
+```powershell
+npm run dev
+```
+
+### Quality gates
+
+- **Type-check & build:** `npm run build`
+- **Lint (if configured):** `npm run lint`
+
+## 🔌 Service integration highlights
+
+- `Api` utility now exposes dedicated clients for `accounts` and `content`, automatically injecting `Authorization`, `x-user-id`, and `x-user-role` headers based on the authenticated session.
+- QA flows consume the content service endpoints (`/questions`, `/questions/status/*`, `/questions/reply`). Pagination is handled client-side to keep the UI unchanged while microservice responses remain array based.
+- Profile and admin panels aggregate information from both microservices, so keep both services available during development.
+
+## 🧪 Testing tips
+
+- Use the provided Postman collections under the repository root to validate microservice endpoints before pointing the frontend at them.
+- Log out and back in after restarting the accounts service—JWTs are issued by microservicio1 and are required for content service calls.
+
+## 🤝 Contributing
+
+1. Fork / branch from `main`.
+2. Implement the change, keeping components typed and side-effect free when possible.
+3. Run `npm run build` to ensure the project compiles.
+4. Open a PR describing the microservice endpoints impacted and any new environment variables.

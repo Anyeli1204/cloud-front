@@ -1,4 +1,4 @@
 export interface UpgradeToAdmin {
-	userid: number;
+	userId: number;
 	adminId: number;
 }

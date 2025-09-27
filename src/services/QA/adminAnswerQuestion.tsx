@@ -6,12 +6,12 @@ import Api from "@services/api";
 export async function answerQuestion(
 	adminAnswerQuestionRequest: AdminAnswerQuestionRequest,
 ) {
-	const api = await Api.getInstance();
-	const response = await api.patch<
+	const api = await Api.getInstance("content");
+	const response = await api.post<
 		AdminAnswerQuestionRequest,
-		QuestionAnswerResponse[]
+		QuestionAnswerResponse
 	>(adminAnswerQuestionRequest, {
-		url: "/admin/answerQuestion",
+		url: "/questions/reply",
 	});
 	return response;
 }

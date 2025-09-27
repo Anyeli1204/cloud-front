@@ -3,11 +3,11 @@ import { UpgradeResponse } from "@interfaces/user-to-admin-Upgrade/UpgradeRespon
 import Api from "@services/api";
 
 export async function upgrade(upgradeToAdmin: UpgradeToAdmin) {
-	const api = await Api.getInstance();
+	const api = await Api.getInstance("accounts");
 	const response = await api.patch<UpgradeToAdmin, UpgradeResponse>(
 		upgradeToAdmin,
 		{
-			url: "/auth/upgradetoadmin",
+			url: "/auth/upgrade-to-admin",
 		},
 	);
 	return response;

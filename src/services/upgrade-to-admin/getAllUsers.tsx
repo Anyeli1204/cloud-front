@@ -3,10 +3,10 @@ import Api from "@services/api";
 
 export async function getAllUsers() {
 	try {
-		const api = await Api.getInstance();
-		
+		const api = await Api.getInstance("accounts");
+
 		const response = await api.get<void, VisualizeAllUser[]>({
-			url: "/auth/getAllUsers",
+			url: "/auth/users",
 		});
 		return response;
 	} catch (error: unknown) {

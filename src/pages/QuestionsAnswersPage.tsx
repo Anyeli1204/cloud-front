@@ -16,6 +16,7 @@ import {
 	getAnsweredQuestionsPaged,
 	getPendingQuestionsPaged,
 	getAllQuestion,
+	PaginatedQuestions,
 } from "@services/QA/getAllQuestions";
 import { makeQuestion } from "@services/QA/userMakeQuestion";
 import { answerQuestion } from "@services/QA/adminAnswerQuestion";
@@ -62,11 +63,7 @@ export default function QuestionsAnswersPage() {
 		if (!shouldUseInfiniteScroll || loading || !hasMore) return;
 		setLoading(true);
 		try {
-			const res = await getQuestionsPaged(page, PAGE_SIZE);
-			const data = res.data as unknown as {
-				content: QuestionAnswerResponse[];
-				last: boolean;
-			};
+			const data = await getQuestionsPaged(page, PAGE_SIZE);
 			const newQuestions = data.content;
 			setQuestions((prev: QuestionAnswerResponse[]) => [
 				...prev,
@@ -86,19 +83,15 @@ export default function QuestionsAnswersPage() {
 		setError(null);
 		setPage(0);
 		try {
-			let res;
+			let data: PaginatedQuestions;
 			const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
 			if (typedFilter === "ANSWERED") {
-				res = await getAnsweredQuestionsPaged(0, PAGE_SIZE);
+				data = await getAnsweredQuestionsPaged(0, PAGE_SIZE);
 			} else if (typedFilter === "PENDING") {
-				res = await getPendingQuestionsPaged(0, PAGE_SIZE);
+				data = await getPendingQuestionsPaged(0, PAGE_SIZE);
 			} else {
-				res = await getQuestionsPaged(0, PAGE_SIZE);
+				data = await getQuestionsPaged(0, PAGE_SIZE);
 			}
-			const data = res.data as unknown as {
-				content: QuestionAnswerResponse[];
-				last: boolean;
-			};
 			const newQuestions = data.content;
 			setQuestions(newQuestions);
 			setPage(1);
@@ -114,10 +107,7 @@ export default function QuestionsAnswersPage() {
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await getQuestionsPaged(0, 1000);
-			const all: QuestionAnswerResponse[] =
-				(res.data as unknown as { content: QuestionAnswerResponse[] })
-					.content || [];
+			const all = await getAllQuestion();
 			let filtered: QuestionAnswerResponse[] = all;
 			const typedFilter = filter as "ALL" | "ANSWERED" | "PENDING";
 			if (typedFilter === "ANSWERED") {
@@ -138,14 +128,7 @@ export default function QuestionsAnswersPage() {
 
 	const loadQuestionsCount = async () => {
 		try {
-			const res = await getAllQuestion();
-			// Detectar si la respuesta es un array plano o un objeto con content
-			let all: QuestionAnswerResponse[] = [];
-			if (Array.isArray(res.data)) {
-				all = res.data;
-			} else if (res.data && Array.isArray((res.data as any).content)) {
-				all = (res.data as any).content;
-			}
+			const all = await getAllQuestion();
 			const newStats = {
 				total: all.length,
 				answered: all.filter(
@@ -346,13 +329,7 @@ export default function QuestionsAnswersPage() {
 	useEffect(() => {
 		const fetchStats = async () => {
 			try {
-				const res = await getQuestionsPaged(0, 1000);
-				let all: QuestionAnswerResponse[] = [];
-				if (Array.isArray(res.data)) {
-					all = res.data;
-				} else if (res.data && Array.isArray((res.data as any).content)) {
-					all = (res.data as any).content;
-				}
+				const all = await getAllQuestion();
 				const newStats = {
 					total: all.length,
 					answered: all.filter(

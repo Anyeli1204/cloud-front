@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { UpdateUserInput } from "@interfaces/update_user_information/UpdateUserInput";
-import axios from "axios";
 import { X } from "lucide-react";
 import { useAuthContext } from "@contexts/AuthContext";
+import Api from "@services/api";
 
 interface EditProfileModalProps {
 	userId: number;
@@ -30,15 +30,10 @@ export default function EditProfileModal({
 		try {
 			setLoading(true);
 			setError(null);
-			const url = await axios.patch(
-				import.meta.env.VITE_API_BASE_URL + `/user/update/${userId}`,
-				formData,
-				{
-					headers: {
-						Authorization: `Bearer ${session}`,
-					},
-				},
-			);
+			const api = await Api.getInstance("accounts");
+			await api.put<UpdateUserInput, unknown>(formData, {
+				url: `/auth/profile/${userId}`,
+			});
 			onSuccess?.();
 			onClose();
 		} catch (err: any) {
@@ -115,6 +110,16 @@ export default function EditProfileModal({
 					>
 						{loading ? "Guardando..." : "Guardar cambios"}
 					</button>
+				</div>
+				<div>
+					<label className="text-sm text-gray-600 dark:text-gray-300 block mb-1">Correo electrónico</label>
+					<input
+						type="email"
+						name="email"
+						value={formData.email}
+						onChange={handleChange}
+						className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+					/>
 				</div>
 			</div>
 		</div>

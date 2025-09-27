@@ -100,11 +100,11 @@ export default function UserInformationPage() {
 			setError(null);
 			try {
 				if (role === "ADMIN") {
-					const res = await adminInfo({ adminId: id! });
-					setAdminData(res.data);
+					const data = await adminInfo({ adminId: id! });
+					setAdminData(data);
 				} else if (role === "USER") {
-					const res = await userInfo({ userId: id! });
-					setUserData(res.data);
+					const data = await userInfo({ userId: id! });
+					setUserData(data);
 				}
 			} catch {
 				setError("Error al cargar la información del usuario");
@@ -411,6 +411,7 @@ export default function UserInformationPage() {
 						firstname: userData.firstname,
 						lastname: userData.lastname,
 						username: userData.username,
+						email: userData.email,
 						}}
 						onClose={() => setEditOpen(false)}
 						onSuccess={() => {
@@ -424,13 +425,13 @@ export default function UserInformationPage() {
 	}
 
 	if (role === "ADMIN" && adminData) {
-		const totalPreguntas = adminData.questionAndAnswer?.length || 0;
+		const answeredQuestions = adminData.answeredQuestions || [];
+		const totalPreguntas = answeredQuestions.length;
 		const totalPaginasPreguntas = Math.ceil(totalPreguntas / preguntasPorPagina);
-		const preguntasPagina =
-			adminData.questionAndAnswer?.slice(
-				(paginaPreguntas - 1) * preguntasPorPagina,
-				paginaPreguntas * preguntasPorPagina,
-			) || [];
+		const preguntasPagina = answeredQuestions.slice(
+			(paginaPreguntas - 1) * preguntasPorPagina,
+			paginaPreguntas * preguntasPorPagina,
+		);
 
 		return (
 			<div className="min-h-screen bg-gradient-to-br from-white to-pink-100 dark:bg-gradient-to-br dark:from-violet-900 dark:to-black text-gray-900 dark:text-white p-6 space-y-6">
@@ -486,27 +487,18 @@ export default function UserInformationPage() {
 								</h2>
 								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3 mb-4 lg:mb-8 text-sm items-start">
 									{preguntasPagina.length > 0 ? (
-										preguntasPagina.map((qa, idx) => {
-											const pregunta = Object.keys(qa)[0];
-											const respuesta = qa[pregunta];
-											const preguntaSinHashtags = pregunta.replace(/#[\wáéíóúÁÉÍÓÚñÑ]+/g, '').trim();
-											const hashtags = pregunta.match(/#[\wáéíóúÁÉÍÓÚñÑ]+/g) || [];
+										preguntasPagina.map((qa: QuestionAnswerResponse, idx: number) => {
+											const questionText = qa.questionDescription || "Pregunta sin descripción";
+											const preguntaSinHashtags = questionText
+												.replace(/#[\wáéíóúÁÉÍÓÚñÑ]+/g, "")
+												.trim();
+											const hashtags = questionText.match(/#[\wáéíóúÁÉÍÓÚñÑ]+/g) || [];
+											const respuesta = qa.answerDescription || "Sin respuesta";
 											return (
 												<div
-													key={idx}
+													key={`${qa.id}-${idx}`}
 													className="bg-blue-50 dark:bg-blue-100 rounded-xl p-3 lg:p-4 shadow-md flex flex-col gap-2 border border-blue-100 dark:border-blue-200 w-full max-w-xs mx-auto cursor-pointer hover:scale-105 transition break-words"
-													onClick={() =>
-														setPreguntaSeleccionada({
-															id: Number(qa.id),
-															questionDescription: preguntaSinHashtags,
-															answerDescription: respuesta,
-															userId: 1,
-															status: "ANSWERED",
-															answerDate: qa.answerDate || "",
-															answerHour: qa.answerHour || "",
-															adminId: qa.adminId ? Number(qa.adminId) : null,
-														})
-													}
+													onClick={() => setPreguntaSeleccionada(qa)}
 												>
 													<div className="text-left">
 														<span className="font-semibold text-blue-800">Pregunta:</span>
@@ -515,13 +507,16 @@ export default function UserInformationPage() {
 															<div className="flex flex-wrap gap-1 mt-1">
 																{hashtags.map((tag, i) => (
 																	<span
-																		key={i}
+																		key={`${qa.id}-tag-${i}`}
 																		className="inline-block bg-blue-100 dark:bg-blue-200 text-blue-700 dark:text-blue-400 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm"
 																	>
 																		{tag}
 																	</span>
 																))}
 															</div>
+														</div>
+														<div className="mt-2 text-blue-900 text-sm">
+															<span className="font-semibold">Respuesta:</span> {respuesta}
 														</div>
 													</div>
 												</div>
@@ -658,9 +653,10 @@ export default function UserInformationPage() {
 						<EditProfileModal
 							userId={id!}
 							initialData={{
-							firstname: adminData.firstname,
-							lastname: adminData.lastname,
-							username: adminData.username,
+								firstname: adminData.firstname,
+								lastname: adminData.lastname,
+								username: adminData.username,
+								email: adminData.email,
 							}}
 							onClose={() => setEditOpenAdmin(false)}
 							onSuccess={() => {

@@ -15,8 +15,9 @@ interface AuthContextType {
 	isLoading: boolean;
 	id: number | null;
 	email: string | null;
-	password: string | null;
 	username: string | null;
+	firstname: string | null;
+	lastname: string | null;
 	role: "USER" | "ADMIN" | null;
 }
 
@@ -26,9 +27,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [[isLoading, session], setSession] = useStorageState("token");
 	const [[, idStr], setId] = useStorageState("id");
 	const [[, email], setEmail] = useStorageState("email");
-	const [[, password], setPassword] = useStorageState("password");
 	const [[, username], setUsername] = useStorageState("username");
 	const [[, role], setRole] = useStorageState("role");
+	const [[, firstname], setFirstname] = useStorageState("firstname");
+	const [[, lastname], setLastname] = useStorageState("lastname");
 
 	const id = idStr ? Number(idStr) : null;
 
@@ -36,18 +38,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setSession(data.token);
 		setId(data.id?.toString() ?? null);
 		setEmail(data.email ?? null);
-		setPassword(data.password ?? null);
 		setUsername(data.username ?? null);
 		setRole(data.role ?? null);
+		setFirstname(data.firstname ?? null);
+		setLastname(data.lastname ?? null);
 	}
 
 	function clearSession() {
 		setSession(null);
 		setId(null);
 		setEmail(null);
-		setPassword(null);
 		setUsername(null);
 		setRole(null);
+		setFirstname(null);
+		setLastname(null);
 	}
 
 	async function login(input: LoginRequest) {
@@ -74,8 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				isLoading,
 				id,
 				email,
-				password,
 				username,
+				firstname,
+				lastname,
 				role: role as "USER" | "ADMIN" | null,
 			}}
 		>

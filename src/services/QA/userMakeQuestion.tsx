@@ -6,12 +6,12 @@ import Api from "@services/api";
 export async function makeQuestion(
 	objectUserMakeQuestionRequest: userMakeQuestionRequest,
 ) {
-	const api = await Api.getInstance();
+	const api = await Api.getInstance("content");
 	const response = await api.post<
 		userMakeQuestionRequest,
 		QuestionAnswerResponse
 	>(objectUserMakeQuestionRequest, {
-		url: "/user/createQuestion",
+		url: "/questions",
 	});
 	return response;
 }
