@@ -1,18 +1,19 @@
 import { RegisterRequest } from "@interfaces/auth/RegisterRequest";
 import { AuthResponse } from "@interfaces/auth/AuthResponse";
-import Api from "@services/api";
+import AccountsApi from "@services/accountsApi";
 
 function saveAuthSession(data: AuthResponse) {
 	sessionStorage.setItem("token", data.token);
 	sessionStorage.setItem("id", data.id.toString());
 	sessionStorage.setItem("email", data.email);
-	sessionStorage.setItem("password", data.password);
+	sessionStorage.setItem("firstname", data.firstname);
+	sessionStorage.setItem("lastname", data.lastname);
 	sessionStorage.setItem("username", data.username);
 	sessionStorage.setItem("role", data.role);
 }
 
 export async function register(registerRequest: RegisterRequest) {
-	const api = await Api.getInstance();
+	const api = await AccountsApi.getInstance();
 	const response = await api.post<RegisterRequest, AuthResponse>(
 		registerRequest,
 		{
