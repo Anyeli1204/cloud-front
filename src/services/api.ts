@@ -4,7 +4,7 @@ import axios, {
 	RawAxiosRequestHeaders,
 } from "axios";
 
-export type ApiServiceKey = "legacy" | "accounts" | "content";
+export type ApiServiceKey = "legacy" | "accounts" | "content" | "dashboard";
 
 type ApiConfig = {
 	basePath: string;
@@ -34,6 +34,7 @@ export default class Api {
 		const defaultBase = env.VITE_API_BASE_URL || "/api";
 		const accountsBase = env.VITE_ACCOUNTS_SERVICE_URL || defaultBase;
 		const contentBase = env.VITE_CONTENT_SERVICE_URL || defaultBase;
+		const dashboardBase = env.VITE_DASHBOARD_SERVICE_URL || defaultBase;
 
 		switch (service) {
 			case "accounts":
@@ -46,6 +47,12 @@ export default class Api {
 					basePath: contentBase,
 					includeAuthHeader: true,
 					includeUserHeaders: true,
+				};
+			case "dashboard":
+				return {
+					basePath: dashboardBase,
+					includeAuthHeader: false,
+					includeUserHeaders: false,
 				};
 			case "legacy":
 			default:
