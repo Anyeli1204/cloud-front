@@ -4,7 +4,32 @@ import axios, {
 	RawAxiosRequestHeaders,
 } from "axios";
 
-export type ApiServiceKey = "legacy" | "accounts" | "content" | "dashboard" | "orchestrator";
+interface Env {
+	VITE_LEGACY_SERVICE_URL?: string;
+	VITE_ACCOUNTS_SERVICE_URL?: string;
+	VITE_CONTENT_SERVICE_URL?: string;
+	VITE_DASHBOARD_SERVICE_URL?: string;
+	VITE_ORCHESTRATOR_SERVICE_URL?: string;
+	VITE_ANALYTICS_SERVICE_URL?: string;
+}
+
+export type ApiServiceKey =
+	| "legacy"
+	| "accounts"
+	| "content"
+	| "dashboard"
+	| "orchestrator"
+	| "analytics";
+
+const env = import.meta.env as Env;
+
+const legacyBase = env.VITE_LEGACY_SERVICE_URL || "http://localhost:8000";
+const accountsBase = env.VITE_ACCOUNTS_SERVICE_URL || "http://localhost:8001";
+const contentBase = env.VITE_CONTENT_SERVICE_URL || "http://localhost:8002";
+const dashboardBase = env.VITE_DASHBOARD_SERVICE_URL || "http://localhost:8003";
+const orchestratorBase =
+	env.VITE_ORCHESTRATOR_SERVICE_URL || "http://localhost:5000";
+const analyticsBase = env.VITE_ANALYTICS_SERVICE_URL || "http://localhost:8006";
 
 type ApiConfig = {
 	basePath: string;
@@ -36,6 +61,7 @@ export default class Api {
 		const contentBase = env.VITE_CONTENT_SERVICE_URL || defaultBase;
 		const dashboardBase = env.VITE_DASHBOARD_SERVICE_URL || defaultBase;
 		const orchestratorBase = env.VITE_ORCHESTRATOR_SERVICE_URL || "http://localhost:5005";
+		const analyticsBase = env.VITE_ANALYTICS_SERVICE_URL || "http://localhost:8006";
 
 		switch (service) {
 			case "accounts":
@@ -58,6 +84,12 @@ export default class Api {
 			case "orchestrator":
 				return {
 					basePath: orchestratorBase,
+					includeAuthHeader: false,
+					includeUserHeaders: false,
+				};
+			case "analytics":
+				return {
+					basePath: analyticsBase,
 					includeAuthHeader: false,
 					includeUserHeaders: false,
 				};

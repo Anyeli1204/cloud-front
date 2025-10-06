@@ -12,6 +12,7 @@ import {
 	Menu,
 	X,
 	Network,
+	BarChart3,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuthContext } from "@contexts/AuthContext";
@@ -30,6 +31,7 @@ const baseOptions = [
 	},
 	{ key: "ai", label: "AI Content Creator", icon: <Bot size={18} /> },
 	{ key: "orchestrator", label: "Consolidated Dashboard", icon: <Network size={18} /> },
+	{ key: "analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
 	{ key: "users", label: "Account Information", icon: <User size={18} /> },
 ];
 
@@ -74,6 +76,7 @@ export default function NavBar({
 				icon: <MessageCircle size={18} />,
 			},
 			{ key: "orchestrator", label: "Consolidated Dashboard", icon: <Network size={18} /> },
+			{ key: "analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
 			{
 				key: "admin-users",
 				label: "Gestión de Usuarios",

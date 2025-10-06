@@ -11,6 +11,7 @@ import AdminUsersPage from "@pages/AdminUsersPage";
 import NotFoundPage from "src/pages/NotFoundPage";
 import AiPage from "@pages/AiPage";
 import OrchestratorPage from "src/pages/OrchestratorPage";
+import AnalyticsPage from "src/pages/AnalyticsPage";
 
 export const router = createBrowserRouter([
 	{
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
 			{
 				path: "/orchestrator",
 				element: <ProtectedRoute element={<OrchestratorPage />} />,
+			},
+			{
+				path: "/analytics",
+				element: <ProtectedRoute element={<AnalyticsPage />} />,
 			},
 			{
 				path: "/admin/users",
