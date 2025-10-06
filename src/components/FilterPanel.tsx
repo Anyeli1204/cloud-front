@@ -2,10 +2,23 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import type { UserApifyCallRequest } from "@interfaces/apify-call/UserApifyCallRequest";
-import { Tag, User, Pencil, RefreshCw, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+	Tag,
+	User,
+	Pencil,
+	RefreshCw,
+	Search,
+	ChevronLeft,
+	ChevronRight,
+} from "lucide-react";
 import ScrapiLogo from "@assets/ScrapiLogo.png";
 import { recommendContent } from "@services/ia/recommendContent";
-import { isScrapiResponseEmpty, MODERATION_MESSAGE } from "../utils/aiModeration";
+import {
+	isScrapiResponseEmpty,
+	MODERATION_MESSAGE,
+} from "../utils/aiModeration";
+
+export const APIFY_TOKEN = import.meta.env.VITE_APIFY_TOKEN ?? "";
 
 const MySwal = withReactContent(Swal);
 
@@ -16,10 +29,22 @@ const POPULAR_HASHTAGS = [
 	"#tech",
 	"#beauty",
 	"#parati",
-	"#baile", 
+	"#baile",
 ];
-const POPULAR_USERS = ["charlidamelio", "khaby.lame", "bellapoarch", "addisonre"];
-const POPULAR_KEYWORDS = ["pizza", "recetas", "cocina", "viajes", "deporte", "universidad"];
+const POPULAR_USERS = [
+	"charlidamelio",
+	"khaby.lame",
+	"bellapoarch",
+	"addisonre",
+];
+const POPULAR_KEYWORDS = [
+	"pizza",
+	"recetas",
+	"cocina",
+	"viajes",
+	"deporte",
+	"universidad",
+];
 
 const HELP_CARDS = [
 	{
@@ -30,7 +55,8 @@ const HELP_CARDS = [
 	},
 	{
 		title: "",
-		subtitle: "Te guiamos paso a paso para que encuentres contenido viral de TikTok con precisión.",
+		subtitle:
+			"Te guiamos paso a paso para que encuentres contenido viral de TikTok con precisión.",
 		text: "",
 		emoji: "🚀",
 	},
@@ -49,13 +75,14 @@ const HELP_CARDS = [
 	{
 		title: "Palabras Clave",
 		subtitle: "",
-		text: "Usa conceptos como \"pizza\", \"recetas\", \"viajes\" para encontrar lo más relevante.",
+		text: 'Usa conceptos como "pizza", "recetas", "viajes" para encontrar lo más relevante.',
 		emoji: "🧠🗝️",
 	},
 
 	{
 		title: "Solo una categoría",
-		subtitle: "Recuerda que solo puedes scrapear una categoría por vez: hashtags, palabras clave o usuarios.",
+		subtitle:
+			"Recuerda que solo puedes scrapear una categoría por vez: hashtags, palabras clave o usuarios.",
 		text: "",
 		emoji: "⚠️",
 	},
@@ -67,11 +94,12 @@ const HELP_CARDS = [
 	},
 	{
 		title: "Scrapi",
-		subtitle: "Consulta el tema que deseas analizar, con nuestro asistente de IA: Scrapi.",
+		subtitle:
+			"Consulta el tema que deseas analizar, con nuestro asistente de IA: Scrapi.",
 		text: "¡Te ayudará al instante!",
 		emoji: "🤖",
 	},
-	
+
 	{
 		title: "Filtros obligatorios",
 		subtitle: "",
@@ -104,27 +132,35 @@ interface FilterPanelProps {
 	initialFilters?: Partial<UserApifyCallRequest> | null;
 }
 
-export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelProps) {
-
+export function FilterPanel({
+	onApply,
+	onReset,
+	initialFilters,
+}: FilterPanelProps) {
 	const [filters, setFilters] = useState<UserApifyCallRequest>({
+		apifyToken: APIFY_TOKEN,
+		excludePinnedPosts: true,
 		userId: 0,
-		hashtags: "",
-		tiktokAccount: "",
-		keyWords: "",
-		dateFrom: "",
-		dateTo: "",
-		nlastPostByHashtags: undefined,
-		...(initialFilters || {})
+		hashtags: [],
+		searchQueries: [],
+		oldestPostDate: "",
+		newestPostDate: "",
+		resultsPerPage: 5,
+		profiles: [],
+		profileSorting: "latest",
 	});
 
-	const [activeTab, setActiveTab] = useState<'hashtags' | 'usuarios' | 'palabras' | 'basico'>('hashtags');
-	const [previousTab, setPreviousTab] = useState<'hashtags' | 'usuarios' | 'palabras'>('hashtags');
+	const [activeTab, setActiveTab] = useState<
+		"hashtags" | "usuarios" | "palabras" | "basico"
+	>("hashtags");
+	const [previousTab, setPreviousTab] = useState<
+		"hashtags" | "usuarios" | "palabras"
+	>("hashtags");
 	const [helpIndex, setHelpIndex] = useState(0);
-	const [fade, setFade] = useState<'in' | 'out'>('in');
+	const [fade, setFade] = useState<"in" | "out">("in");
 
 	useEffect(() => {
-		const interval = setInterval(() => {
-		}, 2000);
+		const interval = setInterval(() => {}, 2000);
 		return () => clearInterval(interval);
 	}, []);
 
@@ -137,19 +173,23 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 		if (storedFilters) {
 			try {
 				const parsedFilters = JSON.parse(storedFilters);
-				setFilters(prev => ({
+				setFilters((prev) => ({
 					...prev,
-					...parsedFilters
+					...parsedFilters,
 				}));
 
 				if (parsedFilters.hashtags) {
-					setActiveTab('hashtags');
+					setActiveTab("hashtags");
 				} else if (parsedFilters.tiktokAccount) {
-					setActiveTab('usuarios');
+					setActiveTab("usuarios");
 				} else if (parsedFilters.keyWords) {
-					setActiveTab('palabras');
-				} else if (parsedFilters.dateFrom || parsedFilters.dateTo || parsedFilters.nlastPostByHashtags) {
-					setActiveTab('basico');
+					setActiveTab("palabras");
+				} else if (
+					parsedFilters.dateFrom ||
+					parsedFilters.dateTo ||
+					parsedFilters.nlastPostByHashtags
+				) {
+					setActiveTab("basico");
 				}
 			} catch (error) {
 				console.error("Error al cargar filtros del sessionStorage:", error);
@@ -164,46 +204,68 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 		}
 	}, [activeTab, filters, helpIndex]);
 
-	const handleChange = <K extends keyof UserApifyCallRequest>(
-		key: K,
-		value: UserApifyCallRequest[K],
+	const handleChange = (
+		key: string,
+		value: string | string[] | number | boolean | undefined,
 	) => {
 		const newFilters = { ...filters };
 
 		if (key === "hashtags") {
-			newFilters.hashtags = value as string;
-			newFilters.tiktokAccount = "";
-			newFilters.keyWords = "";
+			const hashtagsArray =
+				typeof value === "string"
+					? value
+							.split(",")
+							.map((h) => h.trim())
+							.filter((h) => h !== "")
+					: [];
+
+			newFilters.hashtags = hashtagsArray;
+			newFilters.profiles = [];
+			newFilters.searchQueries = [];
 		} else if (key === "tiktokAccount") {
-			newFilters.tiktokAccount = value as string;
-			newFilters.hashtags = "";
-			newFilters.keyWords = "";
+			const profilesArray =
+				typeof value === "string"
+					? value
+							.split(",")
+							.map((p) => p.trim())
+							.filter((p) => p !== "")
+					: [];
+
+			newFilters.profiles = profilesArray;
+			newFilters.hashtags = [];
+			newFilters.searchQueries = [];
 		} else if (key === "keyWords") {
-			newFilters.keyWords = value as string;
-			newFilters.hashtags = "";
-			newFilters.tiktokAccount = "";
+			const keywordsArray =
+				typeof value === "string"
+					? value
+							.split(",")
+							.map((k) => k.trim())
+							.filter((k) => k !== "")
+					: [];
+
+			newFilters.searchQueries = keywordsArray;
+			newFilters.hashtags = [];
+			newFilters.profiles = [];
 		} else {
-			newFilters[key] = value;
+			(newFilters as any)[key] = value;
 		}
 
 		setFilters(newFilters);
-
-		// Guardar en sessionStorage cada vez que cambien los filtros
 		sessionStorage.setItem("apifyScrapeFilters", JSON.stringify(newFilters));
 	};
 
 	const mainCount = useMemo(
 		() =>
-			[filters.hashtags, filters.tiktokAccount, filters.keyWords].filter(
-				(v) => v && v.trim(),
+			[filters.hashtags, filters.profiles, filters.searchQueries].filter(
+				(v) => v && Array.isArray(v) && v.length > 0,
 			).length,
 		[filters],
 	);
 
 	const mandatoryFilled =
-		!!filters.dateFrom &&
-		!!filters.dateTo &&
-		filters.nlastPostByHashtags !== undefined;
+		!!filters.oldestPostDate &&
+		!!filters.newestPostDate &&
+		filters.resultsPerPage !== undefined;
 
 	const isValid = mainCount === 1 && mandatoryFilled;
 
@@ -242,25 +304,32 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 	};
 
 	const handleReset = () => {
-		const resetFilters = {
+		const resetFilters: UserApifyCallRequest = {
+			apifyToken: APIFY_TOKEN,
+			excludePinnedPosts: true,
 			userId: 0,
-			hashtags: "",
-			tiktokAccount: "",
-			keyWords: "",
-			dateFrom: "",
-			dateTo: "",
-			nlastPostByHashtags: undefined,
+			hashtags: [], // ARRAY VACÍO
+			profiles: [], // ARRAY VACÍO
+			searchQueries: [], // ARRAY VACÍO
+			oldestPostDate: "",
+			newestPostDate: "",
+			resultsPerPage: 2,
+			profileSorting: "latest",
 		};
 		setFilters(resetFilters);
-
 		sessionStorage.removeItem("apifyScrapeFilters");
-
 		onReset?.();
 	};
 
-	const handleTabChange = (tab: 'hashtags' | 'usuarios' | 'palabras' | 'basico') => {
-		if (tab === 'basico' && activeTab !== 'basico') {
-			if (activeTab === 'hashtags' || activeTab === 'usuarios' || activeTab === 'palabras') {
+	const handleTabChange = (
+		tab: "hashtags" | "usuarios" | "palabras" | "basico",
+	) => {
+		if (tab === "basico" && activeTab !== "basico") {
+			if (
+				activeTab === "hashtags" ||
+				activeTab === "usuarios" ||
+				activeTab === "palabras"
+			) {
 				setPreviousTab(activeTab);
 			}
 		}
@@ -274,15 +343,18 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 					<div
 						ref={helpPanelRef}
 						className="relative w-full max-w-sm mx-auto bg-white/80 backdrop-blur rounded-2xl shadow-xl px-10 py-8 flex flex-col justify-center items-center transition-all duration-500"
-						style={{ height: helpHeight ? helpHeight : undefined, minHeight: '320px' }}
+						style={{
+							height: helpHeight ? helpHeight : undefined,
+							minHeight: "320px",
+						}}
 					>
 						<button
 							disabled={helpIndex === 0}
 							onClick={() => {
-								setFade('out');
+								setFade("out");
 								setTimeout(() => {
-									setHelpIndex(i => Math.max(0, i - 1));
-									setFade('in');
+									setHelpIndex((i) => Math.max(0, i - 1));
+									setFade("in");
 								}, 200);
 							}}
 							className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full shadow-md p-0.5 hover:bg-purple-100 transition disabled:opacity-30 disabled:cursor-not-allowed z-10"
@@ -293,10 +365,10 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 						<button
 							disabled={helpIndex === HELP_CARDS.length - 1}
 							onClick={() => {
-								setFade('out');
+								setFade("out");
 								setTimeout(() => {
-									setHelpIndex(i => Math.min(HELP_CARDS.length - 1, i + 1));
-									setFade('in');
+									setHelpIndex((i) => Math.min(HELP_CARDS.length - 1, i + 1));
+									setFade("in");
 								}, 200);
 							}}
 							className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full shadow-md p-0.5 hover:bg-purple-100 transition disabled:opacity-30 disabled:cursor-not-allowed z-10"
@@ -306,21 +378,40 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 						</button>
 						<div
 							className={`flex flex-col items-center justify-center w-full h-full space-y-2 transition-all duration-300
-								${helpIndex === 0 ? 'animate-pop' : ''}
-								${fade === 'out' ? 'opacity-0' : 'opacity-100'}`}
+								${helpIndex === 0 ? "animate-pop" : ""}
+								${fade === "out" ? "opacity-0" : "opacity-100"}`}
 							key={helpIndex}
 						>
 							{HELP_CARDS[helpIndex].emoji && (
-								<span className="text-4xl mb-1 animate-fade-in" style={{ transitionDelay: '100ms' }}>{HELP_CARDS[helpIndex].emoji}</span>
+								<span
+									className="text-4xl mb-1 animate-fade-in"
+									style={{ transitionDelay: "100ms" }}
+								>
+									{HELP_CARDS[helpIndex].emoji}
+								</span>
 							)}
 							{HELP_CARDS[helpIndex].title && (
-								<h2 className={`font-extrabold text-center mb-1 text-purple-800 ${helpIndex === 0 ? 'text-2xl md:text-3xl animate-pop' : 'text-lg md:text-xl'}`}>{HELP_CARDS[helpIndex].title}</h2>
+								<h2
+									className={`font-extrabold text-center mb-1 text-purple-800 ${helpIndex === 0 ? "text-2xl md:text-3xl animate-pop" : "text-lg md:text-xl"}`}
+								>
+									{HELP_CARDS[helpIndex].title}
+								</h2>
 							)}
 							{HELP_CARDS[helpIndex].subtitle && (
-								<h3 className={`font-medium text-gray-700 text-center mb-1 animate-fade-in ${helpIndex === 0 ? 'text-base md:text-lg' : 'text-sm md:text-base'}`} style={{ transitionDelay: '150ms' }}>{HELP_CARDS[helpIndex].subtitle}</h3>
+								<h3
+									className={`font-medium text-gray-700 text-center mb-1 animate-fade-in ${helpIndex === 0 ? "text-base md:text-lg" : "text-sm md:text-base"}`}
+									style={{ transitionDelay: "150ms" }}
+								>
+									{HELP_CARDS[helpIndex].subtitle}
+								</h3>
 							)}
 							{HELP_CARDS[helpIndex].text && (
-								<p className={`text-gray-600 text-center animate-fade-in ${helpIndex === 0 ? 'text-base' : 'text-xs md:text-sm'}`} style={{ transitionDelay: '200ms' }}>{HELP_CARDS[helpIndex].text}</p>
+								<p
+									className={`text-gray-600 text-center animate-fade-in ${helpIndex === 0 ? "text-base" : "text-xs md:text-sm"}`}
+									style={{ transitionDelay: "200ms" }}
+								>
+									{HELP_CARDS[helpIndex].text}
+								</p>
 							)}
 						</div>
 						<div className="flex justify-center mt-4">
@@ -328,7 +419,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 								<span
 									key={idx}
 									className={`mx-1 rounded-full transition-all duration-300 inline-block
-										${idx === helpIndex ? 'w-3 h-3 border-2 border-[#5E17EB] bg-white shadow' : 'w-2 h-2 bg-purple-200'}`}
+										${idx === helpIndex ? "w-3 h-3 border-2 border-[#5E17EB] bg-white shadow" : "w-2 h-2 bg-purple-200"}`}
 								></span>
 							))}
 						</div>
@@ -336,10 +427,16 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 				</div>
 
 				<div className="flex-1 lg:flex-[3] h-full relative">
-					<div ref={filterPanelRef} className="bg-white/80 backdrop-blur rounded-2xl shadow-lg p-6 min-h-[340px] h-full flex flex-col justify-center dark:bg-white/80 transition-all duration-500">
+					<div
+						ref={filterPanelRef}
+						className="bg-white/80 backdrop-blur rounded-2xl shadow-lg p-6 min-h-[340px] h-full flex flex-col justify-center dark:bg-white/80 transition-all duration-500"
+					>
 						<div className="mx-auto max-w-2xl w-full px-2">
 							<div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-								<h2 className="text-3xl font-extrabold text-left text-purple-800 tracking-tight" style={{ fontFamily: 'Nunito, Montserrat, sans-serif' }}>
+								<h2
+									className="text-3xl font-extrabold text-left text-purple-800 tracking-tight"
+									style={{ fontFamily: "Nunito, Montserrat, sans-serif" }}
+								>
 									Filtros Apify Call
 								</h2>
 								<div className="flex gap-3 justify-end">
@@ -363,69 +460,99 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 							<div className="flex mb-8 bg-gray-100 rounded-xl p-1 gap-1">
 								<button
 									type="button"
-									onClick={() => handleTabChange('hashtags')}
+									onClick={() => handleTabChange("hashtags")}
 									className={`flex-1 flex items-center justify-center gap-1 py-2 px-2 font-medium text-sm transition-all duration-200 rounded-lg focus:outline-none
-								${activeTab === 'hashtags' ? 'bg-white text-purple-700 shadow-sm border-b-2 border-purple-600' : 'bg-transparent text-gray-500 hover:text-purple-700'}`}
+								${activeTab === "hashtags" ? "bg-white text-purple-700 shadow-sm border-b-2 border-purple-600" : "bg-transparent text-gray-500 hover:text-purple-700"}`}
 								>
-									<Tag className={`w-4 h-4 ${activeTab === 'hashtags' ? 'text-purple-600' : 'text-gray-400'}`} />
+									<Tag
+										className={`w-4 h-4 ${activeTab === "hashtags" ? "text-purple-600" : "text-gray-400"}`}
+									/>
 									<span className="hidden sm:inline">Hashtags</span>
 								</button>
 								<button
 									type="button"
-									onClick={() => handleTabChange('usuarios')}
+									onClick={() => handleTabChange("usuarios")}
 									className={`flex-1 flex items-center justify-center gap-1 py-2 px-2 font-medium text-sm transition-all duration-200 rounded-lg focus:outline-none
-								${activeTab === 'usuarios' ? 'bg-white text-purple-700 shadow-sm border-b-2 border-purple-600' : 'bg-transparent text-gray-500 hover:text-purple-700'}`}
+								${activeTab === "usuarios" ? "bg-white text-purple-700 shadow-sm border-b-2 border-purple-600" : "bg-transparent text-gray-500 hover:text-purple-700"}`}
 								>
-									<User className={`w-4 h-4 ${activeTab === 'usuarios' ? 'text-purple-600' : 'text-gray-400'}`} />
+									<User
+										className={`w-4 h-4 ${activeTab === "usuarios" ? "text-purple-600" : "text-gray-400"}`}
+									/>
 									<span className="hidden sm:inline">Usuarios</span>
 								</button>
 								<button
 									type="button"
-									onClick={() => handleTabChange('palabras')}
+									onClick={() => handleTabChange("palabras")}
 									className={`flex-1 flex items-center justify-center gap-1 py-2 px-2 font-medium text-sm transition-all duration-200 rounded-lg focus:outline-none
-								${activeTab === 'palabras' ? 'bg-white text-purple-700 shadow-sm border-b-2 border-purple-600' : 'bg-transparent text-gray-500 hover:text-purple-700'}`}
+								${activeTab === "palabras" ? "bg-white text-purple-700 shadow-sm border-b-2 border-purple-600" : "bg-transparent text-gray-500 hover:text-purple-700"}`}
 								>
-									<Pencil className={`w-4 h-4 ${activeTab === 'palabras' ? 'text-purple-600' : 'text-gray-400'}`} />
+									<Pencil
+										className={`w-4 h-4 ${activeTab === "palabras" ? "text-purple-600" : "text-gray-400"}`}
+									/>
 									<span className="hidden sm:inline">Palabras Clave</span>
 								</button>
 							</div>
 
-							<form onSubmit={handleSubmit} id="apify-filters-form" className="space-y-4">
-								{activeTab === 'hashtags' && (
+							<form
+								onSubmit={handleSubmit}
+								id="apify-filters-form"
+								className="space-y-4"
+							>
+								{activeTab === "hashtags" && (
 									<div className="space-y-3">
 										<div>
 											<div className="flex items-center justify-between mb-1">
-												<label className="font-semibold text-gray-700 text-sm">Hashtags</label>
-												{(filters.hashtags || '').trim() && (
+												<label className="font-semibold text-gray-700 text-sm">
+													Hashtags
+												</label>
+												{filters.hashtags && filters.hashtags.length > 0 && (
 													<button
 														type="button"
-														onClick={() => handleTabChange('basico')}
+														onClick={() => handleTabChange("basico")}
 														className="flex items-center gap-1 text-purple-700 font-semibold text-xs bg-purple-50 border border-purple-200 rounded-full px-3 py-1 shadow-sm hover:bg-purple-100 transition whitespace-nowrap"
 													>
 														<span>Ir a filtros básicos</span>
-														<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+														<svg
+															className="w-4 h-4"
+															fill="none"
+															stroke="currentColor"
+															strokeWidth="2"
+															viewBox="0 0 24 24"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																d="M9 5l7 7-7 7"
+															/>
+														</svg>
 													</button>
 												)}
 											</div>
 											<input
 												type="text"
 												placeholder="#cocina, #futbol, #tech"
-												value={filters.hashtags}
-												onChange={(e) => handleChange("hashtags", e.target.value)}
+												value={filters.hashtags?.join(", ") || ""} // Convertir array a string
+												onChange={(e) =>
+													handleChange("hashtags", e.target.value)
+												}
 												className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 text-gray-900 text-sm"
 											/>
 										</div>
 										<div className="flex items-center justify-between flex-wrap gap-2 relative">
 											<div>
-												<label className="block mb-1 font-medium text-gray-600 text-xs">Sugerencias:</label>
+												<label className="block mb-1 font-medium text-gray-600 text-xs">
+													Sugerencias:
+												</label>
 												<div className="flex flex-wrap gap-1">
 													{POPULAR_HASHTAGS.map((tag) => (
 														<button
 															key={tag}
 															type="button"
 															onClick={() => {
-																const current = filters.hashtags?.split(",").map((s) => s.trim()).filter(Boolean) || [];
-																const next = current.includes(tag) ? current : [...current, tag];
+																const current = filters.hashtags || [];
+																const next = current.includes(tag)
+																	? current
+																	: [...current, tag];
 																handleChange("hashtags", next.join(", "));
 															}}
 															className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors font-medium"
@@ -439,41 +566,61 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 									</div>
 								)}
 
-								{activeTab === 'usuarios' && (
+								{activeTab === "usuarios" && (
 									<div className="space-y-3">
 										<div>
 											<div className="flex items-center justify-between mb-1">
-												<label className="font-semibold text-gray-700 text-sm">Usuarios de TikTok</label>
-												{(filters.tiktokAccount || '').trim() && (
+												<label className="font-semibold text-gray-700 text-sm">
+													Usuarios de TikTok
+												</label>
+												{filters.profiles && filters.profiles.length > 0 && (
 													<button
 														type="button"
-														onClick={() => handleTabChange('basico')}
+														onClick={() => handleTabChange("basico")}
 														className="flex items-center gap-1 text-purple-700 font-semibold text-xs bg-purple-50 border border-purple-200 rounded-full px-3 py-1 shadow-sm hover:bg-purple-100 transition whitespace-nowrap"
 													>
 														<span>Ir a filtros básicos</span>
-														<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+														<svg
+															className="w-4 h-4"
+															fill="none"
+															stroke="currentColor"
+															strokeWidth="2"
+															viewBox="0 0 24 24"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																d="M9 5l7 7-7 7"
+															/>
+														</svg>
 													</button>
 												)}
 											</div>
 											<input
 												type="text"
 												placeholder="usuario1, usuario2, usuario3"
-												value={filters.tiktokAccount}
-												onChange={(e) => handleChange("tiktokAccount", e.target.value)}
+												value={filters.profiles}
+												onChange={(e) =>
+													handleChange("tiktokAccount", e.target.value)
+												}
 												className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 text-gray-900 text-sm"
 											/>
 										</div>
 										<div className="flex items-center justify-between flex-wrap gap-2">
 											<div>
-												<label className="block mb-1 font-medium text-gray-600 text-xs">Sugerencias:</label>
+												<label className="block mb-1 font-medium text-gray-600 text-xs">
+													Sugerencias:
+												</label>
 												<div className="flex flex-wrap gap-1">
 													{POPULAR_USERS.map((user) => (
 														<button
 															key={user}
 															type="button"
 															onClick={() => {
-																const current = filters.tiktokAccount?.split(",").map((s) => s.trim()).filter(Boolean) || [];
-																const next = current.includes(user) ? current : [...current, user];
+																const current = filters.profiles || [];
+																const next = current.includes(user)
+																	? current
+																	: [...current, user];
 																handleChange("tiktokAccount", next.join(", "));
 															}}
 															className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors font-medium"
@@ -487,42 +634,63 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 									</div>
 								)}
 
-								{activeTab === 'palabras' && (
+								{activeTab === "palabras" && (
 									<div className="space-y-3">
 										<div>
 											<div className="flex items-center justify-between mb-1">
-												<label className="font-semibold text-gray-700 text-sm">Palabras Clave</label>
-												{(filters.keyWords || '').trim() && (
-													<button
-														type="button"
-														onClick={() => handleTabChange('basico')}
-														className="flex items-center gap-1 text-purple-700 font-semibold text-xs bg-purple-50 border border-purple-200 rounded-full px-3 py-1 shadow-sm hover:bg-purple-100 transition whitespace-nowrap"
-													>
-														<span>Ir a filtros básicos</span>
-														<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-													</button>
-												)}
+												<label className="font-semibold text-gray-700 text-sm">
+													Palabras Clave
+												</label>
+												{filters.searchQueries &&
+													filters.searchQueries.length > 0 && (
+														<button
+															type="button"
+															onClick={() => handleTabChange("basico")}
+															className="flex items-center gap-1 text-purple-700 font-semibold text-xs bg-purple-50 border border-purple-200 rounded-full px-3 py-1 shadow-sm hover:bg-purple-100 transition whitespace-nowrap"
+														>
+															<span>Ir a filtros básicos</span>
+															<svg
+																className="w-4 h-4"
+																fill="none"
+																stroke="currentColor"
+																strokeWidth="2"
+																viewBox="0 0 24 24"
+															>
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	d="M9 5l7 7-7 7"
+																/>
+															</svg>
+														</button>
+													)}
 											</div>
 											<input
 												type="text"
 												placeholder="pizza, recetas, viajes"
-												value={filters.keyWords}
-												onChange={(e) => handleChange("keyWords", e.target.value)}
+												value={filters.searchQueries}
+												onChange={(e) =>
+													handleChange("keyWords", e.target.value)
+												}
 												className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 text-gray-900 text-sm"
 											/>
 										</div>
 										<div className="flex items-center justify-between flex-wrap gap-2">
 											<div>
-												<label className="block mb-1 font-medium text-gray-600 text-xs">Sugerencias:</label>
+												<label className="block mb-1 font-medium text-gray-600 text-xs">
+													Sugerencias:
+												</label>
 												<div className="flex flex-wrap gap-1">
 													{POPULAR_KEYWORDS.map((keyword) => (
 														<button
 															key={keyword}
 															type="button"
 															onClick={() => {
-																const current = filters.keyWords?.split(",").map((s) => s.trim()).filter(Boolean) || [];
-																const next = current.includes(keyword) ? current : [...current, keyword];
-																handleChange("keyWords", next.join(", "));
+																const current = filters.searchQueries || [];
+																const next = current.includes(keyword)
+																	? current
+																	: [...current, keyword];
+																handleChange("searchQueries", next.join(", "));
 															}}
 															className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors font-medium"
 														>
@@ -535,34 +703,49 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 									</div>
 								)}
 
-								{activeTab === 'basico' && (
+								{activeTab === "basico" && (
 									<div className="space-y-3">
 										<div className="flex flex-col md:flex-row gap-3 w-full">
 											<div className="flex-1">
-												<label className="font-semibold text-gray-700 text-sm">Fecha desde</label>
+												<label className="font-semibold text-gray-700 text-sm">
+													Fecha desde
+												</label>
 												<input
 													type="date"
-													value={filters.dateFrom}
-													onChange={(e) => handleChange("dateFrom", e.target.value)}
+													value={filters.oldestPostDate}
+													onChange={(e) =>
+														handleChange("oldestPostDate", e.target.value)
+													}
 													className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 text-gray-900 text-sm"
 												/>
 											</div>
 											<div className="flex-1">
-												<label className="font-semibold text-gray-700 text-sm">Fecha hasta</label>
+												<label className="font-semibold text-gray-700 text-sm">
+													Fecha hasta
+												</label>
 												<input
 													type="date"
-													value={filters.dateTo}
-													onChange={(e) => handleChange("dateTo", e.target.value)}
+													value={filters.newestPostDate}
+													onChange={(e) =>
+														handleChange("newestPostDate", e.target.value)
+													}
 													className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 text-gray-900 text-sm"
 												/>
 											</div>
 											<div className="flex-1">
-												<label className="font-semibold text-gray-700 text-sm">Número de Posts</label>
+												<label className="font-semibold text-gray-700 text-sm">
+													Número de Posts
+												</label>
 												<input
 													type="number"
 													placeholder="5"
-													value={filters.nlastPostByHashtags}
-													onChange={(e) => handleChange("nlastPostByHashtags", parseInt(e.target.value) || undefined)}
+													value={filters.resultsPerPage}
+													onChange={(e) =>
+														handleChange(
+															"resultsPerPage",
+															parseInt(e.target.value) || undefined,
+														)
+													}
 													className="w-full border-2 border-purple-200 bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 text-gray-900 text-sm"
 												/>
 											</div>
@@ -575,7 +758,19 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 												style={{ minWidth: 110 }}
 											>
 												Ir a filtros avanzados
-												<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+												<svg
+													className="w-4 h-4"
+													fill="none"
+													stroke="currentColor"
+													strokeWidth="2"
+													viewBox="0 0 24 24"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+													/>
+												</svg>
 											</button>
 										</div>
 									</div>
@@ -583,7 +778,7 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 							</form>
 						</div>
 						{/* Asistente virtual: Scrapi con globo de diálogo pequeño, cuadrado y pegado al logo */}
-						{activeTab !== 'basico' ? (
+						{activeTab !== "basico" ? (
 							<div className="absolute bottom-2 right-6 sm:right-8 z-20 flex items-end justify-end">
 								<div className="relative flex items-center group">
 									{/* Globo solo para desktop */}
@@ -595,16 +790,46 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 										style={{ minWidth: 180, maxWidth: 210 }}
 									>
 										<defs>
-											<linearGradient id="bubble-gradient" x1="0" y1="0" x2="1" y2="1">
+											<linearGradient
+												id="bubble-gradient"
+												x1="0"
+												y1="0"
+												x2="1"
+												y2="1"
+											>
 												<stop offset="0%" stopColor="#a78bfa" />
 												<stop offset="100%" stopColor="#9333ea" />
 											</linearGradient>
-											<filter id="bubble-shadow" x="-20%" y="-20%" width="140%" height="140%">
-												<feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity="0.1" />
+											<filter
+												id="bubble-shadow"
+												x="-20%"
+												y="-20%"
+												width="140%"
+												height="140%"
+											>
+												<feDropShadow
+													dx="0"
+													dy="4"
+													stdDeviation="6"
+													floodColor="#000"
+													floodOpacity="0.1"
+												/>
 											</filter>
 										</defs>
-										<rect x="10" y="-10" rx="16" ry="16" width="260" height="80" fill="url(#bubble-gradient)" filter="url(#bubble-shadow)" />
-										<polygon points="270,40 310,55 270,55" fill="url(#bubble-gradient)" />
+										<rect
+											x="10"
+											y="-10"
+											rx="16"
+											ry="16"
+											width="260"
+											height="80"
+											fill="url(#bubble-gradient)"
+											filter="url(#bubble-shadow)"
+										/>
+										<polygon
+											points="270,40 310,55 270,55"
+											fill="url(#bubble-gradient)"
+										/>
 										<text
 											x="140"
 											y="25"
@@ -635,37 +860,43 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 											src={ScrapiLogo}
 											alt="Scrapi IA"
 											className="w-12 h-12 sm:w-16 sm:h-16 ml-1 drop-shadow-xl cursor-pointer"
-											style={{ marginBottom: '8px' }}
+											style={{ marginBottom: "8px" }}
 											onClick={async () => {
 												const { value: userMessage } = await MySwal.fire({
-													title: 'Scrapi AI',
-													input: 'text',
-													inputLabel: '¿Sobre qué tema quieres ideas de filtros?',
-													inputPlaceholder: 'Ej: cocina, viajes, tecnología...',
+													title: "Scrapi AI",
+													input: "text",
+													inputLabel:
+														"¿Sobre qué tema quieres ideas de filtros?",
+													inputPlaceholder: "Ej: cocina, viajes, tecnología...",
 													showCancelButton: true,
-													confirmButtonText: 'Pedir recomendación',
-													cancelButtonText: 'Cancelar',
-													background: '#fff',
+													confirmButtonText: "Pedir recomendación",
+													cancelButtonText: "Cancelar",
+													background: "#fff",
 													customClass: {
-														popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
-														title: 'text-2xl text-purple-700 mb-2',
-														confirmButton: 'bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg',
-														cancelButton: 'bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-lg ml-2',
-														input: 'border-2 border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300',
+														popup: "rounded-2xl shadow-2xl p-8 max-w-lg",
+														title: "text-2xl text-purple-700 mb-2",
+														confirmButton:
+															"bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg",
+														cancelButton:
+															"bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-lg ml-2",
+														input:
+															"border-2 border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300",
 													},
 												});
 
 												if (userMessage) {
 													MySwal.fire({
-														title: 'Cargando…',
-														html: 'Consultando a la IA, por favor espera...',
+														title: "Cargando…",
+														html: "Consultando a la IA, por favor espera...",
 														allowOutsideClick: false,
 														didOpen: () => MySwal.showLoading(),
 														showConfirmButton: false,
-														background: '#fff',
+														background: "#fff",
 													});
 
-													const res = await recommendContent({ message: userMessage });
+													const res = await recommendContent({
+														message: userMessage,
+													});
 													MySwal.close();
 
 													if (res.response) {
@@ -678,7 +909,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 
 														// Verificar si la respuesta está vacía (indicando moderación)
 														if (isScrapiResponseEmpty(parsed)) {
-															
 															MySwal.fire({
 																icon: "error",
 																title: "Contenido bloqueado",
@@ -688,13 +918,19 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 																customClass: {
 																	popup: "rounded-2xl shadow-2xl p-8 max-w-lg",
 																	title: "text-2xl text-red-700 mb-2",
-																	confirmButton: "bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg",
+																	confirmButton:
+																		"bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg",
 																},
 															});
 															return;
 														}
 
-														if (parsed && (parsed.hashtags || parsed.keywords || parsed.usernames)) {
+														if (
+															parsed &&
+															(parsed.hashtags ||
+																parsed.keywords ||
+																parsed.usernames)
+														) {
 															// Crear modal con tabs para las sugerencias
 															const suggestionsHtml = `
 																<div class="space-y-4">
@@ -712,119 +948,213 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 																	
 																	<div id="content-hashtags" class="tab-content">
 																		<div class="flex flex-wrap gap-2">
-																			${parsed.hashtags?.map((tag: string) => `
+																			${
+																				parsed.hashtags
+																					?.map(
+																						(tag: string) => `
 																				<span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
 																					${tag}
 																				</span>
-																			`).join('') || '<p class="text-gray-500">No hay hashtags sugeridos</p>'}
+																			`,
+																					)
+																					.join("") ||
+																				'<p class="text-gray-500">No hay hashtags sugeridos</p>'
+																			}
 																		</div>
 																	</div>
 																	
 																	<div id="content-keywords" class="tab-content hidden">
 																		<div class="flex flex-wrap gap-2">
-																			${parsed.keywords?.map((keyword: string) => `
+																			${
+																				parsed.keywords
+																					?.map(
+																						(keyword: string) => `
 																				<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
 																					${keyword}
 																				</span>
-																			`).join('') || '<p class="text-gray-500">No hay palabras clave sugeridas</p>'}
+																			`,
+																					)
+																					.join("") ||
+																				'<p class="text-gray-500">No hay palabras clave sugeridas</p>'
+																			}
 																		</div>
 																	</div>
 																	
 																	<div id="content-usernames" class="tab-content hidden">
 																		<div class="flex flex-wrap gap-2">
-																			${parsed.usernames?.map((username: string) => `
+																			${
+																				parsed.usernames
+																					?.map(
+																						(username: string) => `
 																				<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
 																					${username}
 																				</span>
-																			`).join('') || '<p class="text-gray-500">No hay usuarios sugeridos</p>'}
+																			`,
+																					)
+																					.join("") ||
+																				'<p class="text-gray-500">No hay usuarios sugeridos</p>'
+																			}
 																		</div>
 																	</div>
 																</div>
 															`;
-															
+
 															await MySwal.fire({
-																title: 'Sugerencias de Scrapi AI',
+																title: "Sugerencias de Scrapi AI",
 																html: suggestionsHtml,
-																background: '#fff',
+																background: "#fff",
 																showConfirmButton: true,
 																showCancelButton: true,
-																confirmButtonText: 'Autocompletar',
-																cancelButtonText: 'Cerrar',
+																confirmButtonText: "Autocompletar",
+																cancelButtonText: "Cerrar",
 																customClass: {
-																	popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
-																	title: 'text-2xl text-purple-700 mb-2',
-																	confirmButton: 'bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg',
-																	cancelButton: 'bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-lg',
+																	popup: "rounded-2xl shadow-2xl p-8 max-w-lg",
+																	title: "text-2xl text-purple-700 mb-2",
+																	confirmButton:
+																		"bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg",
+																	cancelButton:
+																		"bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-lg",
 																},
 																didOpen: () => {
 																	// Funcionalidad de tabs
-																	const tabs = ['hashtags', 'keywords', 'usernames'];
-																	let activeTab = 'hashtags'; // Tab activo por defecto
-																	
-																	tabs.forEach(tab => {
-																		const tabBtn = document.getElementById(`tab-${tab}`);
-																		const content = document.getElementById(`content-${tab}`);
-																		
+																	const tabs = [
+																		"hashtags",
+																		"keywords",
+																		"usernames",
+																	];
+																	let activeTab = "hashtags"; // Tab activo por defecto
+
+																	tabs.forEach((tab) => {
+																		const tabBtn = document.getElementById(
+																			`tab-${tab}`,
+																		);
+																		const content = document.getElementById(
+																			`content-${tab}`,
+																		);
+
 																		if (tabBtn && content) {
-																			tabBtn.addEventListener('click', () => {
+																			tabBtn.addEventListener("click", () => {
 																				activeTab = tab; // Actualizar tab activo
-																				
+
 																				// Ocultar todos los contenidos
-																				document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+																				document
+																					.querySelectorAll(".tab-content")
+																					.forEach((el) =>
+																						el.classList.add("hidden"),
+																					);
 																				// Remover estilos activos de todos los tabs
-																				document.querySelectorAll('[id^="tab-"]').forEach(el => {
-																					el.classList.remove('bg-white', 'text-purple-700', 'text-blue-700', 'text-green-700', 'shadow-sm', 'border-b-2', 'border-purple-600', 'border-blue-600', 'border-green-600');
-																					el.classList.add('bg-transparent', 'text-gray-500');
-																				});
-																				
+																				document
+																					.querySelectorAll('[id^="tab-"]')
+																					.forEach((el) => {
+																						el.classList.remove(
+																							"bg-white",
+																							"text-purple-700",
+																							"text-blue-700",
+																							"text-green-700",
+																							"shadow-sm",
+																							"border-b-2",
+																							"border-purple-600",
+																							"border-blue-600",
+																							"border-green-600",
+																						);
+																						el.classList.add(
+																							"bg-transparent",
+																							"text-gray-500",
+																						);
+																					});
+
 																				// Mostrar contenido activo
-																				content.classList.remove('hidden');
+																				content.classList.remove("hidden");
 																				// Aplicar estilos activos
-																				tabBtn.classList.remove('bg-transparent', 'text-gray-500');
-																				tabBtn.classList.add('bg-white', 'shadow-sm');
-																				
-																				if (tab === 'hashtags') {
-																					tabBtn.classList.add('text-purple-700', 'border-b-2', 'border-purple-600');
-																				} else if (tab === 'keywords') {
-																					tabBtn.classList.add('text-blue-700', 'border-b-2', 'border-blue-600');
-																				} else if (tab === 'usernames') {
-																					tabBtn.classList.add('text-green-700', 'border-b-2', 'border-green-600');
+																				tabBtn.classList.remove(
+																					"bg-transparent",
+																					"text-gray-500",
+																				);
+																				tabBtn.classList.add(
+																					"bg-white",
+																					"shadow-sm",
+																				);
+
+																				if (tab === "hashtags") {
+																					tabBtn.classList.add(
+																						"text-purple-700",
+																						"border-b-2",
+																						"border-purple-600",
+																					);
+																				} else if (tab === "keywords") {
+																					tabBtn.classList.add(
+																						"text-blue-700",
+																						"border-b-2",
+																						"border-blue-600",
+																					);
+																				} else if (tab === "usernames") {
+																					tabBtn.classList.add(
+																						"text-green-700",
+																						"border-b-2",
+																						"border-green-600",
+																					);
 																				}
 																			});
 																		}
 																	});
-																	
+
 																	// Funcionalidad del botón Autocompletar
-																	const confirmButton = document.querySelector('.swal2-confirm');
+																	const confirmButton =
+																		document.querySelector(".swal2-confirm");
 																	if (confirmButton) {
-																		confirmButton.addEventListener('click', () => {
-																			if (activeTab === 'hashtags' && parsed.hashtags) {
-																				const hashtagsString = parsed.hashtags.join(', ');
-																				handleChange('hashtags', hashtagsString);
-																				setActiveTab('hashtags');
-																			} else if (activeTab === 'keywords' && parsed.keywords) {
-																				const keywordsString = parsed.keywords.join(', ');
-																				handleChange('keyWords', keywordsString);
-																				setActiveTab('palabras');
-																			} else if (activeTab === 'usernames' && parsed.usernames) {
-																				const usernamesString = parsed.usernames.join(', ');
-																				handleChange('tiktokAccount', usernamesString);
-																				setActiveTab('usuarios');
-																			}
-																		});
+																		confirmButton.addEventListener(
+																			"click",
+																			() => {
+																				if (
+																					activeTab === "hashtags" &&
+																					parsed.hashtags
+																				) {
+																					const hashtagsString =
+																						parsed.hashtags.join(", ");
+																					handleChange(
+																						"hashtags",
+																						hashtagsString,
+																					);
+																					setActiveTab("hashtags");
+																				} else if (
+																					activeTab === "keywords" &&
+																					parsed.keywords
+																				) {
+																					const keywordsString =
+																						parsed.keywords.join(", ");
+																					handleChange(
+																						"keyWords",
+																						keywordsString,
+																					);
+																					setActiveTab("palabras");
+																				} else if (
+																					activeTab === "usernames" &&
+																					parsed.usernames
+																				) {
+																					const usernamesString =
+																						parsed.usernames.join(", ");
+																					handleChange(
+																						"tiktokAccount",
+																						usernamesString,
+																					);
+																					setActiveTab("usuarios");
+																				}
+																			},
+																		);
 																	}
-																}
+																},
 															});
 														} else {
 															MySwal.fire({
-																title: 'Respuesta de Scrapi AI',
+																title: "Respuesta de Scrapi AI",
 																html: `<pre style="white-space:pre-wrap;text-align:left;font-size:1rem;">${res.response}</pre>`,
-																background: '#fff',
-																confirmButtonText: 'Cerrar',
+																background: "#fff",
+																confirmButtonText: "Cerrar",
 																customClass: {
-																	popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
-																	title: 'text-2xl text-purple-700 mb-2',
-																	confirmButton: 'bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg',
+																	popup: "rounded-2xl shadow-2xl p-8 max-w-lg",
+																	title: "text-2xl text-purple-700 mb-2",
+																	confirmButton:
+																		"bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-lg",
 																},
 															});
 														}
@@ -833,12 +1163,16 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 														let userFriendlyMessage = MODERATION_MESSAGE;
 
 														try {
-															const errText = typeof res.error === 'string' ? res.error : JSON.stringify(res.error);
+															const errText =
+																typeof res.error === "string"
+																	? res.error
+																	: JSON.stringify(res.error);
 															const errJson = JSON.parse(errText);
 
 															const isContentFilter =
-																errJson?.error?.code === 'content_filter' ||
-																errJson?.error?.innererror?.code === 'ResponsibleAIPolicyViolation';
+																errJson?.error?.code === "content_filter" ||
+																errJson?.error?.innererror?.code ===
+																	"ResponsibleAIPolicyViolation";
 
 															if (!isContentFilter && errJson?.error?.message) {
 																userFriendlyMessage = errJson.error.message;
@@ -848,22 +1182,23 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 														}
 
 														MySwal.fire({
-															icon: 'error',
-															title: 'Mensaje bloqueado',
+															icon: "error",
+															title: "Mensaje bloqueado",
 															text: userFriendlyMessage,
-															background: '#fff',
-															confirmButtonText: 'Cerrar',
+															background: "#fff",
+															confirmButtonText: "Cerrar",
 															customClass: {
-																popup: 'rounded-2xl shadow-2xl p-8 max-w-lg',
-																title: 'text-2xl text-red-700 mb-2',
-																confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg',
+																popup: "rounded-2xl shadow-2xl p-8 max-w-lg",
+																title: "text-2xl text-red-700 mb-2",
+																confirmButton:
+																	"bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-lg",
 															},
 														});
 													}
 												}
 											}}
 										/>
-										
+
 										{/* Tooltip */}
 										<div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-white border border-purple-200 rounded-full px-3 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-30">
 											<span className="text-purple-700 text-xs font-medium whitespace-nowrap">
@@ -874,7 +1209,6 @@ export function FilterPanel({ onApply, onReset, initialFilters }: FilterPanelPro
 								</div>
 							</div>
 						) : null}
-
 					</div>
 				</div>
 			</div>

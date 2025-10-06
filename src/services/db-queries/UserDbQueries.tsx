@@ -1,10 +1,6 @@
 import { UserDBQueryRequest } from "@interfaces/db-queries/UserDBQueryRequest";
-import { UserDbQueryResponse } from "@interfaces/db-queries/UserDbQueryResponse";
-
-import Api from "@services/api";
 
 export async function dbQueries(userDBQueryRequest: UserDBQueryRequest) {
-	const api = await Api.getInstance();
 	const idStr = sessionStorage.getItem("id");
 	if (!idStr) {
 		throw new Error("No se encontró el userId en el storage");
@@ -14,11 +10,16 @@ export async function dbQueries(userDBQueryRequest: UserDBQueryRequest) {
 		...userDBQueryRequest,
 		userId,
 	};
-	const response = await api.post<UserDBQueryRequest, UserDbQueryResponse>(
-		payload,
-		{
-			url: "/user/dbquery",
+	console.log(payload);
+	const MS3_URL = import.meta.env.VITE_API_SERVICE_MS3_URL;
+	const response = await fetch(`${MS3_URL}/dbquery/user`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
 		},
-	);
-	return response.data;
+		body: JSON.stringify(payload),
+	});
+	const result = await response.json();
+	console.log(result);
+	return result.items || [];
 }

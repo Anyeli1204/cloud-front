@@ -29,21 +29,21 @@ interface Props {
 export const PostDetailModal = ({ post, onClose }: Props) => {
 	// Prevenir scroll del body cuando el modal está abierto
 	useEffect(() => {
-		document.body.style.overflow = 'hidden';
+		document.body.style.overflow = "hidden";
 		return () => {
-			document.body.style.overflow = 'unset';
+			document.body.style.overflow = "unset";
 		};
 	}, []);
 
 	// Manejar cierre con ESC
 	useEffect(() => {
 		const handleEscape = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
+			if (e.key === "Escape") {
 				onClose();
 			}
 		};
-		document.addEventListener('keydown', handleEscape);
-		return () => document.removeEventListener('keydown', handleEscape);
+		document.addEventListener("keydown", handleEscape);
+		return () => document.removeEventListener("keydown", handleEscape);
 	}, [onClose]);
 
 	return ReactDOM.createPortal(
@@ -71,16 +71,16 @@ export const PostDetailModal = ({ post, onClose }: Props) => {
 								<div className="flex flex-wrap gap-x-6 gap-y-1 items-center text-sm">
 									<p className="flex items-center">
 										<User2Icon className="inline w-4 h-4 text-sky-400 mr-1" />
-										<strong>Usuario:</strong>&nbsp;{post.tiktokAccountUsername}
+										<strong>Usuario:</strong>&nbsp;{post.usernameTiktokAccount}
 									</p>
 									<p className="flex items-center">
 										<CalendarIcon className="inline w-4 h-4 text-pink-400 mr-1" />
 										<strong>Fecha:</strong>&nbsp;{post.datePosted} -{" "}
-										{post.timePosted}
+										{post.hourPosted}
 									</p>
 									<p className="flex items-center">
 										<Globe2Icon className="inline w-4 h-4 text-green-400 mr-1" />
-										<strong>Región:</strong>&nbsp;{post.regionOfPosting}
+										<strong>Región:</strong>&nbsp;{post.regionPost}
 									</p>
 								</div>
 								<hr className="my-4 border-purple-200" />
@@ -105,7 +105,7 @@ export const PostDetailModal = ({ post, onClose }: Props) => {
 									</p>
 									<p>
 										<Repeat2Icon className="inline w-4 h-4 text-green-400 mr-1" />
-										<strong>Reposteado:</strong> {post.reposted ? "Sí" : "No"}
+										<strong>Reposteado:</strong> {post.reposts ? "Sí" : "No"}
 									</p>
 									<p>
 										<EyeIcon className="inline w-4 h-4 text-blue-400 mr-1" />
@@ -113,7 +113,7 @@ export const PostDetailModal = ({ post, onClose }: Props) => {
 									</p>
 									<p>
 										<BarChart2Icon className="inline w-4 h-4 text-indigo-400 mr-1" />
-										<strong>Interacciones:</strong> {post.interactions}
+										<strong>Interacciones:</strong> {post.totalInteractions}
 									</p>
 								</div>
 								<hr className="my-4 border-purple-200" />
@@ -138,7 +138,7 @@ export const PostDetailModal = ({ post, onClose }: Props) => {
 								</div>
 								<p className="mt-1">
 									<HashIcon className="inline w-4 h-4 text-purple-300 mr-1" />
-									<strong>Cantidad:</strong> {post.numberOfHashtags}
+									<strong>Cantidad:</strong> {post.numberHashtags}
 								</p>
 								<hr className="my-4 border-purple-200" />
 							</div>
@@ -155,11 +155,11 @@ export const PostDetailModal = ({ post, onClose }: Props) => {
 									<MusicIcon className="inline w-4 h-4 text-sky-400 mr-1" />
 									<strong>URL:</strong>{" "}
 									<a
-										href={post.soundUrl}
+										href={post.soundURL}
 										target="_blank"
 										className="text-purple-600 underline break-all"
 									>
-										{post.soundUrl}
+										{post.soundURL}
 									</a>
 								</p>
 								<hr className="my-4 border-purple-200" />
@@ -173,29 +173,29 @@ export const PostDetailModal = ({ post, onClose }: Props) => {
 									<LinkIcon className="inline w-4 h-4 text-purple-400 mr-1" />
 									<strong>Post:</strong>{" "}
 									<a
-										href={post.postLink}
+										href={post.postURL}
 										target="_blank"
 										className="text-purple-600 underline break-all"
 									>
-										{post.postLink}
+										{post.postURL}
 									</a>
 								</p>
 								<p>
 									<CalendarIcon className="inline w-4 h-4 text-purple-300 mr-1" />
-									<strong>Track Date:</strong> {post.trackingDate}
+									<strong>Track Date:</strong> {post.timeTracking}
 								</p>
 								<p>
 									<ClockIcon className="inline w-4 h-4 text-blue-400 mr-1" />
-									<strong>Track Time:</strong> {post.trackingTime}
+									<strong>Track Time:</strong> {post.timeTracking}
 								</p>
 								<p>
 									<UserCircle2Icon className="inline w-4 h-4 text-sky-400 mr-1" />
-									<strong>Usuario (scrapeo):</strong> {post.user}
+									<strong>Usuario (scrapeo):</strong> {post.userId}
 								</p>
-								{post.admin && (
+								{post.adminId && (
 									<p>
 										<ShieldCheckIcon className="inline w-4 h-4 text-purple-500 mr-1" />
-										<strong>Admin:</strong> {post.admin}
+										<strong>Admin:</strong> {post.adminId}
 									</p>
 								)}
 							</div>
@@ -204,7 +204,7 @@ export const PostDetailModal = ({ post, onClose }: Props) => {
 
 					<div className="bg-white rounded-3xl shadow-md w-full md:w-[33%] dark:bg-white/80 self-center flex items-center justify-center p-1.5 overflow-y-auto max-h-[45vh] md:max-h-[90vh]">
 						<div className="w-full max-w-[400px] flex items-center justify-center">
-							<TikTokEmbed url={post.postLink} />
+							<TikTokEmbed url={post.postURL} />
 						</div>
 					</div>
 				</div>
