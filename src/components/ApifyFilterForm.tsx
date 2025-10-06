@@ -5,7 +5,7 @@ import type { AdminApifyRequest } from "@interfaces/apify-call/AdminApifyRequest
 import { Hash, Edit3 } from "lucide-react";
 
 interface ApifyFilterFormProps {
-	onSubmit: (filters: AdminApifyRequest) => void;
+	onSubmit: (filters: Partial<AdminApifyRequest>) => void;
 	loading: boolean;
 	onPublish?: () => void;
 }
@@ -42,13 +42,23 @@ export function ApifyFilterForm({
 				showCloseButton: true,
 				confirmButtonText: "Entendido",
 				allowOutsideClick: false,
-			});
-			return;
-		}
-		onSubmit({ hashtags, keyWords });
-	};
-
-	const handleClear = () => {
+		});
+		return;
+	}
+	
+	// Convert comma-separated strings to arrays
+	const hashtagsArray = hashtags.trim() 
+		? hashtags.split(',').map(h => h.trim()).filter(Boolean)
+		: [];
+	const keyWordsArray = keyWords.trim()
+		? keyWords.split(',').map(k => k.trim()).filter(Boolean)
+		: [];
+	
+	onSubmit({ 
+		hashtags: hashtagsArray.length > 0 ? hashtagsArray : undefined,
+		keyWords: keyWordsArray.length > 0 ? keyWordsArray : undefined
+	});
+};	const handleClear = () => {
 		setHashtags("");
 		setKeyWords("");
 	};

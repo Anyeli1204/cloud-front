@@ -4,6 +4,7 @@ export interface AdminApifyRequest {
 	resultsPerPage?: number;
 	adminId?: number;
 	hashtags?: string[];
+	keyWords?: string[];
 	profileSorting?: string;
 	searchQueries?: string[];
 }

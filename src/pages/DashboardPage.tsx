@@ -40,18 +40,8 @@ function getTermsFromPublished(posts: DashboardInfo[]): string[] {
 
 function getTermsFromFilters(filters: AdminApifyRequest | null): string[] {
 	if (!filters) return [];
-	const hashtags = filters.hashtags
-		? filters.hashtags
-				.split(",")
-				.map((t) => t.trim())
-				.filter(Boolean)
-		: [];
-	const keyWords = filters.keyWords
-		? filters.keyWords
-				.split(",")
-				.map((t) => t.trim())
-				.filter(Boolean)
-		: [];
+	const hashtags = filters.hashtags || [];
+	const keyWords = filters.keyWords || [];
 	// Devolvemos solo términos sin el #
 	return [...hashtags, ...keyWords].map((t) =>
 		t.replace(/^#/, "").toLowerCase(),
@@ -64,16 +54,16 @@ const isApifyData = (post: PostData): post is ApifyCallResponse => {
 };
 
 const getPostId = (post: PostData): string => {
-	return isApifyData(post) ? post.postCode : post.postId;
+	return isApifyData(post) ? post.postId : post.postId;
 };
 
 const getPostLink = (post: PostData): string => {
-	return isApifyData(post) ? post.postLink : post.postURL;
+	return isApifyData(post) ? post.postURL : post.postURL;
 };
 
 const getUsername = (post: PostData): string => {
 	return isApifyData(post)
-		? post.tiktokAccountUsername
+		? post.usernameTiktokAccount
 		: post.usernameTiktokAccount;
 };
 
@@ -82,7 +72,7 @@ const getHashtags = (post: PostData): string => {
 };
 
 const getEngagement = (post: PostData): number => {
-	return isApifyData(post) ? post.engagementRate : post.engagement;
+	return isApifyData(post) ? post.engagement : post.engagement;
 };
 
 const BLUE = "#007BFF";
@@ -130,18 +120,8 @@ export default function DashboardPage() {
 				const emailReqs: TopGlobalesEmailRequest[] = [];
 
 				// Obtener los términos (hashtags y palabras clave)
-				const hashtags = lastFilters.hashtags
-					? lastFilters.hashtags
-							.split(",")
-							.map((t) => t.trim())
-							.filter(Boolean)
-					: [];
-				const keyWords = lastFilters.keyWords
-					? lastFilters.keyWords
-							.split(",")
-							.map((t) => t.trim())
-							.filter(Boolean)
-					: [];
+				const hashtags = lastFilters.hashtags || [];
+				const keyWords = lastFilters.keyWords || [];
 				const terms = [...hashtags, ...keyWords];
 
 				// Para cada término, obtener solo los top 3 videos
@@ -507,10 +487,11 @@ export default function DashboardPage() {
 						<input
 							className="bg-transparent flex-1 outline-none text-base text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 placeholder:text-sm"
 							placeholder="#hashtags (separados por comas)"
-							value={lastFilters?.hashtags || ""}
-							onChange={(e) =>
-								setLastFilters({ ...lastFilters, hashtags: e.target.value })
-							}
+							value={lastFilters?.hashtags?.join(", ") || ""}
+							onChange={(e) => {
+								const hashtagsArray = e.target.value.split(',').map(h => h.trim()).filter(Boolean);
+								setLastFilters(prev => prev ? { ...prev, hashtags: hashtagsArray.length > 0 ? hashtagsArray : undefined } : null);
+							}}
 						/>
 					</div>
 					<div className="flex items-center w-full md:w-1/2 bg-gray-100 dark:bg-gray-800 rounded-xl px-3 py-2 shadow-inner gap-2">
@@ -545,10 +526,11 @@ export default function DashboardPage() {
 						<input
 							className="bg-transparent flex-1 outline-none text-base text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 placeholder:text-sm"
 							placeholder="Palabras clave (separadas por comas)"
-							value={lastFilters?.keyWords || ""}
-							onChange={(e) =>
-								setLastFilters({ ...lastFilters, keyWords: e.target.value })
-							}
+							value={lastFilters?.keyWords?.join(", ") || ""}
+							onChange={(e) => {
+								const keyWordsArray = e.target.value.split(',').map(k => k.trim()).filter(Boolean);
+								setLastFilters(prev => prev ? { ...prev, keyWords: keyWordsArray.length > 0 ? keyWordsArray : undefined } : null);
+							}}
 						/>
 					</div>
 					<div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0 w-full sm:w-auto">
