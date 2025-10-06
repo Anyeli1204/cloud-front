@@ -6,46 +6,46 @@
  */
 export interface ApifyCallResponse {
 	/** Número total de hashtags */
-	numberOfHashtags: number;
+	numberHashtags: number;
 	/** Comentarios del post */
 	comments: number;
 	/** Fecha de publicación en formato YYYY-MM-DD */
 	datePosted: string;
 	/** Porcentaje de engagement */
-	engagementRate: number;
+	engagement: number;
 	/** Texto completo de los hashtags */
 	hashtags: string;
 	/** Total de interacciones */
-	interactions: number;
+	totalInteractions: number;
 	/** Total de likes */
 	likes: number;
 	/** URL completa del post */
-	postLink: string;
+	postURL: string;
 	/** Código o ID del post */
-	postCode: string;
+	postId: string;
 	/** Región donde se publicó */
-	regionOfPosting: string;
+	regionPost: string;
 	/** Veces que se ha repostado */
-	reposted: number;
+	reposts: number;
 	/** Veces que se ha guardado */
 	saves: number;
 	/** ID del sonido original */
 	soundId: string;
 	/** URL del sonido */
-	soundUrl: string;
+	soundURL: string;
 	/** Nombre de usuario de la cuenta de TikTok */
-	tiktokAccountUsername: string;
+	usernameTiktokAccount: string;
 	/** Hora de publicación en formato HH:mm:ss */
-	timePosted: string;
+	hourPosted: string;
 	/** Fecha de rastreo en formato YYYY-MM-DD */
-	trackingDate: string;
+	dateTracking: string;
 	/** Hora de rastreo en formato HH:mm:ss */
-	trackingTime: string;
+	timeTracking: string;
 	/** Usuario que hizo la petición */
-	user?: string;
+	userId?: string;
 	/** Total de visualizaciones */
 	views: number;
-	admin?: string;
+	adminId?: string;
 }
 
 export interface HashtagViews {
@@ -66,35 +66,73 @@ export interface SoundViews {
 export function mapRawToApifyResponse(
 	raw: Record<string, any>,
 ): ApifyCallResponse {
+	const getNumber = (...keys: string[]) => {
+		for (const k of keys) {
+			if (raw[k] !== undefined && raw[k] !== null && raw[k] !== "") {
+				const n = Number(raw[k]);
+				return Number.isNaN(n) ? 0 : n;
+			}
+		}
+		return 0;
+	};
+
+	const getString = (...keys: string[]) => {
+		for (const k of keys) {
+			if (raw[k] !== undefined && raw[k] !== null) {
+				return String(raw[k]);
+			}
+		}
+		return "";
+	};
+
+	// Soportar user/admin en varias keys
+	const getUserId = () => {
+		if (raw["User"] != null) return String(raw["User"]);
+		if (raw["userId"] != null) return String(raw["userId"]);
+		if (raw["User ID"] != null) return String(raw["User ID"]);
+		return undefined;
+	};
+
+	const getAdminId = () => {
+		if (raw["Admin"] != null) return String(raw["Admin"]);
+		if (raw["adminId"] != null) return String(raw["adminId"]);
+		return undefined;
+	};
+
 	return {
-		numberOfHashtags: Number(
-			raw["# of Hashtags"] ?? raw["numberOfHashtags"] ?? 0,
+		numberHashtags: getNumber(
+			"# of Hashtags",
+			"numberOfHashtags",
+			"numberHashtags",
 		),
-		comments: Number(raw["Comments"] ?? raw["comments"] ?? 0),
-		datePosted: String(raw["Date posted"] ?? raw["datePosted"] ?? ""),
-		engagementRate: Number(
-			raw["Engagement rate"] ?? raw["engagementRate"] ?? 0,
+		comments: getNumber("Comments", "comments"),
+		datePosted: getString("Date posted", "datePosted"),
+		engagement: getNumber("Engagement rate", "engagementRate", "engagement"),
+		hashtags: getString("Hashtags", "hashtags"),
+		totalInteractions: getNumber(
+			"Interactions",
+			"interactions",
+			"totalInteractions",
 		),
-		hashtags: String(raw["Hashtags"] ?? raw["hashtags"] ?? ""),
-		interactions: Number(raw["Interactions"] ?? raw["interactions"] ?? 0),
-		likes: Number(raw["Likes"] ?? raw["likes"] ?? 0),
-		postLink: String(raw["Post Link"] ?? raw["postLink"] ?? ""),
-		postCode: String(raw["Post code"] ?? raw["postCode"] ?? ""),
-		regionOfPosting: String(
-			raw["Region of posting"] ?? raw["regionOfPosting"] ?? "",
+		likes: getNumber("Likes", "likes"),
+		postURL: getString("Post Link", "postLink", "postURL"),
+		postId: getString("Post code", "postCode", "postId"),
+		regionPost: getString("Region of posting", "regionOfPosting", "regionPost"),
+		reposts: getNumber("Reposted", "reposted", "reposts"),
+		saves: getNumber("Saves", "saves"),
+		soundId: getString("Sound ID", "soundId"),
+		soundURL: getString("Sound URL", "soundUrl", "soundURL"),
+		usernameTiktokAccount: getString(
+			"TikTok Account Username",
+			"tiktokAccountUsername",
+			"usernameTiktokAccount",
+			"username",
 		),
-		reposted: Number(raw["Reposted"] ?? raw["reposted"] ?? 0),
-		saves: Number(raw["Saves"] ?? raw["saves"] ?? 0),
-		soundId: String(raw["Sound ID"] ?? raw["soundId"] ?? ""),
-		soundUrl: String(raw["Sound URL"] ?? raw["soundUrl"] ?? ""),
-		tiktokAccountUsername: String(
-			raw["TikTok Account Username"] ?? raw["tiktokAccountUsername"] ?? "",
-		),
-		timePosted: String(raw["Time posted"] ?? raw["timePosted"] ?? ""),
-		trackingDate: String(raw["Tracking date"] ?? raw["trackingDate"] ?? ""),
-		trackingTime: String(raw["Tracking time"] ?? raw["trackingTime"] ?? ""),
-		user: raw["User"] != null ? String(raw["User"]) : undefined,
-		admin: raw["Admin"] != null ? String(raw["Admin"]) : undefined,
-		views: Number(raw["Views"] ?? raw["views"] ?? 0),
+		hourPosted: getString("Time posted", "timePosted", "hourPosted"),
+		dateTracking: getString("Tracking date", "trackingDate", "dateTracking"),
+		timeTracking: getString("Tracking time", "trackingTime", "timeTracking"),
+		userId: getUserId(),
+		adminId: getAdminId(),
+		views: getNumber("Views", "views"),
 	};
 }
