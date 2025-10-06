@@ -10,6 +10,7 @@ import QuestionsAnswersPage from "src/pages/QuestionsAnswersPage";
 import AdminUsersPage from "@pages/AdminUsersPage";
 import NotFoundPage from "src/pages/NotFoundPage";
 import AiPage from "@pages/AiPage";
+import OrchestratorPage from "src/pages/OrchestratorPage";
 
 export const router = createBrowserRouter([
 	{
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
 			{
 				path:"/ai",
 				element: <ProtectedRoute roles={["USER"]} element={<AiPage />} />,
+			},
+			{
+				path: "/orchestrator",
+				element: <ProtectedRoute element={<OrchestratorPage />} />,
 			},
 			{
 				path: "/admin/users",

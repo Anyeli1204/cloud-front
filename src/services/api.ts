@@ -4,7 +4,7 @@ import axios, {
 	RawAxiosRequestHeaders,
 } from "axios";
 
-export type ApiServiceKey = "legacy" | "accounts" | "content" | "dashboard";
+export type ApiServiceKey = "legacy" | "accounts" | "content" | "dashboard" | "orchestrator";
 
 type ApiConfig = {
 	basePath: string;
@@ -35,6 +35,7 @@ export default class Api {
 		const accountsBase = env.VITE_ACCOUNTS_SERVICE_URL || defaultBase;
 		const contentBase = env.VITE_CONTENT_SERVICE_URL || defaultBase;
 		const dashboardBase = env.VITE_DASHBOARD_SERVICE_URL || defaultBase;
+		const orchestratorBase = env.VITE_ORCHESTRATOR_SERVICE_URL || "http://localhost:5005";
 
 		switch (service) {
 			case "accounts":
@@ -51,6 +52,12 @@ export default class Api {
 			case "dashboard":
 				return {
 					basePath: dashboardBase,
+					includeAuthHeader: false,
+					includeUserHeaders: false,
+				};
+			case "orchestrator":
+				return {
+					basePath: orchestratorBase,
 					includeAuthHeader: false,
 					includeUserHeaders: false,
 				};

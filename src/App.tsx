@@ -14,6 +14,7 @@ export default function App() {
 		"/queries": "queries",
 		"/qa": "qa",
 		"/ai": "ai", // ✅ agregado
+		"/orchestrator": "orchestrator",
 		"/admin/users": "admin-users",
 		"/users": "users",
 	};
@@ -35,6 +36,9 @@ export default function App() {
 				break;
 			case "ai": // ✅ agregado
 				navigate("/ai");
+				break;
+			case "orchestrator":
+				navigate("/orchestrator");
 				break;
 			case "admin-users":
 				navigate("/admin/users");
