@@ -1,0 +1,42 @@
+[
+  {
+    "ParameterKey": "GitHubRepository",
+    "ParameterValue": "https://github.com/Anyeli1204/cloud-front"
+  },
+  {
+    "ParameterKey": "GitHubBranch",
+    "ParameterValue": "main"
+  },
+  {
+    "ParameterKey": "GitHubToken",
+    "ParameterValue": "ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  },
+  {
+    "ParameterKey": "AccountsServiceURL",
+    "ParameterValue": "http://54.162.117.139:8084/api/v1"
+  },
+  {
+    "ParameterKey": "ContentServiceURL",
+    "ParameterValue": "http://54.162.117.139:8083"
+  },
+  {
+    "ParameterKey": "DashboardServiceURL",
+    "ParameterValue": "http://54.162.117.139:8081"
+  },
+  {
+    "ParameterKey": "OrchestratorServiceURL",
+    "ParameterValue": "http://35.175.5.172:8085"
+  },
+  {
+    "ParameterKey": "AnalyticsServiceURL",
+    "ParameterValue": "http://35.175.5.172:8086"
+  },
+  {
+    "ParameterKey": "MS3ServiceURL",
+    "ParameterValue": "http://54.162.117.139:8082"
+  },
+  {
+    "ParameterKey": "ApifyToken",
+    "ParameterValue": "apify_api_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  }
+]

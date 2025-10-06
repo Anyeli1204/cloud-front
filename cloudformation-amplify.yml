@@ -1,0 +1,214 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template para configurar AWS Amplify con variables de entorno y custom headers para solucionar Mixed Content'
+
+Parameters:
+  GitHubRepository:
+    Type: String
+    Default: 'https://github.com/Anyeli1204/cloud-front'
+    Description: 'URL del repositorio de GitHub'
+  
+  GitHubBranch:
+    Type: String
+    Default: 'main'
+    Description: 'Branch principal del repositorio'
+  
+  GitHubToken:
+    Type: String
+    NoEcho: true
+    Description: 'Personal Access Token de GitHub (con permisos repo y admin:repo_hook)'
+  
+  # URLs de los Microservicios
+  AccountsServiceURL:
+    Type: String
+    Default: 'http://54.162.117.139:8084/api/v1'
+    Description: 'URL del Microservicio 1 - Cuentas y Autenticación'
+  
+  ContentServiceURL:
+    Type: String
+    Default: 'http://54.162.117.139:8083'
+    Description: 'URL del Microservicio 2 - Contenido y Preguntas'
+  
+  DashboardServiceURL:
+    Type: String
+    Default: 'http://54.162.117.139:8081'
+    Description: 'URL del Microservicio 4 - Dashboard Global'
+  
+  OrchestratorServiceURL:
+    Type: String
+    Default: 'http://35.175.5.172:8085'
+    Description: 'URL del Microservicio 5 - Orquestador'
+  
+  AnalyticsServiceURL:
+    Type: String
+    Default: 'http://35.175.5.172:8086'
+    Description: 'URL del Microservicio 6 - Analytics'
+  
+  MS3ServiceURL:
+    Type: String
+    Default: 'http://54.162.117.139:8082'
+    Description: 'URL del Microservicio 3'
+  
+  ApifyToken:
+    Type: String
+    NoEcho: true
+    Description: 'Token de Apify API'
+
+Resources:
+  # Amplify App
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: 'cloud-front-app'
+      Description: 'Frontend de ScrapeTok con React + Vite desplegado automáticamente'
+      Repository: !Ref GitHubRepository
+      AccessToken: !Ref GitHubToken
+      
+      # Variables de entorno para solucionar Mixed Content
+      EnvironmentVariables:
+        - Name: VITE_ACCOUNTS_SERVICE_URL
+          Value: !Ref AccountsServiceURL
+        - Name: VITE_CONTENT_SERVICE_URL
+          Value: !Ref ContentServiceURL
+        - Name: VITE_DASHBOARD_SERVICE_URL
+          Value: !Ref DashboardServiceURL
+        - Name: VITE_ORCHESTRATOR_SERVICE_URL
+          Value: !Ref OrchestratorServiceURL
+        - Name: VITE_ANALYTICS_SERVICE_URL
+          Value: !Ref AnalyticsServiceURL
+        - Name: VITE_API_BASE_URL
+          Value: !Ref AccountsServiceURL
+        - Name: VITE_API_SERVICE_MS3_URL
+          Value: !Ref MS3ServiceURL
+        - Name: VITE_APIFY_TOKEN
+          Value: !Ref ApifyToken
+        - Name: _LIVE_UPDATES
+          Value: '[{"pkg":"@aws-amplify/cli","type":"npm","version":"latest"}]'
+      
+      # Build settings
+      BuildSpec: |
+        version: 1
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - npm ci
+            build:
+              commands:
+                - npm run build
+          artifacts:
+            baseDirectory: dist
+            files:
+              - '**/*'
+          cache:
+            paths:
+              - node_modules/**/*
+      
+      # Custom headers para permitir Mixed Content
+      CustomHeaders: |
+        customHeaders:
+          - pattern: '**'
+            headers:
+              - key: 'Content-Security-Policy'
+                value: 'upgrade-insecure-requests'
+              - key: 'X-Content-Type-Options'
+                value: 'nosniff'
+              - key: 'X-Frame-Options'
+                value: 'SAMEORIGIN'
+              - key: 'Referrer-Policy'
+                value: 'strict-origin-when-cross-origin'
+              - key: 'Permissions-Policy'
+                value: 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()'
+      
+      # IAM Service Role para Amplify
+      IAMServiceRole: !GetAtt AmplifyRole.Arn
+      
+      # Tags
+      Tags:
+        - Key: 'Environment'
+          Value: 'Production'
+        - Key: 'Project'
+          Value: 'ScrapeTok'
+        - Key: 'ManagedBy'
+          Value: 'CloudFormation'
+
+  # Branch principal
+  AmplifyBranch:
+    Type: AWS::Amplify::Branch
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      BranchName: !Ref GitHubBranch
+      EnableAutoBuild: true
+      EnablePullRequestPreview: false
+      Stage: PRODUCTION
+      
+      # Variables específicas del branch (opcional)
+      EnvironmentVariables:
+        - Name: NODE_ENV
+          Value: production
+
+  # IAM Role para Amplify
+  AmplifyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-AmplifyRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - amplify.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess-Amplify'
+      Tags:
+        - Key: 'Project'
+          Value: 'ScrapeTok'
+
+  # Domain (opcional - descomenta si tienes un dominio propio)
+  # AmplifyDomain:
+  #   Type: AWS::Amplify::Domain
+  #   Properties:
+  #     AppId: !GetAtt AmplifyApp.AppId
+  #     DomainName: 'tudominio.com'
+  #     SubDomainSettings:
+  #       - Prefix: 'www'
+  #         BranchName: !Ref GitHubBranch
+  #       - Prefix: ''
+  #         BranchName: !Ref GitHubBranch
+
+Outputs:
+  AmplifyAppId:
+    Description: 'ID de la aplicación Amplify'
+    Value: !GetAtt AmplifyApp.AppId
+    Export:
+      Name: !Sub '${AWS::StackName}-AppId'
+  
+  AmplifyAppName:
+    Description: 'Nombre de la aplicación Amplify'
+    Value: !GetAtt AmplifyApp.AppName
+    Export:
+      Name: !Sub '${AWS::StackName}-AppName'
+  
+  DefaultDomain:
+    Description: 'Dominio por defecto de Amplify'
+    Value: !GetAtt AmplifyApp.DefaultDomain
+    Export:
+      Name: !Sub '${AWS::StackName}-DefaultDomain'
+  
+  AppURL:
+    Description: 'URL completa de la aplicación'
+    Value: !Sub 'https://${GitHubBranch}.${AmplifyApp.DefaultDomain}'
+    Export:
+      Name: !Sub '${AWS::StackName}-AppURL'
+  
+  BranchName:
+    Description: 'Branch desplegado'
+    Value: !Ref GitHubBranch
+    Export:
+      Name: !Sub '${AWS::StackName}-BranchName'
+  
+  ConsoleURL:
+    Description: 'URL de la consola de Amplify'
+    Value: !Sub 'https://console.aws.amazon.com/amplify/home?region=${AWS::Region}#/${AmplifyApp.AppId}/${GitHubBranch}'

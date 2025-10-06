@@ -26,3 +26,6 @@ dist-ssr
 *.env*
 !.env.example
 node_modules
+
+### CloudFormation - Proteger parámetros con tokens ###
+cloudformation-parameters.json
