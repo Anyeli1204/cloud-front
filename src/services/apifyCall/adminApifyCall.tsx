@@ -12,15 +12,29 @@ export interface SoundViews {
 	totalViews: number;
 }
 
-import Api from "@services/api";
-
 export async function adminApify(
 	payload: AdminApifyRequest & { adminId: number },
 ): Promise<[ApifyCallResponse[], HashtagViews[], SoundViews[]]> {
-	const api = await Api.getInstance();
-	const response = await api.post<typeof payload, any>(payload, {
-		url: "/admin/apifycall",
+	const MS3_URL = import.meta.env.VITE_API_SERVICE_MS3_URL;
+
+	const response = await fetch(`${MS3_URL}/apify-connection/admin/normalized`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(payload),
 	});
-	// response.data === [ postsArray, hashtagsStats, soundsStats ]
-	return response.data as [ApifyCallResponse[], HashtagViews[], SoundViews[]];
+
+	if (!response.ok) {
+		const text = await response.text().catch(() => "");
+		throw new Error(`MS3 admin call failed: ${response.status} ${response.statusText} ${text}`);
+	}
+
+	const result = await response.json();
+	// result.data === [ postsArray, hashtagsStats, soundsStats ]
+	return (result?.data ?? []) as [
+		ApifyCallResponse[],
+		HashtagViews[],
+		SoundViews[],
+	];
 }

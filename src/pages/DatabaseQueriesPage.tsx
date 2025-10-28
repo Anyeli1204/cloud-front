@@ -5,6 +5,9 @@ import Swal from "sweetalert2";
 import type { UserDBQueryRequest } from "@interfaces/db-queries/UserDBQueryRequest";
 import type { UserDbPost } from "@interfaces/db-queries/UserDbQueryResponse";
 import { dbQueries } from "@services/db-queries/UserDbQueries";
+import { userApify } from "@services/apifyCall/userApifyCall";
+import type { ApifyCallResponse } from "@interfaces/apify-call/ApifyCallResponse";
+import type { UserApifyCallRequest } from "@interfaces/apify-call/UserApifyCallRequest";
 
 import { FilterPanelDb } from "@components/FilterPanelDb";
 import { PostDetailModal } from "@components/PostDetailModal";
@@ -108,6 +111,33 @@ export default function DatabaseQueriesPage() {
 		};
 	}
 
+	// Mapea una respuesta de Apify (scraping) al formato UserDbPost para reutilizar la misma tabla
+	function mapApifyToUserDbPost(item: ApifyCallResponse): UserDbPost {
+		return {
+			numberHashtags: item.numberHashtags,
+			comments: item.comments,
+			datePosted: item.datePosted,
+			engagement: item.engagement,
+			hashtags: item.hashtags,
+			totalInteractions: item.totalInteractions,
+			likes: item.likes,
+			postURL: item.postURL,
+			postId: item.postId,
+			regionPost: item.regionPost,
+			reposts: item.reposts,
+			saves: item.saves,
+			soundId: item.soundId,
+			soundURL: item.soundURL,
+			usernameTiktokAccount: item.usernameTiktokAccount,
+			hourPosted: item.hourPosted,
+			dateTracking: item.dateTracking,
+			timeTracking: item.timeTracking,
+			userId: item.userId,
+			views: item.views,
+			adminId: item.adminId,
+		};
+	}
+
 	useEffect(() => {
 		if (!filters) {
 			setPosts([]);
@@ -123,8 +153,12 @@ export default function DatabaseQueriesPage() {
 					didOpen: () => Swal.showLoading(),
 				});
 
-				// dbQueries ya devuelve directamente result.items (UserDbPost[])
-				const postList = (await dbQueries(filters)) as UserDbPost[] | [];
+				// Si el usuario ingresó hashtags en este formulario, preferimos llamar al scraping (MS3 normalized)
+				const hasHashtags = !!filters.hashtags && filters.hashtags.trim().length > 0;
+				const hasUsernames = !!filters.tiktokUsernames && filters.tiktokUsernames.trim().length > 0;
+
+				// Always call the DB query endpoint for the Queries page
+				let postList: UserDbPost[] | [] = (await dbQueries(filters)) as UserDbPost[] | [];
 
 				console.log("postList raw:", postList);
 

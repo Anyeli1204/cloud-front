@@ -72,6 +72,37 @@ export default function ApifyCallPage() {
 			sessionStorage.setItem("apifyScrapeData", JSON.stringify(mapped));
 			sessionStorage.setItem("apifyScrapeFilters", JSON.stringify(filters));
 			setSavedFilters(filters as Partial<UserApifyCallRequest>);
+
+			// Also post a historial record to the Content service (MS2)
+			(async function postHistorial() {
+				try {
+					const MS2_URL = import.meta.env.VITE_CONTENT_SERVICE_URL;
+					if (!MS2_URL) return;
+					const userId = sessionStorage.getItem("id") ?? "";
+					const userRole = sessionStorage.getItem("role") ?? "";
+					const body = {
+						filters: filters,
+						results: mapped.length,
+						timestamp: new Date().toISOString(),
+					};
+					const res = await fetch(`${MS2_URL}/historial`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							"x-user-id": String(userId),
+							"x-user-role": String(userRole),
+						},
+						body: JSON.stringify(body),
+					});
+					if (!res.ok) {
+						console.warn("historial POST failed", res.status);
+					} else {
+						console.log("historial recorded");
+					}
+				} catch (e) {
+					console.warn("Error posting historial", e);
+				}
+			})();
 		} catch (err: unknown) {
 			let message = "Ocurrió un error al obtener los datos de TikTok.";
 			if (typeof err === "object" && err !== null && "response" in err) {

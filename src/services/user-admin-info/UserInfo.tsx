@@ -90,14 +90,44 @@ export async function userInfo(
 	const historialData =
 		historialResult.status === "fulfilled" ? historialResult.value.data : null;
 
+	// debug logs removed
+
 	const scrapedAccounts =
 		accountsResult.status === "fulfilled"
 			? accountsResult.value.data ?? []
 			: [];
 
-	const filters: Filtro[] = (historialData?.filtros ?? []).map((filter) =>
-		parseFilterConfig(filter),
-	);
+	let filters: Filtro[] = (historialData?.filtros ?? []).map((filter) => {
+		// Start from the parsed filter
+		const parsed = parseFilterConfig(filter);
+
+		// Ensure the historial id is available to the UI
+		if (filter.id !== undefined && filter.id !== null) {
+			parsed["HistorialId"] = filter.id;
+		}
+
+		// The API may return the date in several places: per-filter createdAt,
+		// or at the parent historialData.startDate. Try a few possibilities.
+		const created =
+			filter.createdAt ?? (historialData && (historialData.startDate as string)) ?? (filter as any).startDate ?? undefined;
+		if (created) parsed["Created At"] = created as string;
+
+		return parsed;
+	});
+
+// If the API returned a top-level historial row but no per-filter entries,
+// create a synthetic entry so the UI can render the historial id and startDate.
+if ((historialData?.filtros ?? []).length === 0 && historialData) {
+	const synthetic: Filtro = {};
+	if (historialData.id !== undefined && historialData.id !== null) {
+		synthetic["HistorialId"] = historialData.id;
+	}
+	if (historialData.startDate) {
+		synthetic["Created At"] = historialData.startDate;
+	}
+	// push to the filters array so the UI will render at least one card
+	filters = [synthetic, ...filters];
+}
 
 	const tiktokUsernameScraped = scrapedAccounts.map(
 		(account) => account.accountName,

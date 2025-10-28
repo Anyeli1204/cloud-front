@@ -9,7 +9,6 @@ import UserInformationPage from "src/pages/UserInformationPage";
 import QuestionsAnswersPage from "src/pages/QuestionsAnswersPage";
 import AdminUsersPage from "@pages/AdminUsersPage";
 import NotFoundPage from "src/pages/NotFoundPage";
-import AiPage from "@pages/AiPage";
 import OrchestratorPage from "src/pages/OrchestratorPage";
 import AnalyticsPage from "src/pages/AnalyticsPage";
 
@@ -28,10 +27,7 @@ export const router = createBrowserRouter([
 			{ path: "queries", element: <ProtectedRoute element={<DatabaseQueriesPage />} /> },
 			{ path: "users", element: <ProtectedRoute element={<UserInformationPage />} /> },
 			{ path: "qa", element: <ProtectedRoute element={<QuestionsAnswersPage />} /> },
-			{
-				path:"/ai",
-				element: <ProtectedRoute roles={["USER"]} element={<AiPage />} />,
-			},
+			// AI page removed per request
 			{
 				path: "/orchestrator",
 				element: <ProtectedRoute element={<OrchestratorPage />} />,
